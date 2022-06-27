@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "author": "",
-  "scripts": {},
+  "scripts": {
+    "dev": "spear watch",
+    "build": "spear build"
+  },
   "devDependencies": {},
   "dependencies": {
     "html-minifier-terser": "^7.0.0-beta.0",
     "node-html-parser": "^5.3.3",
-    "spear-cli": "file:../../spear-cli"
+    "spear-cli": "^1.0.2"
   }
 }

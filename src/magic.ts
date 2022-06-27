@@ -184,6 +184,9 @@ export default function magic(action: string) {
   if (action === "watch") {
     Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
 
+    // Bundle before starting the server
+    bundle()
+
     watch(Settings.srcDir, { recursive: true }, function (evt, name) {
       console.log("%s changed.", name)
       bundle()
