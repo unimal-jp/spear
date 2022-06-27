@@ -1,0 +1,37 @@
+{
+  "name": "spear-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "preferGlobal": true,
+  "scripts": {
+    "tsc": "tsc",
+    "build": "tsc --build src && npm run copy-files",
+    "dev": "nodemon --watch \".\" -e js,ts --exec \"npm run build\"",
+    "copy-files": "npm-run-all copy-files:*",
+    "copy-files:templates": "mkdir -p dist/templates && cp -R src/templates/ dist/templates/"
+  },
+  "bin": {
+    "spear": "./dist/index.js"
+  },
+  "keywords": [],
+  "author": "Yo",
+  "license": "ISC",
+  "dependencies": {
+    "@types/live-server": "^1.2.1",
+    "argparse": "^2.0.1",
+    "chalk": "^5.0.1",
+    "html-minifier-terser": "^7.0.0-beta.0",
+    "live-server": "^1.2.2",
+    "node-html-parser": "^5.3.3",
+    "node-watch": "^0.7.3"
+  },
+  "devDependencies": {
+    "@types/argparse": "^2.0.10",
+    "@types/html-minifier-terser": "^6.1.0",
+    "@types/node": "^18.0.0",
+    "nodemon": "^2.0.16",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^4.7.4"
+  }
+}

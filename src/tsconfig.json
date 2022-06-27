@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "es6",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "rootDir": ".",
+    "outDir": "../dist/"
+  },
+  "references": [
+    { "path": "../" } // this project to the one at the root dir`
+  ]
+}
