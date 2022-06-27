@@ -73,7 +73,7 @@ async function askQuestions() {
 
   showMessage("\n\rDone 🚀\n\r")
   showMessage("To start using:\n\r")
-  showMessage(chalk.green(`    cd ${settings.projectDir} \n\r`))
+  showMessage(chalk.green(`    cd ${settings.answers.projectName} \n\r`))
   showMessage(chalk.green("    yarn install \n\r\n\r"))
 }
 
