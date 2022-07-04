@@ -1,147 +1,184 @@
 import fs from "fs"
+import https from "https"
 import chalk from "chalk"
-import readline from "readline"
+import gradient from "gradient-string"
 import path from "path"
+import inquirer from "inquirer"
 import { fileURLToPath } from "url"
 
-declare module "readline" {
-  export function question(input: any, callback: any): void
-  export function close(): void
-}
-
-const SPEARLY = "7963F0"
-const SPEARLY_SECONDARY = "a0a0a0"
+const SpearlyGradient = gradient(["#F639D1", "#AB2EFF", "#00C7FF"])
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
 const dirname = process.cwd()
 
 const settings = {
-  questions: [
-    {
-      key: "spearlyAuthKey",
-      question: `Will you use ${chalk.hex(SPEARLY)("Spearly CMS")}? ${chalk
-        .hex(SPEARLY_SECONDARY)
-        .dim("enter your API KEY")}: `,
-      hasAnswer: true,
-    },
-  ],
   answers: {
     projectName: "",
-    spearlyAuthKey: "",
+    useCMS: "",
+    spearlyCMSApiKey: "",
   },
   projectDir: dirname.split("/").slice(-1)[0],
 }
 
-const read = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false,
-})
-
-function showMessage(message: string) {
-  process.stdout.write(message)
-}
-
-function promptQuestion(message: any, preAnswer?: string): Promise<string> {
-  return new Promise((resolve) => {
-    let formattedPreAnswer = ""
-    if (preAnswer) {
-      formattedPreAnswer = ` ${chalk.hex(SPEARLY_SECONDARY).dim(`(${preAnswer}) `)}`
-    }
-
-    read.question(`${message} ${formattedPreAnswer}`, (answer) => {
-      process.stdout.moveCursor(0, -1)
-      process.stdout.clearLine(1)
-      process.stdout.write(`${message} ${chalk.hex(SPEARLY)(answer || preAnswer || "")}`)
-      process.stdout.write("\n\r")
-      resolve(answer || preAnswer || "")
-    })
-  })
-}
+const prompt = inquirer.createPromptModule()
 
 async function askQuestions() {
-  showMessage(` ### Welcome to ${chalk.hex(SPEARLY)("Spear CLI")} ###\n\r\n\r`)
+  console.log(` ### Welcome to ${SpearlyGradient("Spear CLI")} ###\n\r\n\r`)
 
-  settings.answers.projectName = await promptQuestion("Project name:", settings.answers.projectName)
+  const questions = [
+    {
+      name: "projectName",
+      type: "input",
+      message: "Name of your project",
+      default: settings.answers.projectName,
+    },
+    {
+      name: "useCMS",
+      type: "list",
+      message: "Use Spearly CMS",
+      default: "Yes",
+      choices: ["Yes", "No"],
+    },
+    {
+      name: "spearlyCMSApiKey",
+      type: "input",
+      message: "Enter your Spearly CMS API KEY",
+      when: (answers) => answers.useCMS === "Yes",
+    },
+  ]
 
-  settings.answers.spearlyAuthKey = await promptQuestion(
-    `Will you use ${chalk.hex(SPEARLY)("Spearly CMS")}? ${chalk
-      .hex(SPEARLY_SECONDARY)
-      .dim("enter your API KEY")}: `
-  )
+  settings.answers = await prompt(questions)
 
-  showMessage("\n\rDone 🚀\n\r")
-  showMessage("To start using:\n\r")
-  showMessage(chalk.green(`    cd ${settings.answers.projectName} \n\r`))
-  showMessage(chalk.green("    yarn install \n\r\n\r"))
+  if (settings.answers.useCMS === "No") {
+    console.log(
+      `  ❤️  If you want to learn more about ${SpearlyGradient(
+        "Spearly CMS"
+      )}: https://cms.spearly.com/`
+    )
+  }
+
+  console.log(`
+  ## Your project was created 🎉
+
+  To start using, run the following command:
+      cd ${settings.answers.projectName}
+      yarn install
+
+  To start local server, run
+      yarn dev
+
+  To build static sources, run
+      yarn build
+
+  `)
 }
 
 function createProjectFolder() {
-  if (!settings.answers.projectName) {
-    if (fs.readdirSync(dirname).length) {
-      showMessage(`The folder ${chalk.blue(settings.projectDir)} is not empty :(\n\r`)
-      return false
+  try {
+    fs.mkdirSync(`${dirname}/${settings.answers.projectName}`)
+    settings.projectDir = settings.answers.projectName
+  } catch (error) {
+    if (error.code === "EEXIST") {
+      console.log(`The folder ${chalk.blue(settings.answers.projectName)} already exists :(`)
     }
-    settings.answers.projectName = settings.projectDir
-  } else {
-    try {
-      fs.mkdirSync(`${dirname}/${settings.answers.projectName}`)
-      settings.projectDir = settings.answers.projectName
-    } catch (error) {
-      if (error.code === "EEXIST") {
-        showMessage(`The folder ${chalk.blue(settings.answers.projectName)} already exists :(\n\r`)
-      }
-      return false
-    }
+    return false
   }
 
   return true
 }
 
-function createBoilerplate() {
+async function createBoilerplate() {
   const templatesPath = `${libDirname}/templates`
   const basePath = `${dirname}/${settings.projectDir}`
   const publicPath = `${basePath}/public`
   const srcPath = `${basePath}/src`
+  const vscodePath = `${basePath}/.vscode`
   const srcComponentsPath = `${basePath}/src/components`
 
   fs.mkdirSync(publicPath)
   fs.mkdirSync(srcPath)
   fs.mkdirSync(srcComponentsPath)
+  fs.mkdirSync(vscodePath)
 
   const templates = [
     { source: `${templatesPath}/index.html`, target: `${publicPath}/index.html` },
     { source: `${templatesPath}/index.spear`, target: `${srcPath}/index.spear` },
     { source: `${templatesPath}/main.spear`, target: `${srcComponentsPath}/main.spear` },
     { source: `${templatesPath}/header.spear`, target: `${srcComponentsPath}/header.spear` },
+    { source: `${templatesPath}/vscodeSettings.json`, target: `${vscodePath}/settings.json` },
   ]
 
   templates.forEach((f) => {
     fs.writeFileSync(f.target, fs.readFileSync(f.source, "utf8"))
   })
 
+  // create package.json file
   const packageJson = JSON.parse(fs.readFileSync(`${templatesPath}/package_template.json`, "utf-8"))
   packageJson.name = settings.answers.projectName
+  const cliVersion = await getSpearCliVersion()
+  if (cliVersion) {
+    packageJson.dependencies["spear-cli"] = `^${cliVersion}`
+  }
   fs.writeFileSync(`${basePath}/package.json`, JSON.stringify(packageJson, null, 2))
+
+  // Create env file if needed
+  const settingsFile: any = {}
+  if (settings.answers.spearlyCMSApiKey) {
+    settingsFile.spearlyCMSApiKey = settings.answers.spearlyCMSApiKey
+  }
+  if (Object.keys(settingsFile).length) {
+    fs.writeFileSync(
+      `${basePath}/spear.config.js`,
+      `module.exports = ${JSON.stringify(settingsFile, null, 2)}`
+    )
+  }
 
   return true
 }
 
+function getSpearCliVersion() {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: "registry.npmjs.org",
+      port: 443,
+      path: "/spear-cli",
+      method: "GET",
+    }
+
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8")
+
+      const chunks = []
+
+      res.on("data", (chunk) => {
+        chunks.push(chunk)
+      })
+
+      res.on("end", () => {
+        const data = JSON.parse(chunks.join(""))
+        resolve(data["dist-tags"].latest)
+      })
+    })
+
+    req.on("error", (error) => {
+      throw new Error(error.message)
+    })
+
+    req.end()
+  })
+}
+
 export default async function main(projectName: string) {
-  settings.answers.projectName = projectName
+  settings.answers.projectName = projectName || settings.projectDir
 
   await askQuestions()
 
   if (!createProjectFolder()) {
-    read.close()
     return
   }
 
   if (!createBoilerplate()) {
-    read.close()
     return
   }
-
-  read.close()
 }

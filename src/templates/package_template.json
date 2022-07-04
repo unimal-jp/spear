@@ -1,8 +1,9 @@
 {
-  "name": "{projectName}",
+  "name": "",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
+  "private": true,
   "scripts": {
     "dev": "spear watch",
     "build": "spear build"
@@ -11,6 +12,6 @@
   "dependencies": {
     "html-minifier-terser": "^7.0.0-beta.0",
     "node-html-parser": "^5.3.3",
-    "spear-cli": "^1.0.5"
+    "spear-cli": ""
   }
 }
