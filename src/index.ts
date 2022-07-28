@@ -18,15 +18,18 @@ const parser = new ArgumentParser({
 const { version } = JSON.parse(fs.readFileSync(`${dirname}/package.json`, "utf-8"))
 
 parser.add_argument("-v", "--version", { action: "version", version })
+parser.add_argument("-p", "--port", { required: false, type: "int" })
 parser.add_argument("action", { help: "Action: create" })
 parser.add_argument("projectName", { help: "Project name", nargs: "?" })
 
 const args = parser.parse_args()
+
+console.log(args)
 
 if (args.action === "create") {
   create(args.projectName)
 }
 
 if (args.action === "watch" || args.action === "build") {
-  magic(args.action)
+  magic(args)
 }

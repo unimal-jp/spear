@@ -4,32 +4,15 @@ import { minify } from "html-minifier-terser"
 import { parse, type HTMLElement } from "node-html-parser"
 import liveServer from "live-server"
 import watch from "node-watch"
-
-type Element = HTMLElement & { props: { [key: string]: string } }
-
-interface Component {
-  tagName: string
-  rawData?: string
-  node: Element
-  props: { [key: string]: string }
-}
-
-interface State {
-  componentList: Component[]
-  rootRaw: string
-  rootNode: Element | null
-  body: Element
-  templateRaw: string
-  globalProps: { [key: string]: string }
-  out: {
-    css: string[]
-  }
-}
+import { Args } from "./interfaces/argsInterfaces"
+import { Element, State } from "./interfaces/magicInterfaces"
+import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 
 const dirname = process.cwd()
 
-const Settings: any = {
+const Settings: DefaultSettings = {
   projectName: "Spear CLI",
+  settingsFile: "spear.config",
   componentsFolder: `${dirname}/src/components`,
   srcDir: `${dirname}/src`,
   distDir: `${dirname}/dist`,
@@ -203,11 +186,41 @@ async function bundle() {
   // console.log("Final", finalHtml)
 }
 
-export default function magic(action: string) {
-  console.log(action)
+async function loadSettings() {
+  try {
+    const settingsFilePrefix = `${dirname}/${Settings.settingsFile}`
 
-  if (action === "watch") {
+    if (fs.existsSync(`${settingsFilePrefix}.js`)) {
+      const data = await import(`${settingsFilePrefix}.js`)
+      Object.keys(data.default).forEach((k) => {
+        Settings[k] = data.default[k]
+      })
+    } else if (fs.existsSync(`${settingsFilePrefix}.json`)) {
+      const data = await import(`${settingsFilePrefix}.json`, { assert: { type: "json" } })
+      Object.keys(data.default).forEach((k) => {
+        Settings[k] = data.default[k]
+      })
+    } else {
+      const data = await import(`${dirname}/package.json`, { assert: { type: "json" } })
+      Settings.projectName = data.default.name
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export default async function magic(args: Args) {
+  console.log(args.action)
+
+  if (args.action === "watch") {
     Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
+
+    // Load default settings from spear.config.{js,json}|package.json
+    await loadSettings()
+
+    if (args.port) {
+      Settings.port = args.port
+    }
 
     // Bundle before starting the server
     bundle()
@@ -228,7 +241,8 @@ export default function magic(action: string) {
     }
 
     liveServer.start(params)
-  } else if (action === "build") {
+    console.log("Server started on port %s", Settings.port)
+  } else if (args.action === "build") {
     bundle()
   }
 }
