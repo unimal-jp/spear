@@ -9,8 +9,7 @@
     "build": "tsc --build src && npm run copy-files",
     "dev": "nodemon --watch \".\" -e js,ts --exec \"npm run build\"",
     "copy-files": "npm-run-all copy-files:*",
-    "copy-files:templates": "mkdir -p dist/templates && cp -R src/templates/ dist/templates/",
-    "publish": "npm publish --access public"
+    "copy-files:templates": "mkdir -p dist/templates && cp -R src/templates/ dist/templates/"
   },
   "bin": {
     "spear": "./dist/index.js"
