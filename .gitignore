@@ -12,6 +12,7 @@ node_modules
 dist
 *.local
 notes.md
+asd
 
 # Editor directories and files
 .vscode/*

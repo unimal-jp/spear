@@ -122,7 +122,7 @@ async function createBoilerplate() {
   }
   fs.writeFileSync(`${basePath}/package.json`, JSON.stringify(packageJson, null, 2))
 
-  // Create env file if needed
+  // Create config file if needed
   const settingsFile: any = {}
   if (settings.answers.spearlyCMSApiKey) {
     settingsFile.spearlyCMSApiKey = settings.answers.spearlyCMSApiKey
