@@ -91,19 +91,21 @@ function createProjectFolder() {
 async function createBoilerplate() {
   const templatesPath = `${libDirname}/templates`
   const basePath = `${dirname}/${settings.projectDir}`
-  const publicPath = `${basePath}/public`
+  // const publicPath = `${basePath}/public`
   const srcPath = `${basePath}/src`
   const vscodePath = `${basePath}/.vscode`
+  const srcPagesPath = `${basePath}/src/pages`
   const srcComponentsPath = `${basePath}/src/components`
 
-  fs.mkdirSync(publicPath)
+  // fs.mkdirSync(publicPath)
   fs.mkdirSync(srcPath)
+  fs.mkdirSync(srcPagesPath)
   fs.mkdirSync(srcComponentsPath)
   fs.mkdirSync(vscodePath)
 
   const templates = [
-    { source: `${templatesPath}/index.html`, target: `${publicPath}/index.html` },
-    { source: `${templatesPath}/index.spear`, target: `${srcPath}/index.spear` },
+    // { source: `${templatesPath}/index.html`, target: `${publicPath}/index.html` },
+    { source: `${templatesPath}/index.spear`, target: `${srcPagesPath}/index.spear` },
     { source: `${templatesPath}/main.spear`, target: `${srcComponentsPath}/main.spear` },
     { source: `${templatesPath}/header.spear`, target: `${srcComponentsPath}/header.spear` },
     { source: `${templatesPath}/vscodeSettings.json`, target: `${vscodePath}/settings.json` },

@@ -1,7 +1,8 @@
 import fs from "fs"
 import path from "path"
 import { minify } from "html-minifier-terser"
-import { parse, type HTMLElement } from "node-html-parser"
+import glob from "glob"
+import { parse } from "node-html-parser"
 import liveServer from "live-server"
 import watch from "node-watch"
 import { Args } from "./interfaces/argsInterfaces"
@@ -13,10 +14,11 @@ const dirname = process.cwd()
 const Settings: DefaultSettings = {
   projectName: "Spear CLI",
   settingsFile: "spear.config",
+  pagesFolder: `${dirname}/src/pages`,
   componentsFolder: `${dirname}/src/components`,
   srcDir: `${dirname}/src`,
   distDir: `${dirname}/dist`,
-  entry: `${dirname}/src/index.spear`,
+  entry: `${dirname}/src/pages/index.?(spear|html)`,
   template: `${dirname}/public/index.html`,
   spearlyAuthKey: "",
   port: 8080,
@@ -40,11 +42,16 @@ function parseElements(state: State, nodes: Element[]) {
     const tagName = node.rawTagName
     const isTextNode = node.nodeType === 3
     const isNative = !isTextNode && node.hasAttribute("native")
-    const component = !isNative && state.componentList.find((c) => c.tagName === tagName)
+    const component = !isNative && state.componentsList.find((c) => c.tagName === tagName)
 
     // console.log("  --")
     // console.log("  tagName:", node.nodeType, tagName, node.innerText)
     // console.log("  isNative:", isNative ? 1 : 0, "hasComponent:", !!component ? 1 : 0)
+
+    if (tagName === "style") {
+      state.out.css.push(node.innerHTML)
+      return
+    }
 
     if (!isTextNode && !component) {
       node.props = {}
@@ -61,10 +68,10 @@ function parseElements(state: State, nodes: Element[]) {
     }
 
     if (component) {
-      console.log("  append component", component.node.outerHTML)
+      // console.log("  append component", component.node.outerHTML)
       component.node.childNodes.forEach((child) => res.appendChild(child))
     } else {
-      console.log("  append node", node.outerHTML)
+      // console.log("  append node", node.outerHTML)
       res.appendChild(node)
     }
   })
@@ -72,10 +79,11 @@ function parseElements(state: State, nodes: Element[]) {
   return res.childNodes
 }
 
-async function parseComponents(state: State, dirPath: string) {
+async function parsePages(state: State, dirPath: string) {
   const files = fs.readdirSync(dirPath)
 
-  console.log("[Parse components]: Start")
+  console.log("")
+  console.log("[Parse Pages]")
 
   for (const file of files) {
     const filePath = `${dirPath}/${file}`
@@ -91,16 +99,42 @@ async function parseComponents(state: State, dirPath: string) {
       const tagName = fname.toLowerCase() // todo: keep lowerCase?
       const node = parse(minified) as Element
 
-      console.log("  ", tagName, node.innerHTML)
+      const head = node.querySelector("head")
+      const title = head?.querySelector("title")
+      if (title && title.innerText === "{{projectName}}") {
+        title.innerHTML = Settings.projectName
+      }
 
-      state.componentList.push({ tagName, rawData, node, props: {} })
+      console.log(`  [Page]: ${fname}`)
+      state.pagesList.push({ fname, tagName, rawData, node, props: {} })
     }
   }
+}
 
-  // Run list again to parse children of the components
-  state.componentList.forEach((component) => {
-    component.node.childNodes = parseElements(state, component.node.childNodes as Element[])
-  })
+async function parseComponents(state: State, dirPath: string) {
+  const files = fs.readdirSync(dirPath)
+
+  console.log("")
+  console.log("[Parse components]")
+
+  for (const file of files) {
+    const filePath = `${dirPath}/${file}`
+    const ext = path.extname(file)
+    const fname = path.basename(file, ext)
+    const isDir = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()
+
+    if (isDir) {
+      await parseComponents(state, filePath)
+    } else {
+      const rawData = fs.readFileSync(filePath, "utf8")
+      const minified = await minify(rawData, { collapseWhitespace: true })
+      const tagName = fname.toLowerCase() // todo: keep lowerCase?
+      const node = parse(minified) as Element
+
+      console.log(`  [Component]: ${fname}`)
+      state.componentsList.push({ fname, tagName, rawData, node, props: {} })
+    }
+  }
 }
 
 function createDir() {
@@ -113,99 +147,104 @@ function createDir() {
   fs.mkdirSync(Settings.distDir)
 }
 
+function dumpStyle(state: State) {
+  const data = state.out.css.join("\n")
+  fs.writeFileSync(`${Settings.distDir}/css.css`, data)
+
+  state.pagesList.forEach((page) => {
+    const link = parse('<link rel="stylesheet" href="./css.css">')
+    const head = page.node?.querySelector("head")
+
+    if (head) {
+      head.appendChild(link)
+    }
+  })
+
+  console.log("")
+  console.log("[Style]")
+  console.log(data)
+}
+
+function dumpPages(state: State) {
+  state.pagesList.forEach((page) => {
+    console.log("")
+    console.log(`[Page]: ${page.fname}`)
+    console.log(page.node.outerHTML)
+    fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, page.node.outerHTML)
+  })
+}
+
 async function bundle() {
   const state: State = {
-    componentList: [],
-    rootRaw: "",
-    rootNode: null,
+    pagesList: [],
+    componentsList: [],
     body: parse("") as Element,
-    templateRaw: "",
     globalProps: {},
     out: { css: [] },
   }
 
+  // Create dist folder
   createDir()
 
-  // load files
-  state.rootRaw = fs.readFileSync(Settings.entry, "utf8")
-  state.rootNode = parse(state.rootRaw) as Element
-
-  state.templateRaw = fs.readFileSync(Settings.template, "utf8")
-
+  // First parse components from the /components folder
   await parseComponents(state, Settings.componentsFolder)
+  await parsePages(state, Settings.pagesFolder)
 
-  // parse title
-  const head = state.rootNode.querySelector("head")
-  const title = head.querySelector("title")
-  if (title && title.innerText === "{{projectName}}") {
-    title.innerHTML = Settings.projectName
+  // Run list again to parse children of the components
+  state.componentsList.forEach((component) => {
+    component.node.childNodes = parseElements(state, component.node.childNodes as Element[])
+  })
+
+  // Run list again to parse children of the pages
+  state.pagesList.forEach((page) => {
+    page.node.childNodes = parseElements(state, page.node.childNodes as Element[])
+  })
+
+  // Append style if needed
+  if (state.out.css.length) {
+    dumpStyle(state)
   }
 
-  // parse body
-  const el = state.rootNode.querySelector("body")
-  if (el) {
-    el.childNodes = parseElements(state, el.childNodes as Element[])
-  }
-
-  console.log("out:", state.rootNode.outerHTML)
-
-  // const minified = await minify(state.templateRaw, { collapseWhitespace: true })
-  // const html = parse(minified)
-
-  // console.log(state.body.outerHTML)
-
-  // const rootMin = await minify(state.rootRaw, { collapseWhitespace: true })
-  // state.rootNode = extractChildNodes(state, parse(rootMin))
-
-  // // Append style if needed
-  // if (state.out.css.length) {
-  //   dumpStyle(state, html)
-  // }
-
-  // // Append nodes into final body
-  // html.querySelector("body").innerHTML = state.rootNode.innerHTML
-
-  // // inject CMS lib if necessary
-  // if (Settings.spearlyAuthKey) {
-  //   injectCMS(html)
-  // }
-
-  // let finalHtml = html.toString()
-
-  // // replace template variables
-  // const matches = finalHtml.match(/{{(.*?)}}/g)
-  // if (matches) {
-  //   matches.forEach((m) => {
-  //     const key = m.match(/[^{\}]+(?=})/)[0]
-  //     const value = Settings[key]
-  //     finalHtml = finalHtml.replace(m, value)
-  //   })
-  // }
-
-  // fs.writeFileSync(`${Settings.distDir}/index.html`, finalHtml)
-  // console.log("Final", finalHtml)
+  // Dump pages
+  dumpPages(state)
 }
 
-async function loadSettings() {
-  try {
-    const settingsFilePrefix = `${dirname}/${Settings.settingsFile}`
+function loadFile(filePath: string) {
+  return new Promise((resolve, reject) => {
+    glob(filePath, null, async (er, files) => {
+      if (er) {
+        reject(er)
+        return
+      }
 
-    if (fs.existsSync(`${settingsFilePrefix}.js`)) {
-      const data = await import(`${settingsFilePrefix}.js`)
-      Object.keys(data.default).forEach((k) => {
-        Settings[k] = data.default[k]
-      })
-    } else if (fs.existsSync(`${settingsFilePrefix}.json`)) {
-      const data = await import(`${settingsFilePrefix}.json`, { assert: { type: "json" } })
-      Object.keys(data.default).forEach((k) => {
-        Settings[k] = data.default[k]
-      })
-    } else {
-      const data = await import(`${dirname}/package.json`, { assert: { type: "json" } })
-      Settings.projectName = data.default.name
-    }
-  } catch (error) {
-    console.log(error)
+      if (files.length) {
+        const ext = path.extname(files[0])
+
+        if (ext === ".js") {
+          const data = await import(
+            files[0],
+            files[0].indexOf("json") > -1 ? { assert: { type: "json" } } : undefined
+          )
+          resolve(data.default)
+        } else if (ext === ".json") {
+          const data = fs.readFileSync(files[0], "utf8")
+          resolve(JSON.parse(data))
+        } else {
+          resolve(fs.readFileSync(files[0], "utf8"))
+        }
+      } else {
+        resolve(null)
+      }
+    })
+  })
+}
+
+async function loadSettingsFromFile() {
+  const data = await loadFile(`${dirname}/${Settings.settingsFile}.?(js|json)`)
+  if (data) {
+    Object.keys(data).forEach((k) => {
+      Settings[k] = data[k]
+    })
   }
 }
 
@@ -216,7 +255,7 @@ export default async function magic(args: Args) {
     Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
 
     // Load default settings from spear.config.{js,json}|package.json
-    await loadSettings()
+    await loadSettingsFromFile()
 
     if (args.port) {
       Settings.port = args.port

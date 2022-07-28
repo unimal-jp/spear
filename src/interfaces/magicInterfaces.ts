@@ -3,6 +3,7 @@ import { HTMLElement } from "node-html-parser"
 export type Element = HTMLElement & { props: { [key: string]: string } }
 
 export interface Component {
+  fname: string
   tagName: string
   rawData?: string
   node: Element
@@ -10,11 +11,9 @@ export interface Component {
 }
 
 export interface State {
-  componentList: Component[]
-  rootRaw: string
-  rootNode: Element | null
+  pagesList: Component[]
+  componentsList: Component[]
   body: Element
-  templateRaw: string
   globalProps: { [key: string]: string }
   out: {
     css: string[]
