@@ -21,6 +21,7 @@ parser.add_argument("-v", "--version", { action: "version", version })
 parser.add_argument("-p", "--port", { required: false, type: "int" })
 parser.add_argument("action", { help: "Action: create" })
 parser.add_argument("projectName", { help: "Project name", nargs: "?" })
+parser.add_argument("-s", "--src", { help: "Specify source directory. "})
 
 const args = parser.parse_args()
 
