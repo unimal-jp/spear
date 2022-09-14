@@ -157,33 +157,39 @@ function createDir() {
   fs.mkdirSync(Settings.distDir)
 }
 
-function dumpStyle(state: State, indexNode: Element) {
+function generateStyleFile(state: State) {
   const data = state.out.css.join("\n")
   fs.writeFileSync(`${Settings.distDir}/css.css`, data)
-
-  if (indexNode) {
-    const link = parse('<link rel="stylesheet" href="./css.css">')
-    const head = indexNode.querySelector("head")
-
-    if (head) {
-      head.appendChild(link)
-    }
-  }
 
   console.log("")
   console.log("[Style]")
   console.log(data)
 }
 
-function dumpPages(state: State, indexNode: Element) {
-  const body = indexNode.querySelector("body")
-  state.pagesList.forEach((page) => {
+async function dumpPages(state: State) {
+  for (const page of state.pagesList) {
+    // Read index.html template
+    const indexRawData = fs.readFileSync(`${libDirname}/templates/templates/index.html`, "utf8")
+    const minified = await minify(indexRawData, { collapseWhitespace: true })
+    const indexNode = parse(minified) as Element
+    const body = indexNode.querySelector("body")
     console.log("")
     console.log(`[Page]: ${page.fname}`)
     console.log(page.node.outerHTML)
     body.appendChild(page.node)
+
+    // Inject the Styles.
+    if (indexNode && state.out.css.length > 0) {
+      const link = parse('<link rel="stylesheet" href="./css.css">')
+      const head = indexNode.querySelector("head")
+
+      if (head) {
+        head.appendChild(link)
+      }
+    }
+
     fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
-  })
+  }
 }
 
 async function bundle() {
@@ -197,11 +203,6 @@ async function bundle() {
 
   // Create dist folder
   createDir()
-
-  // Read index.html template
-  const indexRawData = fs.readFileSync(`${libDirname}/templates/templates/index.html`, "utf8")
-  const minified = await minify(indexRawData, { collapseWhitespace: true })
-  const indexNode = parse(minified) as Element
 
   // First parse components from the /components folder
   await parseComponents(state, Settings.componentsFolder)
@@ -217,13 +218,13 @@ async function bundle() {
     page.node.childNodes = parseElements(state, page.node.childNodes as Element[])
   })
 
-  // Append style if needed
+  // Generate style files.
   if (state.out.css.length) {
-    dumpStyle(state, indexNode)
+    generateStyleFile(state)
   }
 
   // Dump pages
-  dumpPages(state, indexNode)
+  dumpPages(state)
 }
 
 function loadFile(filePath: string) {
