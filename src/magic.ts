@@ -63,6 +63,11 @@ function parseElements(state: State, nodes: Element[]) {
       return
     }
 
+    if (tagName === "script") {
+      state.out.script.push(node.innerHTML)
+      return
+    }
+
     if (!isTextNode && !component) {
       node.props = {}
       extractProps(state, node)
@@ -108,12 +113,6 @@ async function parsePages(state: State, dirPath: string) {
       const minified = await minify(rawData, { collapseWhitespace: true })
       const tagName = fname.toLowerCase() // todo: keep lowerCase?
       const node = parse(minified) as Element
-
-      const head = node.querySelector("head")
-      const title = head?.querySelector("title")
-      if (title && title.innerText === "{{projectName}}") {
-        title.innerHTML = Settings.projectName
-      }
 
       console.log(`  [Page]: ${fname}`)
       state.pagesList.push({ fname, tagName, rawData, node, props: {} })
@@ -166,6 +165,15 @@ function generateStyleFile(state: State) {
   console.log(data)
 }
 
+function generateScriptFile(state: State) {
+  const data =  state.out.script.join("\n")
+  fs.writeFileSync(`${Settings.distDir}/script.js`, data)
+
+  console.log("")
+  console.log("[Script]")
+  console.log(data)
+}
+
 async function dumpPages(state: State) {
   for (const page of state.pagesList) {
     // Read index.html template
@@ -188,6 +196,33 @@ async function dumpPages(state: State) {
       }
     }
 
+    // Inject the Script.
+    if (indexNode && state.out.script.length > 0) {
+      const script = parse('<script src="./script.js"></script>')
+      const head = indexNode.querySelector("head")
+
+      if (head) {
+        head.appendChild(script)
+      }
+    }
+
+    // Inject title
+    if (indexNode) {
+      const head = indexNode.querySelector("head")
+      const title = head?.querySelector("title")
+      if (title && title.innerText === "{{projectName}}") {
+        title.innerHTML = Settings.projectName
+      }
+    }
+
+    // Embedded js common script
+    const embeddedScript = parse(`<script src="https://static.spearly.com/js/v3/spearly-cms.browser.js" defer></script>
+    <script>window.addEventListener('DOMContentLoaded',()=>{const t=document.querySelectorAll(':not(:defined)');for(const e of t) {e.style.visibility="hidden";}; window.spearly.config.AUTH_KEY="${Settings.spearlyAuthKey}"},{once:true})</script>`);
+    const head = indexNode.querySelector("head")
+    if (head) {
+      head.appendChild(embeddedScript)
+    }
+
     fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
   }
 }
@@ -198,7 +233,10 @@ async function bundle() {
     componentsList: [],
     body: parse("") as Element,
     globalProps: {},
-    out: { css: [] },
+    out: {
+      css: [],
+      script: []
+    },
   }
 
   // Create dist folder
@@ -219,8 +257,13 @@ async function bundle() {
   })
 
   // Generate style files.
-  if (state.out.css.length) {
+  if (state.out.css.length > 0) {
     generateStyleFile(state)
+  }
+
+  // Generate script files.
+  if (state.out.script.length > 0) {
+    generateScriptFile(state)
   }
 
   // Dump pages
@@ -301,6 +344,8 @@ export default async function magic(args: Args) {
     liveServer.start(params)
     console.log("Server started on port %s", Settings.port)
   } else if (args.action === "build") {
+    // Load default settings from spear.config.{js,json}|package.json
+    await loadSettingsFromFile()
     bundle()
   }
 }
