@@ -9,20 +9,26 @@ import { Args } from "./interfaces/argsInterfaces"
 import { Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 
-const dirname = process.cwd()
+let dirname = process.cwd()
+let Settings: DefaultSettings
 
-const Settings: DefaultSettings = {
-  projectName: "Spear CLI",
-  settingsFile: "spear.config",
-  pagesFolder: `${dirname}/src/pages`,
-  componentsFolder: `${dirname}/src/components`,
-  srcDir: `${dirname}/src`,
-  distDir: `${dirname}/dist`,
-  entry: `${dirname}/src/pages/index.?(spear|html)`,
-  template: `${dirname}/public/index.html`,
-  spearlyAuthKey: "",
-  port: 8080,
-  host: "0.0.0.0",
+function initializeArgument(args: Args) {
+  if (args.src) {
+    dirname = path.resolve(args.src)
+  }
+  Settings = {
+    projectName: "Spear CLI",
+    settingsFile: "spear.config",
+    pagesFolder: `${dirname}/src/pages`,
+    componentsFolder: `${dirname}/src/components`,
+    srcDir: `${dirname}/src`,
+    distDir: `${dirname}/dist`,
+    entry: `${dirname}/src/pages/index.?(spear|html)`,
+    template: `${dirname}/public/index.html`,
+    spearlyAuthKey: "",
+    port: 8080,
+    host: "0.0.0.0",
+  }
 }
 
 function extractProps(state: State, node: Element) {
@@ -250,6 +256,7 @@ async function loadSettingsFromFile() {
 
 export default async function magic(args: Args) {
   console.log(args.action)
+  initializeArgument(args)
 
   if (args.action === "watch") {
     Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
