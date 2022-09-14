@@ -8,6 +8,10 @@ import watch from "node-watch"
 import { Args } from "./interfaces/argsInterfaces"
 import { Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
+import { fileURLToPath } from "url"
+
+const libFilename = fileURLToPath(import.meta.url)
+const libDirname = path.dirname(libFilename)
 
 let dirname = process.cwd()
 let Settings: DefaultSettings
@@ -153,30 +157,32 @@ function createDir() {
   fs.mkdirSync(Settings.distDir)
 }
 
-function dumpStyle(state: State) {
+function dumpStyle(state: State, indexNode: Element) {
   const data = state.out.css.join("\n")
   fs.writeFileSync(`${Settings.distDir}/css.css`, data)
 
-  state.pagesList.forEach((page) => {
+  if (indexNode) {
     const link = parse('<link rel="stylesheet" href="./css.css">')
-    const head = page.node?.querySelector("head")
+    const head = indexNode.querySelector("head")
 
     if (head) {
       head.appendChild(link)
     }
-  })
+  }
 
   console.log("")
   console.log("[Style]")
   console.log(data)
 }
 
-function dumpPages(state: State) {
+function dumpPages(state: State, indexNode: Element) {
+  const body = indexNode.querySelector("body")
   state.pagesList.forEach((page) => {
     console.log("")
     console.log(`[Page]: ${page.fname}`)
     console.log(page.node.outerHTML)
-    fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, page.node.outerHTML)
+    body.appendChild(page.node)
+    fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
   })
 }
 
@@ -191,6 +197,11 @@ async function bundle() {
 
   // Create dist folder
   createDir()
+
+  // Read index.html template
+  const indexRawData = fs.readFileSync(`${libDirname}/templates/templates/index.html`, "utf8")
+  const minified = await minify(indexRawData, { collapseWhitespace: true })
+  const indexNode = parse(minified) as Element
 
   // First parse components from the /components folder
   await parseComponents(state, Settings.componentsFolder)
@@ -208,11 +219,11 @@ async function bundle() {
 
   // Append style if needed
   if (state.out.css.length) {
-    dumpStyle(state)
+    dumpStyle(state, indexNode)
   }
 
   // Dump pages
-  dumpPages(state)
+  dumpPages(state, indexNode)
 }
 
 function loadFile(filePath: string) {
