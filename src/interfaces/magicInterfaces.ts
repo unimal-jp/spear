@@ -16,6 +16,7 @@ export interface State {
   body: Element
   globalProps: { [key: string]: string }
   out: {
-    css: string[]
+    css: string[],
+    script: string[]
   }
 }
