@@ -8,6 +8,10 @@ import watch from "node-watch"
 import { Args } from "./interfaces/argsInterfaces"
 import { Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
+import { fileURLToPath } from "url"
+
+const libFilename = fileURLToPath(import.meta.url)
+const libDirname = path.dirname(libFilename)
 
 let dirname = process.cwd()
 let Settings: DefaultSettings
@@ -153,31 +157,39 @@ function createDir() {
   fs.mkdirSync(Settings.distDir)
 }
 
-function dumpStyle(state: State) {
+function generateStyleFile(state: State) {
   const data = state.out.css.join("\n")
   fs.writeFileSync(`${Settings.distDir}/css.css`, data)
-
-  state.pagesList.forEach((page) => {
-    const link = parse('<link rel="stylesheet" href="./css.css">')
-    const head = page.node?.querySelector("head")
-
-    if (head) {
-      head.appendChild(link)
-    }
-  })
 
   console.log("")
   console.log("[Style]")
   console.log(data)
 }
 
-function dumpPages(state: State) {
-  state.pagesList.forEach((page) => {
+async function dumpPages(state: State) {
+  for (const page of state.pagesList) {
+    // Read index.html template
+    const indexRawData = fs.readFileSync(`${libDirname}/templates/templates/index.html`, "utf8")
+    const minified = await minify(indexRawData, { collapseWhitespace: true })
+    const indexNode = parse(minified) as Element
+    const body = indexNode.querySelector("body")
     console.log("")
     console.log(`[Page]: ${page.fname}`)
     console.log(page.node.outerHTML)
-    fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, page.node.outerHTML)
-  })
+    body.appendChild(page.node)
+
+    // Inject the Styles.
+    if (indexNode && state.out.css.length > 0) {
+      const link = parse('<link rel="stylesheet" href="./css.css">')
+      const head = indexNode.querySelector("head")
+
+      if (head) {
+        head.appendChild(link)
+      }
+    }
+
+    fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
+  }
 }
 
 async function bundle() {
@@ -206,9 +218,9 @@ async function bundle() {
     page.node.childNodes = parseElements(state, page.node.childNodes as Element[])
   })
 
-  // Append style if needed
+  // Generate style files.
   if (state.out.css.length) {
-    dumpStyle(state)
+    generateStyleFile(state)
   }
 
   // Dump pages
