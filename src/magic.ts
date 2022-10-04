@@ -278,7 +278,7 @@ function loadFile(filePath: string) {
         return
       }
 
-      if (files.length) {
+      if (files.length > 0) {
         const ext = path.extname(files[0])
 
         if (ext === ".js") {
