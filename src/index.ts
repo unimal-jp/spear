@@ -6,6 +6,7 @@ import { ArgumentParser } from "argparse"
 import { fileURLToPath } from "url"
 import create from "./create.js"
 import magic from "./magic.js"
+import { EditorFile } from "./interfaces/EditorFile"
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -34,3 +35,8 @@ if (args.action === "create") {
 if (args.action === "watch" || args.action === "build") {
   magic(args)
 }
+
+export default async function build(inputFile: EditorFile[], targetFile: EditorFile) {
+
+}
+
