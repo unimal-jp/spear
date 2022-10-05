@@ -34,4 +34,3 @@ if (args.action === "create") {
 if (args.action === "watch" || args.action === "build") {
   magic(args)
 }
-

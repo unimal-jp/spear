@@ -20,8 +20,7 @@ const traverseCollectingComponents = async (files: EditorFile[]) => {
       componentList.push({
         fname,
         tagName,
-        node,
-        props: {}
+        node
       });
     } else {
       const childList = await traverseCollectingComponents(file.children);
@@ -103,6 +102,6 @@ export default async function magicInternal(inputFiles: EditorFile[], targetFile
     }
   }
 
-  return null;
+  return undefined;
 }
 
