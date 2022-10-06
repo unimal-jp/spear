@@ -60,7 +60,7 @@ const traverseConvertPages = async (nodes: Element[], componentList) => {
  * Generating the preview from input files and target file.
  *
  */
-export default async function magicInternal(inputFiles: EditorFile[], targetFile: EditorFile) {
+export default async function magicInternal(inputFiles: EditorFile[], targetFile: EditorFile, apiToken: string) {
   if (!inputFiles || !targetFile) {
     return undefined
   }
@@ -83,13 +83,10 @@ export default async function magicInternal(inputFiles: EditorFile[], targetFile
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
-  // we need to specify api key.
   <script src="https://static.spearly.com/js/v3/spearly-cms.browser.js" defer></script>
-  <script>window.addEventListener('DOMContentLoaded',()=>{const t=document.querySelectorAll(':not(:defined)')for(const e of t) {e.style.visibility="hidden"} window.spearly.config.AUTH_KEY="aaaaaaaaaaaaaaaaaaa"},{once:true})</script>
+  <script>window.addEventListener('DOMContentLoaded',()=>{const t=document.querySelectorAll(':not(:defined)')for(const e of t) {e.style.visibility="hidden"} window.spearly.config.AUTH_KEY="${apiToken}"},{once:true})</script>
 </head>
-
 <body></body>
-
 </html>
 `) as Element
 
