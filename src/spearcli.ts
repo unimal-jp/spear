@@ -1,5 +1,4 @@
 import path from "path"
-import { minify } from "html-minifier-terser"
 import { parse } from "node-html-parser"
 import { EditorFile } from "./interfaces/EditorFile"
 import { Element } from "./interfaces/magicInterfaces"
@@ -15,7 +14,7 @@ const traverseCollectingComponents = async (files: EditorFile[]) => {
       const fname    = path.basename(file.name, ext)
       const tagName  = fname.toLowerCase()
       const rawData  = file.content
-      const minified = await minify(rawData, { collapseWhitespace: true })
+      const minified = rawData;
       const node     = parse(minified) as Element
       componentList.push({
         fname,
@@ -71,7 +70,7 @@ export default async function magicInternal(inputFiles: EditorFile[], targetFile
     if (file.path === targetFile.path && file.name === targetFile.name) {
       const ext = path.extname(file.name)
       const fname = path.basename(file.name, ext)
-      const minified = await minify(file.content, { collapseWhitespace: true })
+      const minified = file.content;
       const node = parse(minified) as Element
 
       const result = await traverseConvertPages(node.childNodes as Element[], componentList)
@@ -84,7 +83,7 @@ export default async function magicInternal(inputFiles: EditorFile[], targetFile
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
   <script src="https://static.spearly.com/js/v3/spearly-cms.browser.js" defer></script>
-  <script>window.addEventListener('DOMContentLoaded',()=>{const t=document.querySelectorAll(':not(:defined)')for(const e of t) {e.style.visibility="hidden"} window.spearly.config.AUTH_KEY="${apiToken}"},{once:true})</script>
+  <script>window.addEventListener('DOMContentLoaded',()=>{const t=document.querySelectorAll(':not(:defined)');for(const e of t) {e.style.visibility="hidden";}; window.spearly.config.AUTH_KEY="${apiToken}"},{once:true})</script>`);
 </head>
 <body></body>
 </html>
