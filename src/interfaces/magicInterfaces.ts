@@ -10,6 +10,11 @@ export interface Component {
   props: { [key: string]: string }
 }
 
+export interface AssetFile {
+  filePath: string
+  rawData?: Buffer
+}
+
 export interface State {
   pagesList: Component[]
   componentsList: Component[]
@@ -17,6 +22,7 @@ export interface State {
   globalProps: { [key: string]: string }
   out: {
     css: string[],
-    script: string[]
+    script: string[],
+    assetsFiles: AssetFile[]
   }
 }
