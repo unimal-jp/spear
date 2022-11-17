@@ -63,7 +63,7 @@ function parseElements(state: State, nodes: Element[]) {
       return
     }
 
-    if (tagName === "script") {
+    if (tagName === "script" && node.parentNode.localName !== "head") {
       state.out.script.push(node.innerHTML)
       return
     }
@@ -112,7 +112,7 @@ async function parsePages(state: State, dirPath: string) {
 
     if (isDir) {
       await parseComponents(state, filePath)
-    } if (!isParseTarget(ext)) {
+    } else if (!isParseTarget(ext)) {
       const rawData = fs.readFileSync(filePath)
       state.out.assetsFiles.push({ filePath: file, rawData })
       continue
@@ -142,7 +142,7 @@ async function parseComponents(state: State, dirPath: string) {
 
     if (isDir) {
       await parseComponents(state, filePath)
-    } if (!isParseTarget(ext)) {
+    } else if (!isParseTarget(ext)) {
       const rawData = fs.readFileSync(filePath)
       state.out.assetsFiles.push({ filePath: file, rawData })
       continue
@@ -189,14 +189,19 @@ function generateScriptFile(state: State) {
 async function dumpPages(state: State) {
   for (const page of state.pagesList) {
     // Read index.html template
-    const indexRawData = fs.readFileSync(`${libDirname}/templates/templates/index.html`, "utf8")
-    const minified = await minify(indexRawData, { collapseWhitespace: true })
-    const indexNode = parse(minified) as Element
-    const body = indexNode.querySelector("body")
+    let indexNode;
+    if (!page.node.innerHTML.includes("</html>")) {
+      const indexRawData = fs.readFileSync(`${libDirname}/templates/templates/index.html`, "utf8")
+      const minified = await minify(indexRawData, { collapseWhitespace: true })
+      indexNode = parse(minified) as Element
+      const body = indexNode.querySelector("body")
+      body.appendChild(page.node)
+    } else {
+      indexNode = page.node;
+    }
     console.log("")
     console.log(`[Page]: ${page.fname}`)
     console.log(page.node.outerHTML)
-    body.appendChild(page.node)
 
     // Inject the Styles.
     if (indexNode && state.out.css.length > 0) {
