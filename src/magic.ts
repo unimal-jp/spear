@@ -94,6 +94,10 @@ function parseElements(state: State, nodes: Element[]) {
   return res.childNodes
 }
 
+function isParseTarget(ext: string) {
+  return [".html", ".htm", ".spear"].includes(ext)
+}
+
 async function parsePages(state: State, dirPath: string) {
   const files = fs.readdirSync(dirPath)
 
@@ -108,6 +112,10 @@ async function parsePages(state: State, dirPath: string) {
 
     if (isDir) {
       await parseComponents(state, filePath)
+    } if (!isParseTarget(ext)) {
+      const rawData = fs.readFileSync(filePath)
+      state.out.assetsFiles.push({ filePath: file, rawData })
+      continue
     } else {
       const rawData = fs.readFileSync(filePath, "utf8")
       const minified = await minify(rawData, { collapseWhitespace: true })
@@ -134,6 +142,10 @@ async function parseComponents(state: State, dirPath: string) {
 
     if (isDir) {
       await parseComponents(state, filePath)
+    } if (!isParseTarget(ext)) {
+      const rawData = fs.readFileSync(filePath)
+      state.out.assetsFiles.push({ filePath: file, rawData })
+      continue
     } else {
       const rawData = fs.readFileSync(filePath, "utf8")
       const minified = await minify(rawData, { collapseWhitespace: true })
@@ -225,6 +237,9 @@ async function dumpPages(state: State) {
 
     fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
   }
+  for (const asset of state.out.assetsFiles) {
+    fs.writeFileSync(`${Settings.distDir}/${asset.filePath}`, asset.rawData)
+  }
 }
 
 async function bundle() {
@@ -235,7 +250,8 @@ async function bundle() {
     globalProps: {},
     out: {
       css: [],
-      script: []
+      script: [],
+      assetsFiles: [],
     },
   }
 
