@@ -96,6 +96,7 @@ spear watch -s <project directory>
 - components : top-level directory named `components'
   - There are spear components which inserting into pages or other component.
   - spear-cli allow nested directory structure. (E.g., /components/common, /components/cards)
+  - spear-cli ignore the name which is same to HTML DOM tag name since preventing mixed native and component content. (e.g., body, header, section).
 - assets/public: top-level assets files directory named `assets` or `public`.
   - spear-cli output this directory without converting.
 - other directories: top-level directories any named.

@@ -9,6 +9,7 @@ import { Args } from "./interfaces/argsInterfaces"
 import { Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
+import HTML_TAG_LIST from './htmlList.js'
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -98,7 +99,8 @@ function isParseTarget(ext: string) {
   return [".html", ".htm", ".spear"].includes(ext)
 }
 
-async function parsePages(state: State, dirPath: string) {
+async function parsePages(state: State, dirPath: string, relatePath = "") {
+  if (relatePath === "components") return;
   const files = fs.readdirSync(dirPath)
 
   console.log("")
@@ -111,10 +113,10 @@ async function parsePages(state: State, dirPath: string) {
     const isDir = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()
 
     if (isDir) {
-      await parseComponents(state, filePath)
+      await parsePages(state, filePath, file)
     } else if (!isParseTarget(ext)) {
       const rawData = fs.readFileSync(filePath)
-      state.out.assetsFiles.push({ filePath: file, rawData })
+      state.out.assetsFiles.push({ filePath: `${relatePath}/${file}`, rawData })
       continue
     } else {
       const rawData = fs.readFileSync(filePath, "utf8")
@@ -122,8 +124,8 @@ async function parsePages(state: State, dirPath: string) {
       const tagName = fname.toLowerCase() // todo: keep lowerCase?
       const node = parse(minified) as Element
 
-      console.log(`  [Page]: ${fname}`)
-      state.pagesList.push({ fname, tagName, rawData, node, props: {} })
+      console.log(`  [Page]: ${fname}(/${relatePath})`)
+      state.pagesList.push({ fname: `${relatePath}/${fname}`, tagName, rawData, node, props: {} })
     }
   }
 }
@@ -152,6 +154,9 @@ async function parseComponents(state: State, dirPath: string) {
       const tagName = fname.toLowerCase() // todo: keep lowerCase?
       const node = parse(minified) as Element
 
+      if (HTML_TAG_LIST.includes(tagName)) {
+        throw Error(`Component[${tagName}] is built-in HTML tag. You need specify other name.`)
+      }
       console.log(`  [Component]: ${fname}`)
       state.componentsList.push({ fname, tagName, rawData, node, props: {} })
     }
@@ -240,14 +245,22 @@ async function dumpPages(state: State) {
       head.appendChild(embeddedScript)
     }
 
-    fs.writeFileSync(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
+    writeFile(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
   }
   for (const asset of state.out.assetsFiles) {
-    fs.writeFileSync(`${Settings.distDir}/${asset.filePath}`, asset.rawData)
+    writeFile(`${Settings.distDir}/${asset.filePath}`, asset.rawData)
   }
 }
 
-async function bundle() {
+async function writeFile(targetPath, data) {
+  const targetPathDir = path.dirname(targetPath)
+  if (!fs.existsSync(targetPathDir)) {
+    fs.mkdirSync(targetPathDir)
+  }
+  fs.writeFileSync(targetPath, data)
+}
+
+async function bundle(): Promise<boolean> {
   const state: State = {
     pagesList: [],
     componentsList: [],
@@ -264,8 +277,13 @@ async function bundle() {
   createDir()
 
   // First parse components from the /components folder
-  await parseComponents(state, Settings.componentsFolder)
-  await parsePages(state, Settings.pagesFolder)
+  try {
+    await parseComponents(state, Settings.componentsFolder)
+  } catch(e) {
+    console.log(e);
+    return false;
+  }
+  await parsePages(state, Settings.srcDir)
 
   // Run list again to parse children of the components
   state.componentsList.forEach((component) => {
@@ -289,6 +307,8 @@ async function bundle() {
 
   // Dump pages
   dumpPages(state)
+
+  return true
 }
 
 function loadFile(filePath: string) {
@@ -330,7 +350,7 @@ async function loadSettingsFromFile() {
   }
 }
 
-export default async function magic(args: Args) {
+export default async function magic(args: Args): Promise<boolean> {
   console.log(args.action)
   initializeArgument(args)
 
@@ -345,7 +365,7 @@ export default async function magic(args: Args) {
     }
 
     // Bundle before starting the server
-    bundle()
+    await bundle()
 
     watch(Settings.srcDir, { recursive: true }, function (evt, name) {
       console.log("changed: %s", name)
@@ -364,9 +384,10 @@ export default async function magic(args: Args) {
 
     liveServer.start(params)
     console.log("Server started on port %s", Settings.port)
+    return true
   } else if (args.action === "build") {
     // Load default settings from spear.config.{js,json}|package.json
     await loadSettingsFromFile()
-    bundle()
+    return await bundle()
   }
 }
