@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/spear-cli.svg)](https://badge.fury.io/js/spear-cli)
+
 # spear-cli
 
 This is SSG(Static Site Generator) for Spearly.  
