@@ -191,7 +191,7 @@ async function dumpPages(state: State) {
     // Read index.html template
     let indexNode;
     if (!page.node.innerHTML.includes("</html>")) {
-      const indexRawData = fs.readFileSync(`${libDirname}/templates/templates/index.html`, "utf8")
+      const indexRawData = fs.readFileSync(`${libDirname}/templates/index.html`, "utf8")
       const minified = await minify(indexRawData, { collapseWhitespace: true })
       indexNode = parse(minified) as Element
       const body = indexNode.querySelector("body")
