@@ -1,4 +1,5 @@
 import fs from "fs"
+import { copy, remove } from 'fs-extra';
 import https from "https"
 import chalk from "chalk"
 import gradient from "gradient-string"
@@ -15,6 +16,7 @@ const dirname = process.cwd()
 const settings = {
   answers: {
     projectName: "",
+    templateType: "basic",
     useCMS: "",
     spearlyCMSApiKey: "",
   },
@@ -39,6 +41,13 @@ async function askQuestions() {
       message: "Use Spearly CMS",
       default: "Yes",
       choices: ["Yes", "No"],
+    },
+    {
+      name: "templateType",
+      type: "list",
+      message: "Choose template type",
+      default: "basic",
+      choices: ["basic", "empty"],
     },
     {
       name: "spearlyCMSApiKey",
@@ -91,38 +100,26 @@ function createProjectFolder() {
 async function createBoilerplate() {
   const templatesPath = `${libDirname}/templates`
   const basePath = `${dirname}/${settings.projectDir}`
-  // const publicPath = `${basePath}/public`
-  const srcPath = `${basePath}/src`
   const vscodePath = `${basePath}/.vscode`
-  const srcPagesPath = `${basePath}/src/pages`
-  const srcComponentsPath = `${basePath}/src/components`
 
-  // fs.mkdirSync(publicPath)
-  fs.mkdirSync(srcPath)
-  fs.mkdirSync(srcPagesPath)
-  fs.mkdirSync(srcComponentsPath)
   fs.mkdirSync(vscodePath)
 
-  const templates = [
-    // { source: `${templatesPath}/index.html`, target: `${publicPath}/index.html` },
-    { source: `${templatesPath}/index.spear`, target: `${srcPagesPath}/index.spear` },
-    { source: `${templatesPath}/main.spear`, target: `${srcComponentsPath}/main.spear` },
-    { source: `${templatesPath}/header.spear`, target: `${srcComponentsPath}/header.spear` },
-    { source: `${templatesPath}/vscodeSettings.json`, target: `${vscodePath}/settings.json` },
-  ]
-
-  templates.forEach((f) => {
-    fs.writeFileSync(f.target, fs.readFileSync(f.source, "utf8"))
-  })
+  try {
+    await copy(`${templatesPath}/${settings.answers.templateType}`, basePath);
+  } catch(e) {
+    console.log(`Failed copying boilerplate. :(`);
+    return false;
+  }
 
   // create package.json file
-  const packageJson = JSON.parse(fs.readFileSync(`${templatesPath}/package_template.json`, "utf-8"))
+  const packageJson = JSON.parse(fs.readFileSync(`${basePath}/package.json`, "utf-8"))
   packageJson.name = settings.answers.projectName
   const cliVersion = await getSpearCliVersion()
   if (cliVersion) {
     packageJson.dependencies["spear-cli"] = `^${cliVersion}`
   }
   fs.writeFileSync(`${basePath}/package.json`, JSON.stringify(packageJson, null, 2))
+
 
   // Create config file if needed
   const settingsFile: any = {}

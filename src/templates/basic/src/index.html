@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{projectName}}</title>
+  <link rel="stylesheet" href="./assets/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>  
+</head>
+  <body>
+    <header>
+      <img src="./images/logo.png">
+      <div class="spear-description">
+        <p><span>Welcome spear-cli</span> powered by Spearly CMS🚀</p>
+      </div>
+    </header>
+    <main class="container">
+      <section class="container__description margined-section">
+        <p>Spearly CMS is headless CMS easy to embed.</p>
+        <p>spear-cli is the magic tools make site more easy🧙</p>
+      </section>
+      <section class="container__usage margined-section">
+        <div class="container__spear-code">
+          <div>
+            <p>You can create component easily, You just create component spear file into components like follow:</p>
+          </div>
+          <pre><code class="html">
+&lt;div&gt;
+  &lt;h1&gt;Hello first component&lt;/h1&gt;
+&lt;/div&gt;
+          </code></pre>
+        </div>
+      </section>
+      <section class="container__usage margined-section">
+        <div class="container__spear-code">
+          <div>
+            <p>Then you insert this component like html tags:</p>
+          </div>
+          <pre><code class="html">
+&lt;section&gt;
+  &lt;first-component&gt;&lt;/first-component&gt;
+&lt;/section&gt;
+          </code></pre>
+        </div>
+      </section>
+      <section class="container__usage margined-section">
+        <p>You can check generated file from components and panges/index.spear</p>
+        <p>
+          <a href="./pages/index.html">Generated index here</a>
+        </p>
+      </section>
+    </main>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
