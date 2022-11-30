@@ -131,8 +131,8 @@ async function createBoilerplate() {
   }
   if (Object.keys(settingsFile).length) {
     fs.writeFileSync(
-      `${basePath}/spear.config.js`,
-      `module.exports = ${JSON.stringify(settingsFile, null, 2)}`
+      `${basePath}/spear.config.json`,
+      `${JSON.stringify(settingsFile, null, 2)}`
     )
   }
 
