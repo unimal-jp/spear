@@ -1,0 +1,35 @@
+@font-face {
+    font-family: 'Open Sans';
+    src: url(./fonts/OpenSans-Regular.ttf)
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+header {
+    display: block;
+    text-align: center;
+}
+
+header .spear-description {
+    font-size: 1.8rem;
+}
+
+.margined-section {
+    margin-top: 77px;
+    font-size: 1.2rem;
+}
+
+.margined-section > p {
+    text-align: center;
+}
+
+.container__spear-code {
+    width: 430px;
+    margin: auto;
+}
+
+.container__spear-code > pre {
+    border: 1px solid #b0b0b0;
+    border-radius: 2px;
+}

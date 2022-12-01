@@ -6,7 +6,8 @@
   "preferGlobal": true,
   "scripts": {
     "tsc": "tsc",
-    "build": "tsc --build src && npm run copy-files",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc --build src && npm run copy-files",
     "dev": "nodemon --watch \".\" -e js,ts --exec \"npm run build\"",
     "copy-files": "npm-run-all copy-files:*",
     "copy-files:templates": "mkdir -p dist/templates && cp -R src/templates/* dist/templates/"
@@ -28,6 +29,7 @@
     "@types/live-server": "^1.2.1",
     "argparse": "^2.0.1",
     "chalk": "^5.0.1",
+    "fs-extra": "^11.1.0",
     "glob": "^8.0.3",
     "gradient-string": "^2.0.1",
     "html-minifier-terser": "^7.0.0-beta.0",

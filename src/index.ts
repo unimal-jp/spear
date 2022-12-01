@@ -32,5 +32,8 @@ if (args.action === "create") {
 }
 
 if (args.action === "watch" || args.action === "build") {
-  magic(args)
+  if (!magic(args)) {
+    // Notify caller to magic fail.
+    process.exit(1);
+  }
 }
