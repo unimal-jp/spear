@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "module": "ESNext",
+      "target": "es6",
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "rootDir": ".",
+      "outDir": "../dist/",
+      "composite": true
+    }
+  }
+  
