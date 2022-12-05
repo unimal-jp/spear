@@ -45,44 +45,37 @@ export default function getFieldsValuesDefinitions(
     fields.forEach(field => {
       let key = field.attributes.identifier;
       if (isTextType(field)) {
-        console.log('isText')
         replaceDefinitions.push({
           definitionString: "{%= " + prefix + "_" + key + " %}",
           fieldValue: getEscapedString(field.attributes.value)
         });
       } else if (isNumberType(field)) {
-        console.log('isNumber')
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
             fieldValue: field.attributes.value.toString()
         })
       } else if (isRichTextType(field)) {
-        console.log('irRitchText')
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
             fieldValue: getEscapedStringRichText(field.attributes.value)
         })
       } else if (isImageType(field)) {
-        console.log('isImage')
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
             fieldValue: getEscapedString(field.attributes.value)
         })
       } else if (isCalendarType(field)) {
-        console.log('isCalendarType')
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: dateFormatter(field.attributes.value)
+            fieldValue: dateFormatter(new Date(field.attributes.value))
         })
       } else if (isTagType(field)) {
-        console.log('isTags')
         // TODO: タグの取り扱いを今後変更する必要がある
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
             fieldValue: getEscapedString(field.attributes.value.join(','))
         })
       } else if (isMapType(field)) {
-        console.log('isMap')
         const value = field.attributes.value
         if (value.address) {
           replaceDefinitions.push({
@@ -107,7 +100,6 @@ export default function getFieldsValuesDefinitions(
           });
         }
       } else if (isContentType(field)) {
-        console.log('isContentType')
         if (disableContentType) return
         try {
             Array.prototype.push.apply(replaceDefinitions,

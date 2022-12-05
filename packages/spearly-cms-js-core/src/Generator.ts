@@ -1,29 +1,30 @@
 import { SpearlyApiClient } from '@spearly/sdk-js';
-import { parse } from "node-html-parser"
-import getFieldsValuesDefinitions, { getCustomDateString } from './utils'
+import getFieldsValuesDefinitions, { getCustomDateString } from './Utils'
 
 export type SpearlyJSGeneratorOption = {
     linkBaseUrl: string | undefined;
     dateFormatter: Function | undefined;
 }
-
+type SpearlyJSGeneratorInternalOption = {
+    linkBaseUrl: string;
+    dateFormatter: Function;
+}
 export class SpearlyJSGenerator {
     client: SpearlyApiClient
-    options: SpearlyJSGeneratorOption
+    options: SpearlyJSGeneratorInternalOption
 
     constructor(apiKey: string, domain: string, options: SpearlyJSGeneratorOption | undefined = undefined) {
         this.client = new SpearlyApiClient(apiKey, domain)
         this.options = {
             linkBaseUrl: options?.linkBaseUrl || "",
             dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date) {
-                getCustomDateString("YYYY年MM月DD日 hh時mm分ss秒", date)
+                return getCustomDateString("YYYY年MM月DD日 hh時mm分ss秒", date)
             }
         }
     }
 
     async generateContent(templateHtml: string, contentType: string, contentId: string): Promise<string> {
         try {
-            const root = parse(templateHtml)
             const result = await this.client.getContent(contentId)
             const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
             replacementArray.forEach(r => {
@@ -49,7 +50,33 @@ export class SpearlyJSGenerator {
     }
 
     async generateList(templateHtml: string, contentType: string): Promise<string> {
-        console.log(templateHtml, contentType);
-        return "";
+        try {
+            const result = await this.client.getList(contentType)
+            let resultHtml = ""
+            result.data.forEach(c => {
+                let tempHtml = templateHtml
+                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
+                replacementArray.forEach(r => {
+                    tempHtml = tempHtml.split(r.definitionString).join(r.fieldValue)
+                })
+    
+                // Especially convert for {%= <ContentType>_#url %} and {%= <ContentType>_#link $}
+                // This mean replacing the specifying link to content url.
+                const urlMatchResult = tempHtml.match("{%.*_#url %}")
+                if (!!urlMatchResult && urlMatchResult.length > 0) {
+                    tempHtml = tempHtml.split(urlMatchResult[0]).join("./" + this.options.linkBaseUrl + "?contentId=" + c.attributes.contentAlias);
+                }
+    
+                const linkMatchResult = tempHtml.match("{%.*_#link %}")
+                if (!!linkMatchResult && linkMatchResult.length > 0) {
+                    tempHtml = tempHtml.split(linkMatchResult[0]).join("./" + this.options.linkBaseUrl + "?contentId=" + c.attributes.contentAlias);                
+                }
+                resultHtml += tempHtml
+            })
+
+            return resultHtml
+        } catch (e: any) {
+            return Promise.reject(e);
+        }
     }
 }

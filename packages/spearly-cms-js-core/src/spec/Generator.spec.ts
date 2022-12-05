@@ -1,41 +1,5 @@
 import { SpearlyJSGenerator, SpearlyJSGeneratorOption } from '../Generator'
-
-type ATTR = {
-    identifier: string;
-    inputType: string;
-    value: string;
-}
-
-const generateServerContent = (attrs: ATTR[]) :any => {
-    const template = {
-        attributes: {
-            contentAlias: 'content-alias',
-            createdAt: "2022-12-05 00:00:00",
-            fields: {
-                data: new Array(),
-            },
-            publicUid: 'content_1',
-            publishedAt: '2022-12-04 00:00:00',
-            updatedAt: '2022-12-04 00:00:00'
-        },
-        values: {}
-    }
-    attrs.forEach((attr, id) => {
-        template.attributes.fields.data.push({
-            attributes: {
-                identifier: attr.identifier,
-                inputType: attr.inputType,
-                value: attr.value
-            },
-            id,
-            type: 'field',
-        })
-        Object.defineProperty(template.values, attr.identifier, {
-            value: attr.value
-        })
-    })
-    return template
-}
+import { generateServerContent } from './TestUtils';
 
 const convertTestData = [
     { 
@@ -68,7 +32,7 @@ const convertTestData = [
         mockData: generateServerContent([
             { identifier: "date", inputType: "calendar", value: "2022-12-05 11:22:33" }
         ]),
-        expected: "<date>2022年12月5日 11時22分33秒</date>"
+        expected: "<date>2022年12月05日 11時22分33秒</date>"
     },
     {
         testName: "Custom date formatter",
@@ -82,7 +46,7 @@ const convertTestData = [
         mockData: generateServerContent([
             { identifier: "date", inputType: "calendar", value: "2022-12-05 11:22:33" }
         ]),
-        expected: "<date>2022-12-05 11:22:33</date>"
+        expected: "<date>Mon Dec 05 2022 11:22:33 GMT+0900 (Japan Standard Time)</date>"
     }
 ]
 
@@ -102,7 +66,7 @@ describe('SpearlyJSGenerator', () => {
                 Object.defineProperty(generator, 'client', {
                     value: {
                         getContent: (_: string) => {
-                            return Promise.resolve(convertTestData[0].mockData)
+                            return Promise.resolve(testData.mockData)
                         }
                     }
                 });
