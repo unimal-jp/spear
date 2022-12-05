@@ -20,7 +20,7 @@
 
 Params:
 
-- templateHtml : template html string which using generate the html. This html string **SHOULD NOT** contain `cms-single` attributes. This mean that pass the innerHTML of element which has `cms-single`.
+- templateHtml : template html string which using generate the html. This html string **SHOULD NOT** contain `cms-item` attributes. This mean that pass the innerHTML of element which has `cms-item`.
 - contentId : Specify the content id want to fetch. or You can specify alias id.
 
 Return:

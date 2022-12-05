@@ -1,9 +1,10 @@
 import { SpearlyApiClient } from '@spearly/sdk-js';
 import { parse } from "node-html-parser"
-import getFieldsValuesDefinitions from './utils'
+import getFieldsValuesDefinitions, { getCustomDateString } from './utils'
 
 export type SpearlyJSGeneratorOption = {
-    linkBaseUrl: string,
+    linkBaseUrl: string | undefined;
+    dateFormatter: Function | undefined;
 }
 
 export class SpearlyJSGenerator {
@@ -12,16 +13,19 @@ export class SpearlyJSGenerator {
 
     constructor(apiKey: string, domain: string, options: SpearlyJSGeneratorOption | undefined = undefined) {
         this.client = new SpearlyApiClient(apiKey, domain)
-        this.options = options ? options : { linkBaseUrl: "" }
+        this.options = {
+            linkBaseUrl: options?.linkBaseUrl || "",
+            dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date) {
+                getCustomDateString("YYYY年MM月DD日 hh時mm分ss秒", date)
+            }
+        }
     }
 
     async generateContent(templateHtml: string, contentType: string, contentId: string): Promise<string> {
-        console.log(templateHtml, contentType);
         try {
             const root = parse(templateHtml)
             const result = await this.client.getContent(contentId)
-            console.log(result);
-            const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true);
+            const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
             replacementArray.forEach(r => {
                 templateHtml = templateHtml.split(r.definitionString).join(r.fieldValue)
             })
