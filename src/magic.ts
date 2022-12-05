@@ -53,8 +53,7 @@ function parseElements(state: State, nodes: Element[]) {
   nodes.forEach((node) => {
     const tagName = node.rawTagName
     const isTextNode = node.nodeType === 3
-    const isNative = !isTextNode && node.hasAttribute("native")
-    const component = !isNative && state.componentsList.find((c) => c.tagName === tagName)
+    const component = state.componentsList.find((c) => c.tagName === tagName)
 
     // console.log("  --")
     // console.log("  tagName:", node.nodeType, tagName, node.innerText)
@@ -73,10 +72,6 @@ function parseElements(state: State, nodes: Element[]) {
     if (!isTextNode && !component) {
       node.props = {}
       extractProps(state, node)
-    }
-
-    if (isNative) {
-      node.removeAttribute("native")
     }
 
     // Todo: Check better way to do this, components are being parsed twice
