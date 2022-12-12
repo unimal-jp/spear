@@ -170,7 +170,7 @@ function createDir() {
   } catch (error) {
     // ignore error
   }
-  fs.mkdirSync(Settings.distDir)
+  fs.mkdirSync(Settings.distDir, { recursive: true })
 }
 
 function generateStyleFile(state: State) {
@@ -255,7 +255,7 @@ async function dumpPages(state: State) {
 async function writeFile(targetPath, data) {
   const targetPathDir = path.dirname(targetPath)
   if (!fs.existsSync(targetPathDir)) {
-    fs.mkdirSync(targetPathDir)
+    fs.mkdirSync(targetPathDir, { recursive: true })
   }
   fs.writeFileSync(targetPath, data)
 }
