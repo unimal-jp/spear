@@ -34,6 +34,7 @@ function initializeArgument(args: Args) {
     spearlyAuthKey: "",
     port: 8080,
     host: "0.0.0.0",
+    jsLocation: "https://static.spearly.com/js/v3/spearly-cms.browser.js",
   }
 }
 
@@ -166,7 +167,7 @@ function createDir() {
   } catch (error) {
     // ignore error
   }
-  fs.mkdirSync(Settings.distDir)
+  fs.mkdirSync(Settings.distDir, { recursive: true })
 }
 
 function generateStyleFile(state: State) {
@@ -234,7 +235,7 @@ async function dumpPages(state: State) {
     }
 
     // Embedded js common script
-    const embeddedScript = parse(`<script src="https://static.spearly.com/js/v3/spearly-cms.browser.js" defer></script>
+    const embeddedScript = parse(`<script src="${Settings.jsLocation}" defer></script>
     <script>window.addEventListener('DOMContentLoaded',()=>{const t=document.querySelectorAll(':not(:defined)');for(const e of t) {e.style.visibility="hidden";}; window.spearly.config.AUTH_KEY="${Settings.spearlyAuthKey}"},{once:true})</script>`);
     const head = indexNode.querySelector("head")
     if (head) {
@@ -251,7 +252,7 @@ async function dumpPages(state: State) {
 async function writeFile(targetPath, data) {
   const targetPathDir = path.dirname(targetPath)
   if (!fs.existsSync(targetPathDir)) {
-    fs.mkdirSync(targetPathDir)
+    fs.mkdirSync(targetPathDir, { recursive: true })
   }
   fs.writeFileSync(targetPath, data)
 }
