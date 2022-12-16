@@ -1,7 +1,7 @@
 {
   "name": "@spearly/cms-js-core",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
@@ -13,14 +13,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unimal-jp/spear-cli.git"
+    "url": "git+https://github.com/unimal-jp/spear.git"
   },
   "author": "Unimal.jp",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/unimal-jp/spear-cli/issues"
+    "url": "https://github.com/unimal-jp/spear/issues"
   },
-  "homepage": "https://github.com/unimal-jp/spear-cli#readme",
+  "homepage": "https://github.com/unimal-jp/spear#readme",
+  "dependencies": {
+    "node-html-parser": "^6.1.4"
+  },
   "devDependencies": {
     "@spearly/sdk-js": "^0.5.0",
     "@types/jest": "^29.2.3",
@@ -29,8 +32,5 @@
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^4.6.4"
-  },
-  "dependencies": {
-    "node-html-parser": "^6.1.4"
   }
 }
