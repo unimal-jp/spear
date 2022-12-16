@@ -10,7 +10,6 @@ import { Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import HTML_TAG_LIST from './htmlList.js'
-//import { SpearlyJSGenerator } from '@spearly/js-core';
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -383,7 +382,6 @@ export default async function magic(args: Args): Promise<boolean> {
     console.log("Server started on port %s", Settings.port)
     return true
   } else if (args.action === "build") {
-    console.log(generator);
     // Load default settings from spear.config.{js,json}|package.json
     await loadSettingsFromFile()
     return await bundle()
