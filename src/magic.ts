@@ -10,6 +10,7 @@ import { Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import HTML_TAG_LIST from './htmlList.js'
+//import { SpearlyJSGenerator } from '@spearly/js-core';
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -53,8 +54,7 @@ function parseElements(state: State, nodes: Element[]) {
   nodes.forEach((node) => {
     const tagName = node.rawTagName
     const isTextNode = node.nodeType === 3
-    const isNative = !isTextNode && node.hasAttribute("native")
-    const component = !isNative && state.componentsList.find((c) => c.tagName === tagName)
+    const component = state.componentsList.find((c) => c.tagName === tagName)
 
     // console.log("  --")
     // console.log("  tagName:", node.nodeType, tagName, node.innerText)
@@ -73,10 +73,6 @@ function parseElements(state: State, nodes: Element[]) {
     if (!isTextNode && !component) {
       node.props = {}
       extractProps(state, node)
-    }
-
-    if (isNative) {
-      node.removeAttribute("native")
     }
 
     // Todo: Check better way to do this, components are being parsed twice
@@ -387,6 +383,7 @@ export default async function magic(args: Args): Promise<boolean> {
     console.log("Server started on port %s", Settings.port)
     return true
   } else if (args.action === "build") {
+    console.log(generator);
     // Load default settings from spear.config.{js,json}|package.json
     await loadSettingsFromFile()
     return await bundle()
