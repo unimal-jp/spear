@@ -1,9 +1,12 @@
 {
   "name": "@spearly/cms-js-core",
-  "private": true,
+  "private": false,
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "tsc": "tsc",
     "clean": "rm -rf dist",
@@ -13,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unimal-jp/spear.git"
+    "url": "git://github.com/unimal-jp/spear.git"
   },
   "author": "Unimal.jp",
   "license": "ISC",
