@@ -68,6 +68,11 @@ function parseElements(state: State, nodes: Element[]) {
       state.out.script.push(node.innerHTML)
       return
     }
+    if (component) {
+      // console.log("  append component", component.node.outerHTML)
+      component.node.childNodes.forEach((child) => res.appendChild(child))
+      return
+    }
 
     if (!isTextNode && !component) {
       node.props = {}
@@ -79,13 +84,8 @@ function parseElements(state: State, nodes: Element[]) {
       node.childNodes = parseElements(state, node.childNodes as Element[])
     }
 
-    if (component) {
-      // console.log("  append component", component.node.outerHTML)
-      component.node.childNodes.forEach((child) => res.appendChild(child))
-    } else {
-      // console.log("  append node", node.outerHTML)
-      res.appendChild(node)
-    }
+    // console.log("  append node", node.outerHTML)
+    res.appendChild(node)
   })
 
   return res.childNodes
@@ -227,9 +227,8 @@ async function dumpPages(state: State) {
     // Inject title
     if (indexNode) {
       const head = indexNode.querySelector("head")
-      const title = head?.querySelector("title")
-      if (title && title.innerText === "{{projectName}}") {
-        title.innerHTML = Settings.projectName
+      if (head) {
+        head.innerHTML = head.innerHTML.replace("{{projectName}}", Settings.projectName)
       }
     }
 
