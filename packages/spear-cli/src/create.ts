@@ -124,13 +124,13 @@ async function createBoilerplate() {
   // Create config file if needed
   const settingsFile: any = {}
   if (settings.answers.spearlyCMSApiKey) {
-    settingsFile.spearlyCMSApiKey = settings.answers.spearlyCMSApiKey
+    settingsFile.spearlyAuthKey = settings.answers.spearlyCMSApiKey
   }
   settingsFile.projectName = settings.answers.projectName
   if (Object.keys(settingsFile).length) {
     fs.writeFileSync(
-      `${basePath}/spear.config.json`,
-      `${JSON.stringify(settingsFile, null, 2)}`
+      `${basePath}/spear.config.js`,
+      `module.exports = ${JSON.stringify(settingsFile, null, 2)};`
     )
   }
 
