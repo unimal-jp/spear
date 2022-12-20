@@ -1,5 +1,5 @@
 import { SpearlyApiClient } from '@spearly/sdk-js';
-import getFieldsValuesDefinitions, { getCustomDateString } from './Utils'
+import getFieldsValuesDefinitions, { getCustomDateString } from './Utils.js'
 
 export type SpearlyJSGeneratorOption = {
     linkBaseUrl: string | undefined;
