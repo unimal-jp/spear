@@ -43,6 +43,7 @@ export default function getFieldsValuesDefinitions(
     }
     const replaceDefinitions = Array<ReplaceDefinition>();
     fields.forEach(field => {
+      if (field.attributes.value === null) return
       let key = field.attributes.identifier;
       if (isTextType(field)) {
         replaceDefinitions.push({

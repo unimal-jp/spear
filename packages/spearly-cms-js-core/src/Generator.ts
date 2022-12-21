@@ -1,5 +1,5 @@
 import { SpearlyApiClient } from '@spearly/sdk-js';
-import getFieldsValuesDefinitions, { getCustomDateString } from './Utils'
+import getFieldsValuesDefinitions, { getCustomDateString } from './Utils.js'
 
 export type SpearlyJSGeneratorOption = {
     linkBaseUrl: string | undefined;
@@ -14,7 +14,7 @@ export class SpearlyJSGenerator {
     options: SpearlyJSGeneratorInternalOption
 
     constructor(apiKey: string, domain: string, options: SpearlyJSGeneratorOption | undefined = undefined) {
-        this.client = new SpearlyApiClient(apiKey, domain)
+        this.client = new SpearlyApiClient(domain, apiKey)
         this.options = {
             linkBaseUrl: options?.linkBaseUrl || "",
             dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date) {
