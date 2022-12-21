@@ -6,7 +6,7 @@ import { parse } from "node-html-parser"
 import liveServer from "live-server"
 import watch from "node-watch"
 import { Args } from "./interfaces/argsInterfaces"
-import { Element, State } from "./interfaces/magicInterfaces"
+import { Component, Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import HTML_TAG_LIST from './htmlList.js'
@@ -102,6 +102,31 @@ async function parseElements(state: State, nodes: Element[]) {
   }
 
   return res.childNodes
+}
+
+async function generateAliasPagesFromPagesList(state: State): Promise<Component[]> {
+  const replacePagesList: Component[] = []
+  for (const page of state.pagesList) {
+    if (page.fname.includes("[alias]")) {
+      const targetElement = page.node.querySelector("[cms-item]")
+
+      const contentId = targetElement.getAttribute("cms-content")
+      const generatedContents = await jsGenerator.generateAliasPagesFromPagesList(targetElement.innerHTML, contentId)
+      generatedContents.forEach(c => {
+        targetElement.parentNode.innerHTML = c.generatedHtml
+        replacePagesList.push({
+          fname: page.fname.replace("[alias]", generatedContents.alias),
+          node: page.node,
+          props: page.props,
+          tagName: page.tagName,
+          rawData: page.node.toString()
+        })
+      })      
+    } else {
+      replacePagesList.push(page)
+    }
+  }
+  return replacePagesList
 }
 
 function isParseTarget(ext: string) {
@@ -313,6 +338,9 @@ async function bundle(): Promise<boolean> {
   if (state.out.script.length > 0) {
     generateScriptFile(state)
   }
+
+  // generate static routing files.
+  state.pagesList = await generateAliasPagesFromPagesList(state)
 
   // Dump pages
   dumpPages(state)
