@@ -10,5 +10,6 @@ export interface DefaultSettings {
   spearlyAuthKey?: string
   port?: number
   host?: string
-  jsLocation: string
+  jsLocation: string,
+  apiDomain: string,
 }

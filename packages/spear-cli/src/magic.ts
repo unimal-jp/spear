@@ -10,12 +10,14 @@ import { Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import HTML_TAG_LIST from './htmlList.js'
+import { SpearlyJSGenerator } from '@spearly/cms-js-core';
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
 
 let dirname = process.cwd()
 let Settings: DefaultSettings
+let jsGenerator: SpearlyJSGenerator
 
 function initializeArgument(args: Args) {
   if (args.src) {
@@ -34,6 +36,7 @@ function initializeArgument(args: Args) {
     port: 8080,
     host: "0.0.0.0",
     jsLocation: "https://static.spearly.com/js/v3/spearly-cms.browser.js",
+    apiDomain: "api.spearly.com"
   }
 }
 
@@ -47,10 +50,11 @@ function extractProps(state: State, node: Element) {
   }
 }
 
-function parseElements(state: State, nodes: Element[]) {
+async function parseElements(state: State, nodes: Element[]) {
   const res = parse("") as Element
 
-  nodes.forEach((node) => {
+  //nodes.forEach((node) => {
+  for (let node of nodes) {
     const tagName = node.rawTagName
     const isTextNode = node.nodeType === 3
     const component = state.componentsList.find((c) => c.tagName === tagName)
@@ -61,17 +65,26 @@ function parseElements(state: State, nodes: Element[]) {
 
     if (tagName === "style") {
       state.out.css.push(node.innerHTML)
-      return
+      continue
     }
 
     if (tagName === "script" && node.parentNode.localName !== "head") {
       state.out.script.push(node.innerHTML)
-      return
+      continue
     }
     if (component) {
       // console.log("  append component", component.node.outerHTML)
       component.node.childNodes.forEach((child) => res.appendChild(child))
-      return
+      continue
+    }
+
+    // Inject CMS
+    if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
+      const contentId = node.getAttribute("cms-content")
+      const generatedStr = await jsGenerator.generateList(node.innerHTML, contentId)
+      const generatedNode = parse(generatedStr) as Element
+      res.appendChild(generatedNode)
+      continue
     }
 
     if (!isTextNode && !component) {
@@ -81,12 +94,12 @@ function parseElements(state: State, nodes: Element[]) {
 
     // Todo: Check better way to do this, components are being parsed twice
     if (node.childNodes.length) {
-      node.childNodes = parseElements(state, node.childNodes as Element[])
+      node.childNodes = await parseElements(state, node.childNodes as Element[])
     }
 
     // console.log("  append node", node.outerHTML)
     res.appendChild(node)
-  })
+  }
 
   return res.childNodes
 }
@@ -202,7 +215,6 @@ async function dumpPages(state: State) {
     }
     console.log("")
     console.log(`[Page]: ${page.fname}`)
-    console.log(page.node.outerHTML)
 
     // Inject the Styles.
     if (indexNode && state.out.css.length > 0) {
@@ -267,6 +279,8 @@ async function bundle(): Promise<boolean> {
       assetsFiles: [],
     },
   }
+  
+  jsGenerator = new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain)
 
   // Create dist folder
   createDir()
@@ -281,14 +295,14 @@ async function bundle(): Promise<boolean> {
   await parsePages(state, Settings.srcDir)
 
   // Run list again to parse children of the components
-  state.componentsList.forEach((component) => {
-    component.node.childNodes = parseElements(state, component.node.childNodes as Element[])
+  await state.componentsList.forEach(async (component) => {
+    component.node.childNodes = await parseElements(state, component.node.childNodes as Element[])
   })
 
   // Run list again to parse children of the pages
-  state.pagesList.forEach((page) => {
-    page.node.childNodes = parseElements(state, page.node.childNodes as Element[])
-  })
+  for (let page of state.pagesList) {
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[])
+  }
 
   // Generate style files.
   if (state.out.css.length > 0) {
