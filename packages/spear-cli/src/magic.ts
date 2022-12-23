@@ -35,7 +35,6 @@ function initializeArgument(args: Args) {
     spearlyAuthKey: "",
     port: 8080,
     host: "0.0.0.0",
-    jsLocation: "https://static.spearly.com/js/v3/spearly-cms.browser.js",
     apiDomain: "api.spearly.com"
   }
 }
@@ -111,15 +110,16 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
       const targetElement = page.node.querySelector("[cms-item]")
 
       const contentId = targetElement.getAttribute("cms-content")
-      const generatedContents = await jsGenerator.generateAliasPagesFromPagesList(targetElement.innerHTML, contentId)
+      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId)
       generatedContents.forEach(c => {
-        targetElement.parentNode.innerHTML = c.generatedHtml
+        targetElement.innerHTML = c.generatedHtml
+        const html = page.node.innerHTML.replace(targetElement.innerHTML, c.generatedHtml)
         replacePagesList.push({
-          fname: page.fname.replace("[alias]", generatedContents.alias),
-          node: page.node,
+          fname: page.fname.split("[alias]").join(c.alias),
+          node: parse(html) as Element,
           props: page.props,
           tagName: page.tagName,
-          rawData: page.node.toString()
+          rawData: html
         })
       })      
     } else {
@@ -267,14 +267,6 @@ async function dumpPages(state: State) {
       if (head) {
         head.innerHTML = head.innerHTML.replace("{{projectName}}", Settings.projectName)
       }
-    }
-
-    // Embedded js common script
-    const embeddedScript = parse(`<script src="${Settings.jsLocation}" defer></script>
-    <script>window.addEventListener('DOMContentLoaded',()=>{const t=document.querySelectorAll(':not(:defined)');for(const e of t) {e.style.visibility="hidden";}; window.spearly.config.AUTH_KEY="${Settings.spearlyAuthKey}"},{once:true})</script>`);
-    const head = indexNode.querySelector("head")
-    if (head) {
-      head.appendChild(embeddedScript)
     }
 
     writeFile(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
