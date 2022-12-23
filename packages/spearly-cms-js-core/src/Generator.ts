@@ -47,6 +47,11 @@ export class SpearlyJSGenerator {
             result = result.split(linkMatchResult[0]).join("./" + this.options.linkBaseUrl + "?contentId=" + alias);                
         }
 
+        const aliasMatchResult = templateHtml.match("{%.*_#alias %}")
+        if (!!aliasMatchResult && aliasMatchResult.length > 0) {
+            result = result.split(aliasMatchResult[0]).join(alias);
+        }
+
         return result
     }
 
@@ -84,7 +89,7 @@ export class SpearlyJSGenerator {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter)
 
                 generatedContents.push({
-                    alias: c.attributes.contentAlias,
+                    alias: c.attributes.contentAlias || c.attributes.publicUid,
                     generatedHtml: this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c.attributes.contentAlias),
                 })
             });
