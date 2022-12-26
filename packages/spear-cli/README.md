@@ -1,14 +1,14 @@
-[README in English](./README-en.md)
+[README in Japanese](./README-ja.md)
 
 # spear-cli
 
 [![npm version](https://badge.fury.io/js/spear-cli.svg)](https://badge.fury.io/js/spear-cli)
 
-`spear-cli` はSpearly 向けの静的サイトジェネレーターです (SSG) 
+This is SSG(Static Site Generator) for Spearly.  
 
-## 利用方法
+## Usage
 
-### インストール
+### Install
 
 1. npm
 
@@ -22,22 +22,22 @@ npm install spear-cli -g
 yarn global add spear-cli
 ```
 
-### プロジェクトの作成
+### Create project
 
-最初に以下の手順でプロジェクトを作成します。
+As first step, you need to create:
 
-1. `spear create` : このコマンドを実行するとプロジェクトを作成するためのウィザードが起動します。
+1. `spear create` : This command start wizard creating project.
 
 ```bash
 Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
  ### Welcome to Spear CLI ###
 
 
-? Name of your project (spear-cli) <Input your project name>　←プロジェクト名を入力します。
+? Name of your project (spear-cli) <Input your project name>
 ? Use Spearly CMS (Use arrow keys)
-❯ Yes      <- Choose 'yes' if you use the Spear content.      ←CMS を利用する場合は「Yes」を選択
+❯ Yes      <- Choose 'yes' if you use the Spear content.
   No
-? Enter your Spearly CMS API KEY  <Input your Spearly API KEY> ← CMS を利用する場合は Spearly の API キーを入力
+? Enter your Spearly CMS API KEY  <Input your Spearly API KEY>
 
 
 
@@ -59,58 +59,55 @@ Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
 
 ```
 
-これで `spear-cli` を使う準備は完了しました 🚀
+If you finish wizard, your preparation for using spear-cli.
 
-### ページの編集
+### Editing pages
 
-自由にページを作成できます。`spear-cli` は以下の機能を提供しています。
+You can edit pages to you prefer.  spear-cli support some features:
 
-- コンポーネント
-  - ページの一部の部品をコンポーネントとして作成できます。
-  - `components` ディレクトリにコンポーネントを作成します。
-- アセット
-  - イメージやスクリプト、CSS などを `assets` ディレクトリに作成できます。
-  - ディレクトリ名は任意のもので構いません。
-- Spearly CMS のコンテンツリスト
-  - Spearly CMS のコンテンツのリストをページ内に挿入できます。
-  - 記述方法は、Spearly CMS 埋め込み JavaScript と同じです。
-  - `cms-loop` 属性を要素へ付与すると、その要素はリストとして生成されます。
-- Spearly CMS のコンテンツ
-  - Spearly CMS のコンテンツをページ内に挿入できます。
-  - 記述方法は、Spearly CMS 埋め込み JavaScript と同じです。
-  - `cms-item` 属性を要素へ付与すると、その要素はコンテンツとして生成されます。
-- 静的ルーティング
-  - コンテンツページへのリンクは静的ルーティングを利用できます。
+- Components
+  - You can create parts of pages as `components`.
+- assets
+  - Images / Scripsts / CSS...
+- Insert Spearly content list into pages.
+  - You can insert list of content.
+- Insert Spearly content into pages.
+  - You can generate specified Spearly content as page.
+- Static Routing
+  - You can use static routing feature that moving to content pages.
 
-ライブモードも利用できます。ライブモードを医療したい場合は以下のコマンドを利用してください。
+You can use live-mode as well. If you want to use it, you need to execute the following command:
 
 ```bash
 spear watch -s <project directory>
 ```
 
-### 静的ルーティング
+### Static Routing
 
-`spear-cli` は Spearly CMS コンテンツを静的ファイルとして生成します。仕様は以下の通りです。
+`spear-cli` generate static site with Spearly CMS Content. The spec is as follow:
 
-- ファイル名は `/path/[alias].html` として保存します。
-  - このファイルは生成されると、`/path/<content-alias>.html` として出力されます。(例：コンテンツエイリアスが `first-blog` の場合は `/path/first-blog.html` となります)
+- File name: `/path/[alias].html`
+- Generated File name: `/path/<content-alias>.html` (e.g., content alias is `first-blog`, file name is `/path/first-blog.html`)
+- Spearly Syntax: Same to spearly embed js v3. (For detail, see official document.)
+- You can create list pages by using spearly syntax as well.
 
-### ディレクトリ構造
+### Directory structures
 
-`spear-cli` は以下のディレクトリ構造のルールがあります。
+`spear-cli` has directory rules:
 
-- components : ルートディレクトリ直下の `components' です。
-  - 他のページやコンポーネントへ挿入するための spear コンポーネントを保存する場所です。
-  - spear-cli はネストされたコンポーネントディレクトリを保証します。(例： /components/common、/components/cards)
-  - spear-cli はネイティブDOM要素と同じ名前のコンポーネントを指定する事はできません。(例：`body` / `header` / `section`)
-- assets / public : ルートディレクトリ直下の `assets` や `public` などです。
-  - spear-cli では何も加工せずにそのまま出力します。
-- その他のディレクトリ
-  - spear-cli では何も加工せずにそのまま出力します。
-  - html / spear / htm ファイルがある場合は、ファイル内を解析して spear コンポーネントの指定があれば挿入します。
-  - バイナリファイルは解析せずそのまま出力します。
+- components : top-level directory named `components'
+  - There are spear components which inserting into pages or other component.
+  - spear-cli allow nested directory structure. (E.g., /components/common, /components/cards)
+  - spear-cli ignore the name which is same to HTML DOM tag name since preventing mixed native and component content. (e.g., body, header, section).
+- assets/public: top-level assets files directory named `assets` or `public`.
+  - spear-cli output this directory without converting.
+- other directories: top-level directories any named.
+  - spear-cli output this directory with html converting.
+  - spear-cli keep directory structure.
+  - If there are html/spear/htm file, spear-cli traverse and insert spear component.
+  - If there are binary file, spear-cli output files as it is.
 
-ディレクトリサンプル:
+Example directories:
 
 ```bash
 ├── package.json
@@ -136,7 +133,7 @@ spear watch -s <project directory>
         └── favicon.ico
 ```
 
-spear-cli のビルドを実行後は蒸気サンプルは以下のような構成で出力されます。
+After spear-cli build, an above example directory will be the following structure.
 
 ```bash
 ├── dist
@@ -161,26 +158,27 @@ spear-cli のビルドを実行後は蒸気サンプルは以下のような構�
 ├── spear.config.json
 ```
 
-注意：
+Note that:
 
-- `components/header.spear` と `components/main.spear` は各ページに挿入されます。
-- `pages/index.spear` は `pages/index.html` にリネームされます.
+- `components/header.spear` and `components/main.spear` was inserted pages.
+- `pages/index.spear` renamed `pages/index.html`.
 
-### ビルド
+### Building pages
 
-最後のプロセスとして以下のコマンドでビルドできます。
+At the last process, you can build all of them.
 
 ```bash
 $ spear build -s <project directory>
-```
 
-これで Spearly ページがビルドできました🚀🚀🚀
 
-## ドキュメント
+Congrats! You can build your pages with Spearly 🚀🚀🚀
 
-spear-cli で利用する構文の公式ドキュメントは Spearly CMS にあります。
+## Resource
 
-## 貢献
+spear-cli has official document by using Spearly CMS.
 
-このプロジェクトへ貢献する場合は、[CONTRIBUTING.md](../../CONTRIBUTING.md) をご覧ください！
-参加をお待ちしています！
+
+## Contributing
+
+If you want to contribute this project, You can read [CONTRIBUTING.md](./CONTRIBUTING.md) !  
+We will wait for your participant!
