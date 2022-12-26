@@ -79,7 +79,7 @@ async function parseElements(state: State, nodes: Element[]) {
 
     // Inject CMS
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
-      const contentId = node.getAttribute("cms-content")
+      const contentId = node.getAttribute("cms-content-type")
       const generatedStr = await jsGenerator.generateList(node.innerHTML, contentId)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
