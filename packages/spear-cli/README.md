@@ -169,7 +169,7 @@ At the last process, you can build all of them.
 
 ```bash
 $ spear build -s <project directory>
-
+```
 
 Congrats! You can build your pages with Spearly 🚀🚀🚀
 
