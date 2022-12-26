@@ -109,7 +109,7 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
     if (page.fname.includes("[alias]")) {
       const targetElement = page.node.querySelector("[cms-item]")
 
-      const contentId = targetElement.getAttribute("cms-content")
+      const contentId = targetElement.getAttribute("cms-content-type")
       const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId)
       generatedContents.forEach(c => {
         targetElement.innerHTML = c.generatedHtml
