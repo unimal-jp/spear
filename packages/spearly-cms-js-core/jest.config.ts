@@ -8,5 +8,9 @@ module.exports = {
     transform: {
       '^.+\\.(ts|tsx)$': 'ts-jest',
     },
+    moduleNameMapper: {
+        '(.+)\\.js': '$1'
+    },
+    extensionsToTreatAsEsm: ['.ts']
   }
   

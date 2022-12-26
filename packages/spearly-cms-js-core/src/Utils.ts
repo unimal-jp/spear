@@ -26,7 +26,7 @@ const isContentType = (fieldType: FieldTypeAll): fieldType is FieldTypeContentTy
     return fieldType.attributes.inputType === 'content_type'
 }
 
-declare type ReplaceDefinition = {
+export declare type ReplaceDefinition = {
     definitionString: string;
     fieldValue: string;
 };
