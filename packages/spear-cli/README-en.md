@@ -1,3 +1,5 @@
+[README in Japanese](./README.md)
+
 # spear-cli
 
 [![npm version](https://badge.fury.io/js/spear-cli.svg)](https://badge.fury.io/js/spear-cli)
