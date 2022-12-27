@@ -79,7 +79,7 @@ async function parseElements(state: State, nodes: Element[]) {
 
     // Inject CMS
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
-      const contentId = node.getAttribute("cms-content")
+      const contentId = node.getAttribute("cms-content-type")
       const generatedStr = await jsGenerator.generateList(node.innerHTML, contentId)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
@@ -109,7 +109,7 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
     if (page.fname.includes("[alias]")) {
       const targetElement = page.node.querySelector("[cms-item]")
 
-      const contentId = targetElement.getAttribute("cms-content")
+      const contentId = targetElement.getAttribute("cms-content-type")
       const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId)
       generatedContents.forEach(c => {
         targetElement.innerHTML = c.generatedHtml
