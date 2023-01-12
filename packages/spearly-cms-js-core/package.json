@@ -19,7 +19,7 @@
     "url": "git://github.com/unimal-jp/spear.git"
   },
   "author": "Unimal.jp",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/unimal-jp/spear/issues"
   },
