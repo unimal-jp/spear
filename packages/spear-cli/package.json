@@ -20,7 +20,7 @@
   },
   "keywords": [],
   "author": "Yo",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/unimal-jp/spear.git"
