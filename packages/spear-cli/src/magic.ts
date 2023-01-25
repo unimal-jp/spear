@@ -10,7 +10,8 @@ import { Component, Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import HTML_TAG_LIST from './htmlList.js'
-import { SpearlyJSGenerator } from '@spearly/cms-js-core';
+import { SpearlyJSGenerator } from '@spearly/cms-js-core'
+import sass from 'sass'
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -148,6 +149,10 @@ function isParseTarget(ext: string) {
   return [".html", ".htm", ".spear"].includes(ext)
 }
 
+function needSASSBuild(ext: string) {
+  return [".scss"].includes(ext)
+}
+
 async function parsePages(state: State, dirPath: string, relatePath = "") {
   if (relatePath === "components") return;
   const files = fs.readdirSync(dirPath)
@@ -163,6 +168,10 @@ async function parsePages(state: State, dirPath: string, relatePath = "") {
 
     if (isDir) {
       await parsePages(state, filePath, file)
+    } else if (needSASSBuild(ext)) {
+      const result = sass.compile(filePath)
+      state.out.assetsFiles.push({ filePath: `${relatePath}/${fname}.css`, rawData: Buffer.from(result.css) })
+      continue
     } else if (!isParseTarget(ext)) {
       const rawData = fs.readFileSync(filePath)
       state.out.assetsFiles.push({ filePath: `${relatePath}/${file}`, rawData })
