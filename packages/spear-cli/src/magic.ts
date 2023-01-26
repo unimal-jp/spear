@@ -12,6 +12,7 @@ import { fileURLToPath } from "url"
 import HTML_TAG_LIST from './htmlList.js'
 import { SpearlyJSGenerator } from '@spearly/cms-js-core'
 import sass from 'sass'
+import chalk from 'chalk'
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -333,7 +334,13 @@ async function bundle(): Promise<boolean> {
     console.log(e);
     return false;
   }
-  await parsePages(state, Settings.srcDir)
+
+  try {
+    await parsePages(state, Settings.srcDir)
+  } catch(e) {
+    console.log(e);
+    return false;
+  }
 
   // Run list again to parse children of the components
   await state.componentsList.forEach(async (component) => {
@@ -436,7 +443,12 @@ export default async function magic(args: Args): Promise<boolean> {
     }
 
     liveServer.start(params)
-    console.log("Server started on port %s", Settings.port)
+    console.log(chalk.green(`
+    Server started on port ${Settings.port} 🚀
+    You can access the following URL:
+    
+      http://localhost:${Settings.port}
+    `))
     return true
   } else if (args.action === "build") {
     // Load default settings from spear.config.{js,json}|package.json
