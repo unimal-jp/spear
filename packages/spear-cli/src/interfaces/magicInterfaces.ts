@@ -26,3 +26,9 @@ export interface State {
     assetsFiles: AssetFile[]
   }
 }
+
+export interface SiteMapURL {
+  url: string,
+  changefreq: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never",
+  priority: number,
+}
