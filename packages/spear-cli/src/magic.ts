@@ -6,13 +6,15 @@ import { parse } from "node-html-parser"
 import liveServer from "live-server"
 import watch from "node-watch"
 import { Args } from "./interfaces/argsInterfaces"
-import { Component, Element, State } from "./interfaces/magicInterfaces"
+import { Component, Element, State, SiteMapURL } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import HTML_TAG_LIST from './htmlList.js'
 import { SpearlyJSGenerator } from '@spearly/cms-js-core'
 import sass from 'sass'
 import chalk from 'chalk'
+import { SitemapStream, streamToPromise } from "sitemap"
+import { Readable } from "stream"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -37,7 +39,9 @@ function initializeArgument(args: Args) {
     spearlyAuthKey: "",
     port: 8080,
     host: "0.0.0.0",
-    apiDomain: "api.spearly.com"
+    apiDomain: "api.spearly.com",
+    generateSitemap: false,
+    siteURL: "",
   }
 }
 
@@ -251,6 +255,7 @@ function generateScriptFile(state: State) {
 }
 
 async function dumpPages(state: State) {
+  const linkList:Array<SiteMapURL> = []
   for (const page of state.pagesList) {
     // Read index.html template
     let indexNode;
@@ -295,7 +300,24 @@ async function dumpPages(state: State) {
     }
 
     writeFile(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
+    linkList.push({
+      url: `${page.fname}.html`,
+      changefreq: "daily",
+      priority: 0.7,
+    })
   }
+
+  // Generate Sitemap
+  if (Settings.generateSitemap) {
+    try {
+      const data = await streamToPromise(Readable.from(linkList).pipe(new SitemapStream({ hostname: Settings.siteURL })))
+      console.log(`[Sitemap]: /sitemap.xml`)
+      writeFile(`${Settings.distDir}/sitemap.xml`, data.toString())
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   for (const asset of state.out.assetsFiles) {
     writeFile(`${Settings.distDir}/${asset.filePath}`, asset.rawData)
   }

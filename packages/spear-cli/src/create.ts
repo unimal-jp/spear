@@ -19,6 +19,8 @@ const settings = {
     templateType: "basic",
     useCMS: "",
     spearlyCMSApiKey: "",
+    generateSitemap: "",
+    siteURL: "",
   },
   projectDir: dirname.split("/").slice(-1)[0],
 }
@@ -43,6 +45,12 @@ async function askQuestions() {
       choices: ["Yes", "No"],
     },
     {
+      name: "spearlyCMSApiKey",
+      type: "input",
+      message: "Enter your Spearly CMS API KEY",
+      when: (answers) => answers.useCMS === "Yes",
+    },
+    {
       name: "templateType",
       type: "list",
       message: "Choose template type",
@@ -50,10 +58,26 @@ async function askQuestions() {
       choices: ["basic", "empty"],
     },
     {
-      name: "spearlyCMSApiKey",
+      name: "generateSitemap",
+      message: "Generate Sitemap?",
+      type: "list",
+      default: "No",
+      choices: ["Yes", "No"],
+    },
+    {
+      name: "siteURL",
+      message: "Enter your hosting URL (Example: https://foobar.netlify.app/)",
       type: "input",
-      message: "Enter your Spearly CMS API KEY",
-      when: (answers) => answers.useCMS === "Yes",
+      default: "",
+      validate: (input) => {
+        try {
+          new URL(input)
+        } catch (e) {
+          return "input correct URL syntax. (Example: https://foobar.netlify.app/foo/";
+        }
+        return true;
+      },
+      when: (answer) => answer.generateSitemap === "Yes",
     },
   ]
 
@@ -127,6 +151,8 @@ async function createBoilerplate() {
     settingsFile.spearlyAuthKey = settings.answers.spearlyCMSApiKey
   }
   settingsFile.projectName = settings.answers.projectName
+  settingsFile.generateSitemap = settings.answers.generateSitemap === "Yes"
+  settingsFile.siteURL = settings.answers.siteURL
   if (Object.keys(settingsFile).length) {
     fs.writeFileSync(
       `${basePath}/spear.config.js`,

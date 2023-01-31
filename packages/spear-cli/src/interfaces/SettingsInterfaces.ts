@@ -11,4 +11,6 @@ export interface DefaultSettings {
   port?: number
   host?: string
   apiDomain: string,
+  generateSitemap: boolean,
+  siteURL: string,
 }
