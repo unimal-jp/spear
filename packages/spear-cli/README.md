@@ -1,4 +1,4 @@
-[README in Japanese](./README-ja.md)
+[README in Japanese](./README_ja.md)
 
 # spear-cli
 
@@ -10,16 +10,17 @@ This is SSG(Static Site Generator) for Spearly.
 
 ### Install
 
-1. npm
+You can install the `spear-cli` via following command:
 
 ```bash
-npm install spear-cli -g
-```
+# If you use the npm.
+$ npm install "@spearly/spear-cli" -g
 
-1. yarn
+# If you use the yarn.
+$ yarn global add "@spearly/spear-cli"
 
-```bash
-yarn global add spear-cli
+# If you use the pnpm.
+$ pnpm install "@spearly/spear-cli" -g
 ```
 
 ### Create project
@@ -38,12 +39,18 @@ Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
 ❯ Yes      <- Choose 'yes' if you use the Spear content.
   No
 ? Enter your Spearly CMS API KEY  <Input your Spearly API KEY>
-
+? Choose template type (Use arrow keys)
+❯ basic 
+  empty 
+? Generate Sitemap? 
+❯ Yes 
+  No 
+  ? Enter your hosting URL (Example: https://foobar.netlify.app/) () 
 
 
 ? Name of your project SampleProject
 ? Use Spearly CMS Yes
-? Enter your Spearly CMS API KEY aaaaaa
+? Enter your Spearly CMS API KEY **********
 
   ## Your project was created 🎉
 
@@ -173,9 +180,19 @@ $ spear build -s <project directory>
 
 Congrats! You can build your pages with Spearly 🚀🚀🚀
 
-## Resource
+## Configuration File
 
-spear-cli has official document by using Spearly CMS.
+Spear build according to `spear.config.js`. This file has the following settings:
+
+```js
+module.exports = {
+  "spearlyAuthKey": string,     // Specify the spearly api token for fetching.
+  "projectName": string,        // This project name.
+  "generateSitemap": boolean,   // Whether generating the sitemap or not.
+  "siteURL": string,            // Base URL of generation sitemap. (optional)
+  "apiDomain": string,          // Fetching API Domain. (optional)
+};
+```
 
 
 ## Contributing

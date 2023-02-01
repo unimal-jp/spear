@@ -1,3 +1,5 @@
+[日本語](./README_ja.md)
+
 # Spearly CMS JS Core module
 
 ## Feature
@@ -5,7 +7,7 @@
 - Generate converted html string from specified html template string.
 - Fetch content data.
 
-## DO NOT OPERATE THE DOM
+## Concept : DO NOT MANIPULATE THE DOM
 
 - This module **SHOULD NOT** use Browser DOM Manipulation.
   - This module should out of DOM world.
