@@ -4,7 +4,6 @@ import fs from "fs"
 import path from "path"
 import { ArgumentParser } from "argparse"
 import { fileURLToPath } from "url"
-import create from "./create.js"
 import magic from "./magic.js"
 
 const filename = fileURLToPath(import.meta.url)
@@ -26,10 +25,6 @@ parser.add_argument("-s", "--src", { help: "Specify source directory. "})
 const args = parser.parse_args()
 
 console.log(args)
-
-if (args.action === "create") {
-  create(args.projectName)
-}
 
 if (args.action === "watch" || args.action === "build") {
   if (!magic(args)) {
