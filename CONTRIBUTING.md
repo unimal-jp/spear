@@ -29,19 +29,6 @@ You can execute generated spear-cli by using the following command:
 $ node dist/index.js
 ```
 
-### Publish on npm (Project Owner)
-
-```bash
-# First version up
-npm version {patch|minor|major}
-
-# push to repo
-git push origin main --tags
-
-# Publish to NPM
-npm publish --access public
-```
-
 ## Contribute to spearly-cms-js-core
 
 `cms-js-core` is core library for spearly technologies.

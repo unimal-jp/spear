@@ -4,22 +4,21 @@
 
 [![npm version](https://badge.fury.io/js/spear-cli.svg)](https://badge.fury.io/js/spear-cli)
 
-`spear-cli` はSpearly 向けの静的サイトジェネレーターです (SSG) 
+`spear-cli` は Spearly 向けの静的サイトジェネレーターです (SSG) 
 
 ## 利用方法
 
 ### インストール
 
-1. npm
-
 ```bash
-npm install spear-cli -g
-```
+# If you use the npm.
+$ npm install "@spearly/spear-cli" -g
 
-1. yarn
+# If you use the yarn.
+$ yarn global add "@spearly/spear-cli"
 
-```bash
-yarn global add spear-cli
+# If you use the pnpm.
+$ pnpm install "@spearly/spear-cli" -g
 ```
 
 ### プロジェクトの作成
@@ -38,12 +37,19 @@ Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
 ❯ Yes      <- Choose 'yes' if you use the Spear content.      ←CMS を利用する場合は「Yes」を選択
   No
 ? Enter your Spearly CMS API KEY  <Input your Spearly API KEY> ← CMS を利用する場合は Spearly の API キーを入力
+? Choose template type (Use arrow keys)                        ← テンプレートタイプを選択する
+❯ basic 
+  empty 
+? Generate Sitemap?                                            ← サイトマップを生成するかどうかの選択
+❯ Yes 
+  No 
+  ? Enter your hosting URL (Example: https://foobar.netlify.app/) () ← サイトマップを生成する場合ベースとなるURL
 
 
 
 ? Name of your project SampleProject
 ? Use Spearly CMS Yes
-? Enter your Spearly CMS API KEY aaaaaa
+? Enter your Spearly CMS API KEY **********
 
   ## Your project was created 🎉
 
@@ -176,9 +182,19 @@ $ spear build -s <project directory>
 
 これで Spearly ページがビルドできました🚀🚀🚀
 
-## ドキュメント
+## 設定ファイル
 
-spear-cli で利用する構文の公式ドキュメントは Spearly CMS にあります。
+Spear のビルドは `spear.config.js` に従って行われます。このファイルは以下のような設定値を持ちます。
+
+```js
+module.exports = {
+  "spearlyAuthKey": string,     // データを取得するための Spearly API トークンを指定します
+  "projectName": string,        // プロジェクト名を指定します
+  "generateSitemap": boolean,   // サイトマップを生成するかを指定します
+  "siteURL": string,            // サイトマップを生成する際のベースURLを指定します(オプション)
+  "apiDomain": string,          // フェッチする API サーバーのドメインを指定します(オプション)
+};
+```
 
 ## 貢献
 
