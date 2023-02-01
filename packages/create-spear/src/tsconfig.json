@@ -1,0 +1,13 @@
+{
+    "include": ["src", "index.d.ts"],
+    "compilerOptions": {
+      "allowJs": true,
+      "target": "ES2020",
+      "module": "ES2020",
+      "outDir": "../dist/",
+      "declarationDir": "../dist/types"
+    },
+    "references": [
+      { "path": "../" } // this project to the one at the root dir`
+    ]
+}
