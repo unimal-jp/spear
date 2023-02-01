@@ -140,7 +140,7 @@ async function createBoilerplate() {
   packageJson.name = settings.answers.projectName
   const cliVersion = await getSpearCliVersion()
   if (cliVersion) {
-    packageJson.dependencies["spear-cli"] = `^${cliVersion}`
+    packageJson.dependencies["@spearly/spear-cli"] = `^${cliVersion}`
   }
   fs.writeFileSync(`${basePath}/package.json`, JSON.stringify(packageJson, null, 2))
 
@@ -168,7 +168,7 @@ function getSpearCliVersion() {
     const options = {
       hostname: "registry.npmjs.org",
       port: 443,
-      path: "/spear-cli",
+      path: "/@spearly/spear-cli",
       method: "GET",
     }
 
