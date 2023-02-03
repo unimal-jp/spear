@@ -8,26 +8,11 @@ This is SSG(Static Site Generator) for Spearly.
 
 ## Usage
 
-### Install
-
-You can install the `spear-cli` via following command:
-
-```bash
-# If you use the npm.
-$ npm install "@spearly/spear-cli" -g
-
-# If you use the yarn.
-$ yarn global add "@spearly/spear-cli"
-
-# If you use the pnpm.
-$ pnpm install "@spearly/spear-cli" -g
-```
-
 ### Create project
 
 As first step, you need to create:
 
-1. `spear create` : This command start wizard creating project.
+1. `npm create spear@latest` : This command start wizard creating project.
 
 ```bash
 Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
@@ -97,6 +82,20 @@ spear watch -s <project directory>
 - Generated File name: `/path/<content-alias>.html` (e.g., content alias is `first-blog`, file name is `/path/first-blog.html`)
 - Spearly Syntax: Same to spearly embed js v3. (For detail, see official document.)
 - You can create list pages by using spearly syntax as well.
+
+### SASS
+
+`spear-clil` supports SASS syntax. All of `scss` files under the `src` is compiled, and spear will copy compiled css file to relative path under `dist`.
+
+### Sitemap generation
+
+`spear-cli` will generate sitemap automatically if you set the sitemap configuration into config file.  
+This feature requires the flag of the site generating and host URL. You can specify these values in `spear.config.js` file.
+
+```javascript
+  "generateSitemap": boolean,
+  "siteURL": string,
+```
 
 ### Directory structures
 

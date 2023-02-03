@@ -8,24 +8,11 @@
 
 ## 利用方法
 
-### インストール
-
-```bash
-# If you use the npm.
-$ npm install "@spearly/spear-cli" -g
-
-# If you use the yarn.
-$ yarn global add "@spearly/spear-cli"
-
-# If you use the pnpm.
-$ pnpm install "@spearly/spear-cli" -g
-```
-
 ### プロジェクトの作成
 
 最初に以下の手順でプロジェクトを作成します。
 
-1. `spear create` : このコマンドを実行するとプロジェクトを作成するためのウィザードが起動します。
+1. `npm create spear@latest` : このコマンドを実行するとプロジェクトを作成するためのウィザードが起動します。
 
 ```bash
 Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
@@ -100,6 +87,20 @@ spear watch -s <project directory>
 
 - ファイル名は `/path/[alias].html` として保存します。
   - このファイルは生成されると、`/path/<content-alias>.html` として出力されます。(例：コンテンツエイリアスが `first-blog` の場合は `/path/first-blog.html` となります)
+
+### SASS
+
+`spear-cli` は SASS 構文をサポートしてます。`src` にある `.scss` ファイルはすべてコンパイルされ、`dist` からの相対パスへコンパイル結果の CSS が保存されます。
+
+### サイトマップ生成
+
+`spear-cli` の設定ファイルでサイトマップ生成設定がされている場合、自動でサイトマップを生成します。  
+サイトマップ生成設定には、サイトマップ生成の有無と、ホスト URL の情報が必要です。次の2つの設定を `spear.config.js` に入れることで動作します。
+
+```javascript
+  "generateSitemap": boolean,
+  "siteURL": string,
+```
 
 ### ディレクトリ構造
 
