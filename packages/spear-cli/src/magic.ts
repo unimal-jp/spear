@@ -78,8 +78,11 @@ async function parseElements(state: State, nodes: Element[]) {
       continue
     }
     if (component) {
-      // console.log("  append component", component.node.outerHTML)
-      component.node.childNodes.forEach((child) => res.appendChild(child))
+      // Regenerate node since node-html-parser's HTMLElement doesn't have deep copy.
+      // If we consumed this element once, this HTML node might release on memory.
+      const minified = await minify(component.rawData, { collapseWhitespace: true })
+      const node = parse(minified) as Element
+      node.childNodes.forEach((child) => res.appendChild(child.clone()))
       continue
     }
 
