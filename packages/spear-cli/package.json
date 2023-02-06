@@ -10,10 +10,8 @@
   "scripts": {
     "tsc": "tsc",
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc --build src && npm run copy-files",
-    "dev": "nodemon --watch \".\" -e js,ts --exec \"npm run build\"",
-    "copy-files": "npm-run-all copy-files:*",
-    "copy-files:templates": "mkdir -p dist/templates && cp -R src/templates/* dist/templates/"
+    "build": "npm run clean && tsc --build src",
+    "dev": "nodemon --watch \".\" -e js,ts --exec \"npm run build\""
   },
   "bin": {
     "spear": "./dist/index.js"
