@@ -178,7 +178,7 @@ async function parsePages(state: State, dirPath: string, relatePath = "") {
     const isDir = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()
 
     if (isDir) {
-      await parsePages(state, filePath, file)
+      await parsePages(state, filePath, relatePath + (relatePath !== "" ? '/' : '') + file)
     } else if (needSASSBuild(ext)) {
       const result = sass.compile(filePath)
       state.out.assetsFiles.push({ filePath: `${relatePath}/${fname}.css`, rawData: Buffer.from(result.css) })
