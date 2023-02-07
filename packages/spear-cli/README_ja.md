@@ -197,6 +197,23 @@ module.exports = {
 };
 ```
 
+## エディタについて
+
+Spear はエディタを選びません。
+ただし、以下の設定をすることでより快適な開発が行えます。
+
+### Visual Studio Code
+
+ プロジェクト作成時に生成される `.vscode/settings.json` を利用してください。
+
+### JetBrains(IntelliJ, WebStorm, PhpStorm 等)
+
+- IntelliJ の Plugin ができるまでは、独自の設定が必要です。
+- 公式ドキュメントに沿って、 `.spear` を `.html` として認識するように設定してください。
+
+[ファイル名パターンとファイルタイプ間の関連付けを構成する](https://pleiades.io/help/idea/creating-and-registering-file-types.html#configure-associations-between-filename-patterns-and-file-types)
+
+
 ## 貢献
 
 このプロジェクトへ貢献する場合は、[CONTRIBUTING.md](../../CONTRIBUTING.md) をご覧ください！

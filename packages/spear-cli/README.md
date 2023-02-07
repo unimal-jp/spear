@@ -193,6 +193,18 @@ module.exports = {
 };
 ```
 
+## Editor settings
+
+Spear is a editor free tool.
+However, you can use the following settings to have a better experience when coding in your favorite editor.
+
+### Visual Studio Code
+
+A default settings is created at `.vscode/settings.json` for better highlighting of the code, specially `.spear` files.
+
+### JetBrains(IntelliJ, WebStorm, PhpStorm, etc)
+
+While IntelliJ Plugin is under construction, there is a workaround for the editor to highlight `.spear` files at  [Configure associations between filename patterns and file types](https://www.jetbrains.com/help/idea/creating-and-registering-file-types.html#configure-associations-between-filename-patterns-and-file-types)
 
 ## Contributing
 
