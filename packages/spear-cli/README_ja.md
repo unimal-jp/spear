@@ -204,7 +204,7 @@ Spear はエディタを選びません。
 
 ### Visual Studio Code
 
- プロジェクト作成時に生成される `vscodeSettings.json` を利用してください。
+ プロジェクト作成時に生成される `.vscode/settings.json` を利用してください。
 
 ### JetBrains(IntelliJ, WebStorm, PhpStorm 等)
 
