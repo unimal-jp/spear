@@ -193,6 +193,21 @@ module.exports = {
 };
 ```
 
+## About Editor
+
+Spear does not choose an editor.
+However, the following settings will allow you to develop comfortably.
+
+### Visual Studio Code
+
+Please use `vscodeSettings.json` generated when the project is created.
+
+### JetBrains(IntelliJ, WebStorm, PhpStorm and so on.)
+
+- Until the IntelliJ Plugin is ready, you will need to configure your own settings.
+- Follow the official documentation and configure it to recognize `.spear` as `.html`.
+
+[Configure associations between filename patterns and file types](https://www.jetbrains.com/help/idea/creating-and-registering-file-types.html#configure-associations-between-filename-patterns-and-file-types)
 
 ## Contributing
 
