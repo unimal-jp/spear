@@ -89,7 +89,8 @@ async function parseElements(state: State, nodes: Element[]) {
     // Inject CMS loop
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
       const contentType = node.getAttribute("cms-content-type")
-      const generatedStr = await jsGenerator.generateList(node.innerHTML, contentType)
+      node.removeAttribute("cms-content-type")
+      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
       continue
@@ -104,7 +105,9 @@ async function parseElements(state: State, nodes: Element[]) {
     ) {
       const contentType = node.getAttribute("cms-content-type")
       const contentId   = node.getAttribute("cms-content")
-      const generatedStr = await jsGenerator.generateContent(node.innerHTML, contentType, contentId)
+      node.removeAttribute("cms-content-type")
+      node.removeAttribute("cms-content")
+      const generatedStr = await jsGenerator.generateContent(node.outerHTML, contentType, contentId)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
       continue
