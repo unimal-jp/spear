@@ -89,6 +89,13 @@ $ pnpm run build
 
 - [Spearly CMS Official Documentation](https://docs.spearly.com)
 
+## Contributors
+
+Thank you for your participation!
+
+<a href="https://github.com/unimal-jp/spear/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=unimal-jp/spear" />
+</a>
 
 ## Contributing
 
