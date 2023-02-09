@@ -347,7 +347,7 @@ function loadFile(filePath: string) {
       if (files.length > 0) {
         const ext = path.extname(files[0])
 
-        if (ext === ".js") {
+        if (ext === ".js" || ext === ".mjs") {
           const data = await import(
             files[0],
             files[0].indexOf("json") > -1 ? { assert: { type: "json" } } : undefined
@@ -367,7 +367,7 @@ function loadFile(filePath: string) {
 }
 
 async function loadSettingsFromFile() {
-  const data = await loadFile(`${dirname}/${Settings.settingsFile}.?(js|json)`)
+  const data = await loadFile(`${dirname}/${Settings.settingsFile}.?(mjs|js|json)`)
   if (data) {
     Object.keys(data).forEach((k) => {
       Settings[k] = data[k]
