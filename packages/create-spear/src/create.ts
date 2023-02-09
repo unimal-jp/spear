@@ -155,8 +155,8 @@ async function createBoilerplate() {
   settingsFile.siteURL = settings.answers.siteURL
   if (Object.keys(settingsFile).length) {
     fs.writeFileSync(
-      `${basePath}/spear.config.js`,
-      `module.exports = ${JSON.stringify(settingsFile, null, 2)};`
+      `${basePath}/spear.config.mjs`,
+      `export default ${JSON.stringify(settingsFile, null, 2)};`
     )
   }
 
