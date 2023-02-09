@@ -64,19 +64,6 @@ async function parseElements(state: State, nodes: Element[]) {
     const isTextNode = node.nodeType === 3
     const component = state.componentsList.find((c) => c.tagName === tagName)
 
-    // console.log("  --")
-    // console.log("  tagName:", node.nodeType, tagName, node.innerText)
-    // console.log("  isNative:", isNative ? 1 : 0, "hasComponent:", !!component ? 1 : 0)
-
-    if (tagName === "style") {
-      state.out.css.push(node.innerHTML)
-      continue
-    }
-
-    if (tagName === "script" && node.parentNode.localName !== "head") {
-      state.out.script.push(node.innerHTML)
-      continue
-    }
     if (component) {
       // Regenerate node since node-html-parser's HTMLElement doesn't have deep copy.
       // If we consumed this element once, this HTML node might release on memory.
@@ -242,24 +229,6 @@ function createDir() {
   fs.mkdirSync(Settings.distDir, { recursive: true })
 }
 
-function generateStyleFile(state: State) {
-  const data = state.out.css.join("\n")
-  fs.writeFileSync(`${Settings.distDir}/css.css`, data)
-
-  console.log("")
-  console.log("[Style]")
-  console.log(data)
-}
-
-function generateScriptFile(state: State) {
-  const data =  state.out.script.join("\n")
-  fs.writeFileSync(`${Settings.distDir}/script.js`, data)
-
-  console.log("")
-  console.log("[Script]")
-  console.log(data)
-}
-
 async function dumpPages(state: State) {
   const linkList:Array<SiteMapURL> = []
   for (const page of state.pagesList) {
@@ -276,26 +245,6 @@ async function dumpPages(state: State) {
     }
     console.log("")
     console.log(`[Page]: ${page.fname}`)
-
-    // Inject the Styles.
-    if (indexNode && state.out.css.length > 0) {
-      const link = parse('<link rel="stylesheet" href="./css.css">')
-      const head = indexNode.querySelector("head")
-
-      if (head) {
-        head.appendChild(link)
-      }
-    }
-
-    // Inject the Script.
-    if (indexNode && state.out.script.length > 0) {
-      const script = parse('<script src="./script.js"></script>')
-      const head = indexNode.querySelector("head")
-
-      if (head) {
-        head.appendChild(script)
-      }
-    }
 
     // Inject title
     if (indexNode) {
@@ -344,8 +293,6 @@ async function bundle(): Promise<boolean> {
     body: parse("") as Element,
     globalProps: {},
     out: {
-      css: [],
-      script: [],
       assetsFiles: [],
     },
   }
@@ -378,16 +325,6 @@ async function bundle(): Promise<boolean> {
   // Run list again to parse children of the pages
   for (let page of state.pagesList) {
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[])
-  }
-
-  // Generate style files.
-  if (state.out.css.length > 0) {
-    generateStyleFile(state)
-  }
-
-  // Generate script files.
-  if (state.out.script.length > 0) {
-    generateScriptFile(state)
   }
 
   // generate static routing files.
