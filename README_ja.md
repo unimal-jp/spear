@@ -87,6 +87,14 @@ $ pnpm run build
 
 - [Spearly CMS の公式ドキュメント](https://docs.spearly.com)
 
+## コントリビューター
+
+参加ありがとうございます！
+
+<a href="https://github.com/unimal-jp/spear/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=unimal-jp/spear" />
+</a>
+
 ## コントリビューション
 
 Spear プロジェクトはオープンソースです。いつでもコントリビュートをお待ちしております🚀
