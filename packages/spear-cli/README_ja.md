@@ -75,7 +75,7 @@ Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
 - 静的ルーティング
   - コンテンツページへのリンクは静的ルーティングを利用できます。
 
-ライブモードも利用できます。ライブモードを利用したい場合は以下のコマンドを利用してください。
+ライブモードも利用できます。ライブモードを利用したい場合は以下のコマンドを実行してください。
 
 ```bash
 spear watch -s <project directory>
