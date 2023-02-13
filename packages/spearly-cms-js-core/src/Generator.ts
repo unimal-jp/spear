@@ -70,8 +70,6 @@ export class SpearlyJSGenerator {
     async traverseInjectionSubLoop(nodes: HTMLElement[]): Promise<Node[]> {
         const resultNode = parse("") as HTMLElement
         for (const node of nodes) {
-            const tagName = node.rawTagName
-            const isTextNode = node.nodeType === 3
             if (node.hasAttribute("cms-loop")) {
                 const contentType = node.getAttribute("cms-field")
                 if (!contentType) {
