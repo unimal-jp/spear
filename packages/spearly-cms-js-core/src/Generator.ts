@@ -1,3 +1,4 @@
+import { HTMLElement, Node, parse } from 'node-html-parser';
 import { SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { getCustomDateString, ReplaceDefinition } from './Utils.js'
 
@@ -66,8 +67,31 @@ export class SpearlyJSGenerator {
         }
     }
 
+    traverseInjectionCMS(nodes: HTMLElement[]): Node {
+        const resultNode = parse("") as HTMLElement
+        for (const node of nodes) {
+            const tagName = node.rawTagName
+            const isTextNode = node.nodeType === 3
+            if (node.childNodes > 0) {
+                resultNode.childNodes = this.traverseInjectionCMS(node.childNodes as HTMLElement[])
+            }
+        }
+        return resultNode
+    }
+
+    async generateSubLoop(templateHtml: string): Promise<string> {
+        const parsedNode = parse(templateHtml)
+        for (const node of parsedNode.childNodes) {
+            
+        }
+    }
+
     async generateList(templateHtml: string, contentType: string): Promise<string> {
         try {
+            // Searching sub-loop in html.
+            if (templateHtml.includes("cms-loop")) {
+                templateHtml = await this.generateSubLoop(templateHtml)
+            }
             const result = await this.client.getList(contentType)
             let resultHtml = ""
             result.data.forEach(c => {
