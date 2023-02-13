@@ -76,6 +76,7 @@ async function parseElements(state: State, nodes: Element[]) {
     // Inject CMS loop
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
       const contentType = node.getAttribute("cms-content-type")
+      node.removeAttribute("cms-loop")
       node.removeAttribute("cms-content-type")
       const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType)
       const generatedNode = parse(generatedStr) as Element
