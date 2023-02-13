@@ -83,7 +83,6 @@ export class SpearlyJSGenerator {
                 const generatedStr = await this.generateList(node.outerHTML, contentType, varName || contentType)
                 const generatedNode = parse(generatedStr) as HTMLElement
                 resultNode.childNodes = generatedNode.childNodes
-                //resultNode.appendChild(generatedNode)
                 continue
             }
             if (node.childNodes.length > 0) {
