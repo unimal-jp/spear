@@ -14,6 +14,7 @@ The Spear project has the following packages:
 | Packages | Status | Details | README Link |
 |---|---|---|---|
 | [`spear-cli`](./packages/spear-cli/) | [![npm version](https://badge.fury.io/js/spear-cli.svg)](https://badge.fury.io/js/spear-cli) | SSG CLI | [README](./packages/spear-cli/README.md) |
+| [`create-spear`](./packages/create-spear/) | [![npm version](https://badge.fury.io/js/create-spear.svg)](https://badge.fury.io/js/create-spear) | Spear Project creation tool | [README](./packages/create-spear/README.md) |
 | [`cms-js-core`](./packages/spearly-cms-js-core/) | Public | Spearly contents converter library. | [README](./packages/spearly-cms-js-core/README.md) |
 | `spearly-flutter` | In Planning | The library which Embedding CMS Content into Flutter | - |
 | `spearly-svelte` | In Planning | The library which embedding CMS Content into Svelte Kit | - |

@@ -15,6 +15,7 @@ Spear には以下のパッケージがあります。
 | Packages | Status | Details | README Link |
 |---|---|---|---|
 | [`spear-cli`](./packages/spear-cli/) | [![npm version](https://badge.fury.io/js/spear-cli.svg)](https://badge.fury.io/js/spear-cli) | SSG 本体 | [README](./packages/spear-cli/README_ja.md) |
+| [`create-spear`](./packages/create-spear/) | [![npm version](https://badge.fury.io/js/create-spear.svg)](https://badge.fury.io/js/create-spear) | Spear プロジェクト作成ツール | [README](./packages/create-spear/README_ja.md) |
 | [`cms-js-core`](./packages/spearly-cms-js-core/) | 公開中 | Spearly のコンテンツ埋め込みコンバーターライブラリ | [README](./packages/spearly-cms-js-core/README_ja.md) |
 | `spearly-flutter` | 計画中 | Flutter へ CMS コンテンツを埋め込めるライブラリ | - |
 | `spearly-svelte` | 計画中 | Svelte Kit へ CMS コンテンツを埋め込めるライブラリ | - |

@@ -2,7 +2,7 @@
 
 # spear-cli
 
-[![npm version](https://badge.fury.io/js/spear-cli.svg)](https://badge.fury.io/js/spear-cli)
+[![npm version](https://badge.fury.io/js/@spearly%2Fspear-cli.svg)](https://badge.fury.io/js/@spearly%2Fspear-cli)
 
 `spear-cli` は Spearly 向けの静的サイトジェネレーターです (SSG) 
 
