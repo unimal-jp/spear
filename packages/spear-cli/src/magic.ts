@@ -76,6 +76,7 @@ async function parseElements(state: State, nodes: Element[]) {
     // Inject CMS loop
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
       const contentType = node.getAttribute("cms-content-type")
+      node.removeAttribute("cms-loop")
       node.removeAttribute("cms-content-type")
       const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType)
       const generatedNode = parse(generatedStr) as Element
@@ -318,10 +319,18 @@ async function bundle(): Promise<boolean> {
   }
 
   // Run list again to parse children of the components
-  await state.componentsList.forEach(async (component) => {
-    component.node.childNodes = await parseElements(state, component.node.childNodes as Element[])
-  })
-
+  const componentsList = state.componentsList
+  state.componentsList = []
+  for (const component of componentsList) {
+    const parsedNode = await parseElements(state, component.node.childNodes as Element[]) as Element[]
+    state.componentsList.push({
+      "fname": component.fname,
+      "rawData": parsedNode[0].outerHTML,
+      "tagName": component.tagName,
+      "node": parsedNode[0],
+      "props": {}
+    })
+  }
   // Run list again to parse children of the pages
   for (let page of state.pagesList) {
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[])
