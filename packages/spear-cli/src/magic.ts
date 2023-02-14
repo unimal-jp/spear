@@ -121,9 +121,8 @@ async function parseElements(state: State, nodes: Element[]) {
 async function generateAliasPagesFromPagesList(state: State): Promise<Component[]> {
   const replacePagesList: Component[] = []
   for (const page of state.pagesList) {
-    if (page.fname.includes("[alias]")) {
-      const targetElement = page.node.querySelector("[cms-item]")
-
+    const targetElement = page.node.querySelector("[cms-item]")
+    if (page.fname.includes("[alias]") && targetElement) {
       const contentId = targetElement.getAttribute("cms-content-type")
       const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId)
       generatedContents.forEach(c => {
@@ -136,7 +135,7 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
           tagName: page.tagName,
           rawData: html
         })
-      })      
+      })
     } else {
       replacePagesList.push(page)
     }
@@ -153,7 +152,8 @@ function needSASSBuild(ext: string) {
 }
 
 async function parsePages(state: State, dirPath: string, relatePath = "") {
-  if (relatePath === "components") return;
+  if (relatePath === "components") return
+  if (!fs.existsSync(dirPath)) return
   const files = fs.readdirSync(dirPath)
 
   console.log("")
@@ -188,6 +188,7 @@ async function parsePages(state: State, dirPath: string, relatePath = "") {
 }
 
 async function parseComponents(state: State, dirPath: string) {
+  if (!fs.existsSync(dirPath)) return
   const files = fs.readdirSync(dirPath)
 
   console.log("")
