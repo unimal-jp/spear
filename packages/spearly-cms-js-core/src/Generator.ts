@@ -1,3 +1,4 @@
+import { HTMLElement, Node, parse } from 'node-html-parser';
 import { SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { getCustomDateString, ReplaceDefinition } from './Utils.js'
 
@@ -19,7 +20,7 @@ export class SpearlyJSGenerator {
     options: SpearlyJSGeneratorInternalOption
 
     constructor(apiKey: string, domain: string, options: SpearlyJSGeneratorOption | undefined = undefined) {
-        this.client = new SpearlyApiClient(domain, apiKey)
+        this.client = new SpearlyApiClient(apiKey, domain)
         this.options = {
             linkBaseUrl: options?.linkBaseUrl || "",
             dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date) {
@@ -66,12 +67,48 @@ export class SpearlyJSGenerator {
         }
     }
 
-    async generateList(templateHtml: string, contentType: string): Promise<string> {
+    async traverseInjectionSubLoop(nodes: HTMLElement[]): Promise<Node[]> {
+        const resultNode = parse("") as HTMLElement
+        for (const node of nodes) {
+            if (node.hasAttribute("cms-loop")) {
+                const contentType = node.getAttribute("cms-field")
+                if (!contentType) {
+                    // Error case.
+                    return Promise.reject(new Error("cms-loop element doesn't have cms-field"))
+                }
+                const varName = node.getAttribute("cms-item-variable")
+                node.removeAttribute("cms-loop")
+                node.removeAttribute("cms-field")
+                node.removeAttribute("cms-item-variable")
+                const generatedStr = await this.generateList(node.outerHTML, contentType, varName || contentType)
+                const generatedNode = parse(generatedStr) as HTMLElement
+                resultNode.childNodes = generatedNode.childNodes
+                continue
+            }
+            if (node.childNodes.length > 0) {
+                node.childNodes = await this.traverseInjectionSubLoop(node.childNodes as HTMLElement[])
+            } 
+            resultNode.appendChild(node)
+        }
+        return resultNode.childNodes
+    }
+
+    async generateSubLoop(templateHtml: string): Promise<string> {
+        const parsedNode = parse(templateHtml)
+        parsedNode.childNodes = await this.traverseInjectionSubLoop(parsedNode.childNodes as HTMLElement[])
+        return parsedNode.outerHTML
+    }
+
+    async generateList(templateHtml: string, contentType: string, variableName = ""): Promise<string> {
         try {
+            // Searching sub-loop in html.
+            if (templateHtml.includes("cms-loop")) {
+                templateHtml = await this.generateSubLoop(templateHtml)
+            }
             const result = await this.client.getList(contentType)
             let resultHtml = ""
             result.data.forEach(c => {
-                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
+                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter);
                 resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c.attributes.contentAlias)
             })
 

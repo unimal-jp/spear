@@ -107,7 +107,7 @@ async function parseElements(state: State, nodes: Element[]) {
     }
 
     // Todo: Check better way to do this, components are being parsed twice
-    if (node.childNodes.length) {
+    if (node.childNodes.length > 0) {
       node.childNodes = await parseElements(state, node.childNodes as Element[])
     }
 
