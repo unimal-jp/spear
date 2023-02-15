@@ -1,6 +1,6 @@
 {
   "name": "@spearly/spear-cli",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "type": "module",
   "description": "",
   "preferGlobal": true,
@@ -36,7 +36,7 @@
     "fs-extra": "^11.1.0",
     "glob": "^8.0.3",
     "html-minifier-terser": "^7.0.0-beta.0",
-    "live-server": "^1.2.2",
+    "live-server": "^1.1.0",
     "node-html-parser": "^5.3.3",
     "node-watch": "^0.7.3",
     "sass": "^1.57.1",
