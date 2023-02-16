@@ -42,6 +42,7 @@ function initializeArgument(args: Args) {
     apiDomain: "api.spearly.com",
     generateSitemap: false,
     siteURL: "",
+    plugins: []
   }
 }
 
@@ -301,6 +302,11 @@ async function bundle(): Promise<boolean> {
   
   jsGenerator = new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain)
 
+  // Hook API: beforeBuild
+  for (const plugin of Settings.plugins) {
+    await plugin.beforeBuild(state)
+  }
+
   // Create dist folder
   createDir()
 
@@ -340,8 +346,18 @@ async function bundle(): Promise<boolean> {
   // generate static routing files.
   state.pagesList = await generateAliasPagesFromPagesList(state)
 
+  // Hook API: afterBuild
+  for (const plugin of Settings.plugins) {
+    await plugin.afterBuild(state)
+  }
+
   // Dump pages
   dumpPages(state)
+
+  // Hook API: bundle
+  for (const plugin of Settings.plugins) {
+    await plugin.bundle(state)
+  }
 
   return true
 }
@@ -397,6 +413,11 @@ export default async function magic(args: Args): Promise<boolean> {
 
     if (args.port) {
       Settings.port = args.port
+    }
+
+    // Hook API after settings
+    for (const plugin of Settings.plugins) {
+      await plugin.configuration(Settings)
     }
 
     // Bundle before starting the server

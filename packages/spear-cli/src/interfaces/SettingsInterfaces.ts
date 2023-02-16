@@ -1,3 +1,5 @@
+import { HookApi } from "./HookCallback"
+
 export interface DefaultSettings {
   projectName?: string
   settingsFile?: string
@@ -13,4 +15,5 @@ export interface DefaultSettings {
   apiDomain: string,
   generateSitemap: boolean,
   siteURL: string,
+  plugins: HookApi[]
 }
