@@ -1,7 +1,6 @@
 import fs from "fs"
 import path from "path"
 import { minify } from "html-minifier-terser"
-import glob from "glob"
 import { parse } from "node-html-parser"
 import liveServer from "live-server"
 import watch from "node-watch"
@@ -15,6 +14,7 @@ import sass from 'sass'
 import chalk from 'chalk'
 import { SitemapStream, streamToPromise } from "sitemap"
 import { Readable } from "stream"
+import { defaultSettingDeepCopy, loadFile, stateDeepCopy } from "./util.js"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -42,6 +42,7 @@ function initializeArgument(args: Args) {
     apiDomain: "api.spearly.com",
     generateSitemap: false,
     siteURL: "",
+    rootDir: dirname,
     plugins: []
   }
 }
@@ -290,7 +291,7 @@ async function writeFile(targetPath, data) {
 }
 
 async function bundle(): Promise<boolean> {
-  const state: State = {
+  let state: State = {
     pagesList: [],
     componentsList: [],
     body: parse("") as Element,
@@ -304,7 +305,12 @@ async function bundle(): Promise<boolean> {
 
   // Hook API: beforeBuild
   for (const plugin of Settings.plugins) {
-    await plugin.beforeBuild(state)
+    if (plugin.beforeBuild) {
+      const newState = await plugin.beforeBuild(state)
+      if (newState) {
+        state = stateDeepCopy(newState)
+      }
+    }
   }
 
   // Create dist folder
@@ -348,7 +354,12 @@ async function bundle(): Promise<boolean> {
 
   // Hook API: afterBuild
   for (const plugin of Settings.plugins) {
-    await plugin.afterBuild(state)
+    if (plugin.afterBuild) {
+      const newState = await plugin.afterBuild(state)
+      if (newState) {
+        state = stateDeepCopy(newState)
+      }
+    }
   }
 
   // Dump pages
@@ -356,40 +367,15 @@ async function bundle(): Promise<boolean> {
 
   // Hook API: bundle
   for (const plugin of Settings.plugins) {
-    await plugin.bundle(state)
+    if (plugin.bundle) {
+      const newState = await plugin.bundle(state)
+      if (newState) {
+        state = stateDeepCopy(newState)
+      }
+    }
   }
 
   return true
-}
-
-function loadFile(filePath: string) {
-  return new Promise((resolve, reject) => {
-    glob(filePath, null, async (er, files) => {
-      if (er) {
-        reject(er)
-        return
-      }
-
-      if (files.length > 0) {
-        const ext = path.extname(files[0])
-
-        if (ext === ".js" || ext === ".mjs") {
-          const data = await import(
-            files[0],
-            files[0].indexOf("json") > -1 ? { assert: { type: "json" } } : undefined
-          )
-          resolve(data.default)
-        } else if (ext === ".json") {
-          const data = fs.readFileSync(files[0], "utf8")
-          resolve(JSON.parse(data))
-        } else {
-          resolve(fs.readFileSync(files[0], "utf8"))
-        }
-      } else {
-        resolve(null)
-      }
-    })
-  })
 }
 
 async function loadSettingsFromFile() {
@@ -407,19 +393,25 @@ export default async function magic(args: Args): Promise<boolean> {
 
   if (args.action === "watch") {
     Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
+  }
 
-    // Load default settings from spear.config.{js,json}|package.json
-    await loadSettingsFromFile()
+  // Load default settings from spear.config.{js,json}|package.json
+  await loadSettingsFromFile()
 
+  // Hook API after settings
+  for (const plugin of Settings.plugins) {
+    if (plugin.configuration) {
+      const newSettings = await plugin.configuration(Settings)
+      if (newSettings) {
+        Settings = defaultSettingDeepCopy(newSettings)
+      }
+    }
+  }
+
+  if (args.action === "watch") {
     if (args.port) {
       Settings.port = args.port
     }
-
-    // Hook API after settings
-    for (const plugin of Settings.plugins) {
-      await plugin.configuration(Settings)
-    }
-
     // Bundle before starting the server
     await bundle()
 
@@ -447,8 +439,6 @@ export default async function magic(args: Args): Promise<boolean> {
     `))
     return true
   } else if (args.action === "build") {
-    // Load default settings from spear.config.{js,json}|package.json
-    await loadSettingsFromFile()
     return await bundle()
   }
 }
