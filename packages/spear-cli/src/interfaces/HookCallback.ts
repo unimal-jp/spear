@@ -1,8 +1,7 @@
 import { DefaultSettings } from "./SettingsInterfaces"
 import { HTMLElement } from "node-html-parser"
 
-export interface SpearSettings extends DefaultSettings {
-}
+export type SpearSettings = DefaultSettings
 
 export type Element = HTMLElement & { props: { [key: string]: string } }
 

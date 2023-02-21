@@ -8,7 +8,7 @@ import { Element } from "./interfaces/magicInterfaces"
  */
 const traverseCollectingComponents = async (files: EditorFile[]) => {
   let componentList = []
-  for (let file of files) {
+  for (const file of files) {
     if (!file.children) {
       const ext      = path.extname(file.name)
       const fname    = path.basename(file.name, ext)
@@ -35,7 +35,7 @@ const traverseCollectingComponents = async (files: EditorFile[]) => {
  */
 const traverseConvertPages = async (nodes: Element[], componentList) => {
   const res = parse("") as Element
-  for (let node of nodes) {
+  for (const node of nodes) {
     const tagName    = node.rawTagName
     const isTextNode = node.nodeType ===3
     const isNative   = !isTextNode && node.hasAttribute("native")
@@ -66,10 +66,8 @@ export default async function magicInternal(inputFiles: EditorFile[], targetFile
   const componentList = await traverseCollectingComponents(inputFiles)
 
   // For preview, we make the conent string.
-  for (let file of inputFiles) {
+  for (const file of inputFiles) {
     if (file.path === targetFile.path && file.name === targetFile.name) {
-      const ext = path.extname(file.name)
-      const fname = path.basename(file.name, ext)
       const minified = file.content;
       const node = parse(minified) as Element
 
