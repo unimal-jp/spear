@@ -15,5 +15,6 @@ export interface DefaultSettings {
   apiDomain: string,
   generateSitemap: boolean,
   siteURL: string,
+  rootDir: string,
   plugins: HookApi[]
 }
