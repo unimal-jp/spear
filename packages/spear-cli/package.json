@@ -42,7 +42,8 @@
     "node-html-parser": "^5.3.3",
     "node-watch": "^0.7.3",
     "sass": "^1.57.1",
-    "sitemap": "^7.1.1"
+    "sitemap": "^7.1.1",
+    "yaml": "^2.2.1"
   },
   "devDependencies": {
     "@types/argparse": "^2.0.10",
