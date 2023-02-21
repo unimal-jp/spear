@@ -45,7 +45,6 @@ const i18nLanguages: I18nLanguages = new Map<string, I18nWords>()
 
 export function spearI18n(settingsFile?: string): HookApi {
     // Use configuration and afterBuild hook for generating SEO.
-    console.log(settingsFile)
     return {
         // Build internal variable for converting i18n
         configuration: async function(settings: SpearSettings) {
@@ -62,7 +61,6 @@ export function spearI18n(settingsFile?: string): HookApi {
                                 Object.keys(languagesObject).forEach(lang => {
                                     const words = languagesObject[lang]
                                     const convWords: I18nWords = new Map<string, string>()
-                                    console.log(words)
                                     words.forEach(w=> {
                                         Object.keys(w).forEach(subKey => {
                                             convWords.set(subKey, w[subKey])
@@ -72,8 +70,6 @@ export function spearI18n(settingsFile?: string): HookApi {
                                 })
                             }
                         })
-                        console.log(i18nLanguages)
-                        console.log(JSON.stringify(i18nLanguages))
                     } else {
                         throw new Error(`Specify the correct i18n file name. [${settingsFile}]`)
                     }
