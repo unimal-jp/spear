@@ -61,7 +61,7 @@ async function parseElements(state: State, nodes: Element[]) {
   const res = parse("") as Element
 
   //nodes.forEach((node) => {
-  for (let node of nodes) {
+  for (const node of nodes) {
     const tagName = node.rawTagName
     const isTextNode = node.nodeType === 3
     const component = state.componentsList.find((c) => c.tagName === tagName)
@@ -345,7 +345,7 @@ async function bundle(): Promise<boolean> {
     })
   }
   // Run list again to parse children of the pages
-  for (let page of state.pagesList) {
+  for (const page of state.pagesList) {
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[])
   }
 
@@ -420,13 +420,14 @@ export default async function magic(args: Args): Promise<boolean> {
       bundle()
     })
 
-    var params = {
+    const params = {
       port: Settings.port,
       host: Settings.host,
       root: Settings.distDir,
       open: false,
       file: "index.html",
       wait: 1000,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       logLevel: 0 as any,
     }
 
