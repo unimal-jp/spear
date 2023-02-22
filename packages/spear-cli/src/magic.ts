@@ -306,9 +306,15 @@ async function bundle(): Promise<boolean> {
   // Hook API: beforeBuild
   for (const plugin of Settings.plugins) {
     if (plugin.beforeBuild) {
-      const newState = await plugin.beforeBuild(state)
-      if (newState) {
-        state = stateDeepCopy(newState)
+      try {
+        const newState = await plugin.beforeBuild(state)
+        if (newState) {
+          state = stateDeepCopy(newState)
+        }
+      } catch (e) {
+        // TODO. This error should have a plugin information.
+        // For more information, see the https://github.com/unimal-jp/spear/issues/111
+        console.warn(` plugin process failed. `)
       }
     }
   }
@@ -355,9 +361,15 @@ async function bundle(): Promise<boolean> {
   // Hook API: afterBuild
   for (const plugin of Settings.plugins) {
     if (plugin.afterBuild) {
-      const newState = await plugin.afterBuild(state)
-      if (newState) {
-        state = stateDeepCopy(newState)
+      try {
+        const newState = await plugin.afterBuild(state)
+        if (newState) {
+          state = stateDeepCopy(newState)
+        }
+      } catch (e) {
+        // TODO. This error should have a plugin information.
+        // For more information, see the https://github.com/unimal-jp/spear/issues/111
+        console.warn(` plugin process failed. `)
       }
     }
   }
@@ -368,9 +380,15 @@ async function bundle(): Promise<boolean> {
   // Hook API: bundle
   for (const plugin of Settings.plugins) {
     if (plugin.bundle) {
-      const newState = await plugin.bundle(state)
-      if (newState) {
-        state = stateDeepCopy(newState)
+      try {
+        const newState = await plugin.bundle(state)
+        if (newState) {
+          state = stateDeepCopy(newState)
+        }
+      } catch (e) {
+        // TODO. This error should have a plugin information.
+        // For more information, see the https://github.com/unimal-jp/spear/issues/111
+        console.warn(` plugin process failed. `)
       }
     }
   }
@@ -401,9 +419,15 @@ export default async function magic(args: Args): Promise<boolean> {
   // Hook API after settings
   for (const plugin of Settings.plugins) {
     if (plugin.configuration) {
-      const newSettings = await plugin.configuration(Settings)
-      if (newSettings) {
-        Settings = defaultSettingDeepCopy(newSettings)
+      try {
+        const newSettings = await plugin.configuration(Settings)
+        if (newSettings) {
+          Settings = defaultSettingDeepCopy(newSettings)
+        }
+      } catch (e) {
+        // TODO. This error should have a plugin information.
+        // For more information, see the https://github.com/unimal-jp/spear/issues/111
+        console.warn(` plugin process failed. `)
       }
     }
   }
