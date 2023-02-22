@@ -2,6 +2,7 @@ import glob from "glob"
 import fs from "fs"
 import path from "path"
 import { parse } from "node-html-parser"
+import { parse as yamlParse } from "yaml"
 import { AssetFile, Component, Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 
@@ -19,7 +20,7 @@ function componentsDeepCopy(components: Component[]): Component[] {
     return ret
 }
 
-function bufferDeepCopy(buffer: Buffer): Buffer {
+export function bufferDeepCopy(buffer?: Buffer): Buffer {
     if (!buffer) return null
     const newBuffer = new Buffer(buffer.length)
     buffer.copy(newBuffer)
@@ -73,6 +74,9 @@ export function loadFile(filePath: string) {
           } else if (ext === ".json") {
             const data = fs.readFileSync(files[0], "utf8")
             resolve(JSON.parse(data))
+          } else if (ext === ".yaml") {
+            const data = fs.readFileSync(files[0], "utf8")
+            resolve(yamlParse(data))
           } else {
             resolve(fs.readFileSync(files[0], "utf8"))
           }
