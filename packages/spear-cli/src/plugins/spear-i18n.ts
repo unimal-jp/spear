@@ -68,6 +68,8 @@ export function spearI18n(settingsFile?: string): HookApi {
                                     })
                                     i18nLanguages.set(lang.toLowerCase(), convWords)
                                 })
+                            } else {
+                                throw new Error(`invalid key name. [${key}]`)
                             }
                         })
                     } else {
