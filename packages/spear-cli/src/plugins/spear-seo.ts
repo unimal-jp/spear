@@ -56,7 +56,7 @@ async function generateSEOBeforeBundle(state: SpearState): Promise<SpearState> {
         } else {
             indexNode = page.node
         }
-        
+
         // Replace Global SEO Setting
         let htmlStr = indexNode.outerHTML as string
         globalSettings.forEach((val, key) => {
@@ -77,7 +77,10 @@ async function generateSEOBeforeBundle(state: SpearState): Promise<SpearState> {
                 } else if (k.startsWith("meta-")) {
                     const metaName = k.replace("meta-", "")
                     const metaValue = spearSEOTag.attributes[k]
-                    const metaTag = parse(`<meta name="${metaName}" content="${metaValue}">`)
+                    let metaTag = parse(`<meta name="${metaName}" content="${metaValue}">`)
+                    if (metaName.includes('og:')) {
+                        metaTag = parse(`<meta property="${metaName}" content="${metaValue}">`)
+                    }
                     headerTag.appendChild(metaTag)
                 } else if (k.startsWith("link-")) {
                     const linkRel = k.replace("link-", "")
