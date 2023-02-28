@@ -97,6 +97,142 @@ This feature requires the flag of the site generating and host URL. You can spec
   "siteURL": string,
 ```
 
+### SEO Tag
+
+Spear will inject the SEO related tag into generated file if you configure the SEO Tag setting.  
+If you want to use SEO feature, you need to plugin into `spear.config.mjs` file.
+
+```javascript
+import { spearSEO } from "@spearly/spear-cli/dist/plugins/spear-seo.js"
+export default {
+  ...
+  plugins: [
+    spearSEO(),
+  ]
+}
+```
+
+After you set above setting, Spear will inject SEO related tag automatically.
+
+```html
+<spear-seo
+  title="Page title"
+  meta-description="Page description"
+  meta-og:url="/pics/ogp.png">
+</spear-seo>
+```
+
+Available attribute for SEO is the following:
+
+| Attribute | Description | Generated Value|
+|-----------|-------------|----------------|
+| title | Site title |  <title>value</title> |
+| meta-*** | Meta information | <meta name="****" value="value"> |
+| link-*** | Link description | <link rel="***" href="value"> |
+
+You can pass global setting via `spearSEO` parameter.
+
+```javascript
+import { spearSEO } from "@spearly/spear-cli/dist/plugins/spear-seo.js"
+export default {
+  ...
+  plugins: [
+    spearSEO({
+      "title": "My Blog"
+    }),
+  ]
+}
+```
+
+### i18n (Internationalization)
+
+You can localize your site with i18n plugin if you have international site.  
+If you want to use it, you need to configure plugin setting into `spear.config.mjs`.
+
+```javascript
+import { spearI18n } from "@spearly/spear-cli/dist/plugins/i18n.js"
+export default {
+  ...
+  plugins: [
+    spearI18n('./i18n.yaml')
+  ]
+}
+```
+
+The language file is requirement for using i18n. Language file is consist of key and value.
+
+```yaml
+settings:
+  default: "jp"
+lang:
+  jp:
+    - title: ブログだよ
+    - description: ブログサイトです
+    - url: https://www.yahoo.co.jp
+  en:
+    - title: Blog
+    - description: This is blog site.
+    - url: https://www.google.com
+```
+
+Spear provide the two way for using localization feature:
+
+1. i18n Attributes
+
+Spear will replace the all child node to localized string if there are HTML Tags which has i18n.
+
+Example：
+```html
+<p i18n="title"></p>
+<!-- Replaced the bellow in Japanese -->
+<p>ブログだよ</p>
+```
+
+2. Embed syntax (`{%= translate() %}`)
+
+Spear will replace the embed syntax as well.
+
+```html
+<title>{%= translate('title') %}</title>
+<!-- Replaced the bellow in Japanese -->
+<title>ブログだよ</title>
+```
+
+You can specify `t()` instead of `translate()`.
+
+Spear provide the two way for using localization link feature as well:
+
+1. spear-link Tag
+
+Spear will replace the specified URL of `spear-link` tag to each language.
+
+```html
+<spear-link href="/about.html">About us</spear-link>
+<!-- Replaced the bellow in Japanese -->
+<a href="/ja/about.html">About us</a>
+```
+
+2. Embed Syntax (`{%= localize() %}`)
+
+Spear will replace the URL of embed syntax to each language.
+
+```html
+<script>
+  function click() {
+    window.location = "{%= localize('./about.html') %}"
+  }
+</script>
+<!-- Replaced the bellow in Japanese -->
+<script>
+  function click() {
+    window.location = "ja/about.html"
+  }
+</script>
+```
+
+Note that:
+ - Generated URL path will change by original specified path.(Absolute path and relative path.)
+
 ### Directory structures
 
 `spear-cli` has directory rules:
