@@ -162,7 +162,7 @@ async function generateI18nBeforeBundle(state: SpearState): Promise<SpearState> 
                 matchLocalizeSyntax.forEach(m => {
                     const tempKey = m.match(/\(.*?\)/g)[0]
                     const url = tempKey.substr(2, tempKey.length - 4)
-                    const val = `${lang}${url}`
+                    const val = url.startsWith("/") ? `/${lang}${url}` : `${lang}${url}`
                     replacedLocalizeMap.set(m, val)
                 })
                 replacedLocalizeMap.forEach((v, k) => {
