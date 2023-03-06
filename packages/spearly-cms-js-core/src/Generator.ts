@@ -1,6 +1,7 @@
 import { HTMLElement, Node, parse } from 'node-html-parser';
 import { SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { getCustomDateString, ReplaceDefinition } from './Utils.js'
+import type { Content } from '@spearly/sdk-js'
 
 export type SpearlyJSGeneratorOption = {
     linkBaseUrl: string | undefined;
@@ -29,7 +30,7 @@ export class SpearlyJSGenerator {
         }
     }
 
-    convertFromFieldsValueDefinitions(templateHtml: string, replacementArray: ReplaceDefinition[], alias: string): string {
+    convertFromFieldsValueDefinitions(templateHtml: string, replacementArray: ReplaceDefinition[], content: Content, contentType: string): string {
         let result = templateHtml
         replacementArray.forEach(r => {
             result = result.split(r.definitionString).join(r.fieldValue)
@@ -38,19 +39,30 @@ export class SpearlyJSGenerator {
 
         // Especially convert for {%= <ContentType>_#url %} and {%= <ContentType>_#link $}
         // This mean replacing the specifying link to content url.
-        const urlMatchResult = result.match("{%.*_#url %}")
+        const alias = content.attributes.contentAlias
+        const urlMatchResult = result.match(`{%= ${contentType}_#url %}`)
         if (!!urlMatchResult && urlMatchResult.length > 0) {
             result = result.split(urlMatchResult[0]).join("./" + this.options.linkBaseUrl + "?contentId=" + alias);
         }
 
-        const linkMatchResult = templateHtml.match("{%.*_#link %}")
+        const linkMatchResult = result.match(`{%= ${contentType}_#link %}`)
         if (!!linkMatchResult && linkMatchResult.length > 0) {
             result = result.split(linkMatchResult[0]).join("./" + this.options.linkBaseUrl + "?contentId=" + alias);                
         }
 
-        const aliasMatchResult = templateHtml.match("{%.*_#alias %}")
+        const aliasMatchResult = result.match(`{%= ${contentType}_#alias %}`)
         if (!!aliasMatchResult && aliasMatchResult.length > 0) {
             result = result.split(aliasMatchResult[0]).join(alias);
+        }
+
+        // Special converting for {%= <ContentType>_#published_at %} and {%= <ContentType>_#updated_at %}.
+        const publishedAtResult = result.match(`{%= ${contentType}_#published_at %}`)
+        if (!!publishedAtResult && publishedAtResult.length > 0) {
+            result = result.split(publishedAtResult[0]).join(this.options.dateFormatter(content.attributes.publishedAt))
+        }
+        const updatedAtResult = result.match(`{%= ${contentType}_#updated_at %}`)
+        if (!!updatedAtResult && updatedAtResult.length > 0) {
+            result = result.split(updatedAtResult[0]).join(this.options.dateFormatter(content.attributes.updatedAt))
         }
 
         return result
@@ -61,7 +73,7 @@ export class SpearlyJSGenerator {
             const result = await this.client.getContent(contentId)
             const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
 
-            return this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result.attributes.contentAlias)
+            return this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType)
         } catch (e: any) {
             return Promise.reject(e);
         }
@@ -110,7 +122,7 @@ export class SpearlyJSGenerator {
             let resultHtml = ""
             result.data.forEach(c => {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter);
-                resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c.attributes.contentAlias)
+                resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType)
             })
 
             return resultHtml
@@ -128,7 +140,7 @@ export class SpearlyJSGenerator {
 
                 generatedContents.push({
                     alias: c.attributes.contentAlias || c.attributes.publicUid,
-                    generatedHtml: this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c.attributes.contentAlias),
+                    generatedHtml: this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType),
                 })
             });
             return generatedContents
