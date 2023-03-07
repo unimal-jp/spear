@@ -323,7 +323,7 @@ $ spear build -s <project directory>
 Spear のビルドは `spear.config.mjs` に従って行われます。このファイルは以下のような設定値を持ちます。
 
 ```js
-module.exports = {
+export default {
   "spearlyAuthKey": string,     // データを取得するための Spearly API トークンを指定します
   "projectName": string,        // プロジェクト名を指定します
   "generateSitemap": boolean,   // サイトマップを生成するかを指定します
