@@ -155,7 +155,7 @@ export default {
 設定は `spear.config.mjs` に i18n プラグインを指定します。
 
 ```javascript
-import { spearI18n } from "@spearly/spear-cli/dist/plugins/i18n.js"
+import { spearI18n } from "@spearly/spear-cli/dist/plugins/spear-i18n.js"
 export default {
   ...
   plugins: [
