@@ -150,7 +150,7 @@ You can localize your site with i18n plugin if you have international site.
 If you want to use it, you need to configure plugin setting into `spear.config.mjs`.
 
 ```javascript
-import { spearI18n } from "@spearly/spear-cli/dist/plugins/i18n.js"
+import { spearI18n } from "@spearly/spear-cli/dist/plugins/spear-i18n.js"
 export default {
   ...
   plugins: [
