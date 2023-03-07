@@ -129,3 +129,11 @@ export function generateAPIOptionMap(node: Element): APIOption {
   }
   return apiOptions
 }
+
+export function removeCMSAttributes(node: Element) {
+  for (const key in node.attributes) {
+    if (key.startsWith("cms-")) {
+      node.removeAttribute(key)
+    }
+  }
+}
