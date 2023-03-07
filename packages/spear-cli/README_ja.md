@@ -135,20 +135,6 @@ export default {
 | meta-*** | メタ情報 | <meta name="****" value="value"> |
 | link-*** | リンク情報 | <link rel="***" href="value"> |
 
-また  サイト内で共通のグローバル値  `spearSEO` 関数の引数として指定できます。
-
-```javascript
-import { spearSEO } from "@spearly/spear-cli/dist/plugins/spear-seo.js"
-export default {
-  ...
-  plugins: [
-    spearSEO({
-      "title": "My Blog"
-    }),
-  ]
-}
-```
-
 ### i18n (国際化)
 
 サイトを複数言語で運用する場合、i18n プラグインを利用することで、サイトを多言語化することが出来ます。  

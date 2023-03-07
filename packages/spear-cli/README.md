@@ -130,20 +130,6 @@ Available attribute for SEO is the following:
 | meta-*** | Meta information | <meta name="****" value="value"> |
 | link-*** | Link description | <link rel="***" href="value"> |
 
-You can pass global setting via `spearSEO` parameter.
-
-```javascript
-import { spearSEO } from "@spearly/spear-cli/dist/plugins/spear-seo.js"
-export default {
-  ...
-  plugins: [
-    spearSEO({
-      "title": "My Blog"
-    }),
-  ]
-}
-```
-
 ### i18n (Internationalization)
 
 You can localize your site with i18n plugin if you have international site.  
