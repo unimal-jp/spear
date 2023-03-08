@@ -14,7 +14,7 @@ import sass from 'sass'
 import chalk from 'chalk'
 import { SitemapStream, streamToPromise } from "sitemap"
 import { Readable } from "stream"
-import { defaultSettingDeepCopy, loadFile, stateDeepCopy } from "./util.js"
+import { defaultSettingDeepCopy, loadFile, stateDeepCopy, generateAPIOptionMap, removeCMSAttributes } from "./util.js"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -78,9 +78,8 @@ async function parseElements(state: State, nodes: Element[]) {
     // Inject CMS loop
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
       const contentType = node.getAttribute("cms-content-type")
-      node.removeAttribute("cms-loop")
-      node.removeAttribute("cms-content-type")
-      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType)
+      removeCMSAttributes(node)
+      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType, "", generateAPIOptionMap(node))
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
       continue
@@ -95,8 +94,7 @@ async function parseElements(state: State, nodes: Element[]) {
     ) {
       const contentType = node.getAttribute("cms-content-type")
       const contentId   = node.getAttribute("cms-content")
-      node.removeAttribute("cms-content-type")
-      node.removeAttribute("cms-content")
+      removeCMSAttributes(node)
       const generatedStr = await jsGenerator.generateContent(node.outerHTML, contentType, contentId)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
@@ -126,7 +124,8 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
     const targetElement = page.node.querySelector("[cms-item]")
     if (page.fname.includes("[alias]") && targetElement) {
       const contentId = targetElement.getAttribute("cms-content-type")
-      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId)
+      removeCMSAttributes(targetElement as Element)
+      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId, generateAPIOptionMap(targetElement as Element))
       generatedContents.forEach(c => {
         targetElement.innerHTML = c.generatedHtml
         const html = page.node.innerHTML.replace(targetElement.innerHTML, c.generatedHtml)

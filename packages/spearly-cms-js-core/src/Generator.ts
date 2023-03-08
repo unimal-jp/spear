@@ -1,6 +1,6 @@
 import { HTMLElement, Node, parse } from 'node-html-parser';
 import { SpearlyApiClient } from '@spearly/sdk-js';
-import getFieldsValuesDefinitions, { getCustomDateString, ReplaceDefinition } from './Utils.js'
+import getFieldsValuesDefinitions, { generateGetParamsFromAPIOptions, getCustomDateString, ReplaceDefinition } from './Utils.js'
 import type { Content } from '@spearly/sdk-js'
 
 export type SpearlyJSGeneratorOption = {
@@ -15,6 +15,8 @@ export type GeneratedContent = {
     alias : string,
     generatedHtml: string,
 }
+
+export type APIOption = Map<string, string | Date | number | string[] | { [key: string]: string | string[] } >
 
 export class SpearlyJSGenerator {
     client: SpearlyApiClient
@@ -79,7 +81,7 @@ export class SpearlyJSGenerator {
         }
     }
 
-    async traverseInjectionSubLoop(nodes: HTMLElement[]): Promise<Node[]> {
+    async traverseInjectionSubLoop(nodes: HTMLElement[], apiOptions: APIOption): Promise<Node[]> {
         const resultNode = parse("") as HTMLElement
         for (const node of nodes) {
             const isTextNode = node.nodeType === 3
@@ -93,32 +95,32 @@ export class SpearlyJSGenerator {
                 node.removeAttribute("cms-loop")
                 node.removeAttribute("cms-field")
                 node.removeAttribute("cms-item-variable")
-                const generatedStr = await this.generateList(node.outerHTML, contentType, varName || contentType)
+                const generatedStr = await this.generateList(node.outerHTML, contentType, varName || contentType, apiOptions)
                 const generatedNode = parse(generatedStr) as HTMLElement
                 resultNode.childNodes = generatedNode.childNodes
                 continue
             }
             if (node.childNodes.length > 0) {
-                node.childNodes = await this.traverseInjectionSubLoop(node.childNodes as HTMLElement[])
+                node.childNodes = await this.traverseInjectionSubLoop(node.childNodes as HTMLElement[], apiOptions)
             } 
             resultNode.appendChild(node)
         }
         return resultNode.childNodes
     }
 
-    async generateSubLoop(templateHtml: string): Promise<string> {
+    async generateSubLoop(templateHtml: string, apiOptions: APIOption): Promise<string> {
         const parsedNode = parse(templateHtml)
-        parsedNode.childNodes = await this.traverseInjectionSubLoop(parsedNode.childNodes as HTMLElement[])
+        parsedNode.childNodes = await this.traverseInjectionSubLoop(parsedNode.childNodes as HTMLElement[], apiOptions)
         return parsedNode.outerHTML
     }
 
-    async generateList(templateHtml: string, contentType: string, variableName = ""): Promise<string> {
+    async generateList(templateHtml: string, contentType: string, variableName = "", apiOptions: APIOption): Promise<string> {
         try {
             // Searching sub-loop in html.
             if (templateHtml.includes("cms-loop")) {
-                templateHtml = await this.generateSubLoop(templateHtml)
+                templateHtml = await this.generateSubLoop(templateHtml, apiOptions)
             }
-            const result = await this.client.getList(contentType)
+            const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             let resultHtml = ""
             result.data.forEach(c => {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter);
@@ -131,10 +133,10 @@ export class SpearlyJSGenerator {
         }
     }
 
-    async generateEachContentFromList(templateHtml: string, contentType: string) : Promise<GeneratedContent[]> {
+    async generateEachContentFromList(templateHtml: string, contentType: string, apiOptions: APIOption) : Promise<GeneratedContent[]> {
         try {
             const generatedContents: GeneratedContent[] = []
-            const result = await this.client.getList(contentType)
+            const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             result.data.forEach(c => {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter)
 

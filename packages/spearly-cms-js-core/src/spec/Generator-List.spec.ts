@@ -7,6 +7,7 @@ const convertTestData = [
         testName: "Sanity Test",
         template: "<h1>{%= blog_title %}</h1><div>{%= blog_description %}</div>",
         options: {} as unknown as SpearlyJSGeneratorOption,
+        apiOptions: new Map<string, string>(),
         contentType: "blog",
         mockData: generateServerList([
             {identifier: "title", inputType: "text", value: "title" },
@@ -33,7 +34,7 @@ describe('SpearlyJSGenerator', () => {
                 // 変換
                 let result
                 try {
-                    result = await generator.generateList(testData.template, testData.contentType)
+                    result = await generator.generateList(testData.template, testData.contentType, "", testData.apiOptions)
                 } catch(e) {
                     console.log(e)
                 }
