@@ -25,27 +25,12 @@ Spear には以下のパッケージがあります。
 
 ## SSG 利用方法
 
-1. `spear-cli` のインストール
+1. プロジェクトの作成
 
-`spear-cli` パッケージは NPM で配布されているので以下のコマンドでインストールが可能です。
-
-```bash
-# If you use the npm.
-$ npm install "@spearly/spear-cli" -g
-
-# If you use the yarn.
-$ yarn global add "@spearly/spear-cli"
-
-# If you use the pnpm.
-$ pnpm install "@spearly/spear-cli" -g
-```
-
-2. プロジェクトの作成
-
-`spear create` コマンドで質問に答えてプロジェクトを作成します。
+`npm create spear@latest` コマンドで質問に答えてプロジェクトを作成します。
 
 ```bash
-$ spear create
+$ npm create spear@latest
 Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
  ### Welcome to Spear CLI ###
 
@@ -68,7 +53,7 @@ Namespace(port=undefined, action='create', projectName=undefined, src=undefined)
       yarn build
 ```
 
-3. 関連パッケージのインストールとプロジェクトのビルド
+2. 関連パッケージのインストールとプロジェクトのビルド
 
 `build` タスクを実行すればビルドできます。(`dev` タスクを実行すると開発サーバーが起動しデバッグモードになります。)
 
