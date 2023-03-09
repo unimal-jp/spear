@@ -142,7 +142,8 @@ export function insertComponentSlot(componentElement: Element, parentElement: El
   const slotElements = componentElement.querySelectorAll("slot")
   // If component has not <Slot> element, return component html string as is.
   if (slotElements.length <= 0) return componentElement.innerHTML
-  if (slotElements.length == 1) {
+  if (slotElements.length === 1) {
+
     // Single Slot
     const slotElement = slotElements[0]
     console.log(`parentElement: [${parentElement.innerHTML}]`)
