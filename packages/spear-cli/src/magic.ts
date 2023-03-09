@@ -14,7 +14,7 @@ import sass from 'sass'
 import chalk from 'chalk'
 import { SitemapStream, streamToPromise } from "sitemap"
 import { Readable } from "stream"
-import { defaultSettingDeepCopy, loadFile, stateDeepCopy, generateAPIOptionMap, removeCMSAttributes } from "./util.js"
+import { defaultSettingDeepCopy, loadFile, stateDeepCopy, generateAPIOptionMap, removeCMSAttributes, insertComponentSlot } from "./util.js"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -64,14 +64,15 @@ async function parseElements(state: State, nodes: Element[]) {
   for (const node of nodes) {
     const tagName = node.rawTagName
     const isTextNode = node.nodeType === 3
-    const component = state.componentsList.find((c) => c.tagName === tagName)
+    const component = state.componentsList.find((c) => c.tagName === tagName) as Component
 
     if (component) {
       // Regenerate node since node-html-parser's HTMLElement doesn't have deep copy.
       // If we consumed this element once, this HTML node might release on memory.
       const minified = await minify(component.rawData, { collapseWhitespace: true })
-      const node = parse(minified) as Element
-      node.childNodes.forEach((child) => res.appendChild(child.clone()))
+      const deepCopyNode = parse(minified) as Element
+      const componentNode = parse(insertComponentSlot(deepCopyNode, node as Element)) as Element
+      componentNode.childNodes.forEach((child) => res.appendChild(child.clone()))
       continue
     }
 
