@@ -227,7 +227,7 @@ HTML 内に独自構文を書くことで、Spear は指定された URL を言�
 
 `spear-cli` は以下のディレクトリ構造のルールがあります。
 
-- components : ルートディレクトリ直下の `components' です。
+- components : ルートディレクトリ直下の `components` です。
   - 他のページやコンポーネントへ挿入するための spear コンポーネントを保存する場所です。
   - spear-cli はネストされたコンポーネントディレクトリを保証します。(例： /components/common、/components/cards)
   - spear-cli はネイティブDOM要素と同じ名前のコンポーネントを指定する事はできません。(例：`body` / `header` / `section`)
@@ -264,7 +264,7 @@ HTML 内に独自構文を書くことで、Spear は指定された URL を言�
         └── favicon.ico
 ```
 
-spear-cli のビルドを実行後は蒸気サンプルは以下のような構成で出力されます。
+spear-cli のビルドを実行後は上記サンプルは以下のような構成で出力されます。
 
 ```bash
 ├── dist
