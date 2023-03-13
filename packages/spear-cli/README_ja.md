@@ -95,18 +95,139 @@ spear watch -s <project directory>
 ### サイトマップ生成
 
 `spear-cli` の設定ファイルでサイトマップ生成設定がされている場合、自動でサイトマップを生成します。  
-サイトマップ生成設定には、サイトマップ生成の有無と、ホスト URL の情報が必要です。次の2つの設定を `spear.config.js` に入れることで動作します。
+サイトマップ生成設定には、サイトマップ生成の有無と、ホスト URL の情報が必要です。次の2つの設定を `spear.config.mjs` に入れることで動作します。
 
 ```javascript
   "generateSitemap": boolean,
   "siteURL": string,
 ```
 
+### SEO タグ
+
+SEO タグ設定をすることで、生成した HTM  ファイルに SEO タグを注入することが出来ます。  
+設定は `spear.config.mjs` のプラグイン機能を利用します。
+
+```javascript
+import { spearSEO } from "@spearly/spear-cli/dist/plugins/spear-seo.js"
+export default {
+  ...
+  plugins: [
+    spearSEO(),
+  ]
+}
+```
+
+コンポーネントやページ内で以下のタグを好きな場所に書くことで、SEO タグを自動で注入します。
+
+```html
+<spear-seo
+  title="Page title"
+  meta-description="Page description"
+  meta-og:url="/pics/ogp.png">
+</spear-seo>
+```
+
+指定可能な属性は以下の通りです。
+
+| Attribute | Description | Generated Value|
+|-----------|-------------|----------------|
+| title |	サイトタイトル。 |  <title>value</title> |
+| meta-*** | メタ情報 | <meta name="****" value="value"> |
+| link-*** | リンク情報 | <link rel="***" href="value"> |
+
+### i18n (国際化)
+
+サイトを複数言語で運用する場合、i18n プラグインを利用することで、サイトを多言語化することが出来ます。  
+設定は `spear.config.mjs` に i18n プラグインを指定します。
+
+```javascript
+import { spearI18n } from "@spearly/spear-cli/dist/plugins/spear-i18n.js"
+export default {
+  ...
+  plugins: [
+    spearI18n('./i18n.yaml')
+  ]
+}
+```
+
+国際化するためには言語ファイルを用意する必要があります。言語ファイルはキー/バリューの組み合わせになります。
+
+```yaml
+settings:
+  default: "jp"
+lang:
+  jp:
+    - title: ブログだよ
+    - description: ブログサイトです
+    - url: https://www.yahoo.co.jp
+  en:
+    - title: Blog
+    - description: This is blog site.
+    - url: https://www.google.com
+```
+
+各ページやコンポーネントで指定するに、Spear  は 2 種類の方法を提供しています。
+
+1. i18n 属性
+
+HTML タグに i18n 属性を付与すると、インライン全てが言語ファイルで指定した値に置き換わります。
+
+例：
+```html
+<p i18n="title"></p>
+<!-- Replaced the bellow in Japanese -->
+<p>ブログだよ</p>
+```
+
+2. 独自構文 (`{%= translate() %}`)
+
+HTML 内に独自構文を書くことで、Spear はその文字を置換します。
+
+```html
+<title>{%= translate('title') %}</title>
+<!-- Replaced the bellow in Japanese -->
+<title>ブログだよ</title>
+```
+
+この `translate()` 関数は省略して `t()` と記載することも可能です。
+
+また、リンクも置き換えたい場合も同様に Spear は 2 種類の方法を提供しています。
+
+1. spear-link タグ
+
+spear-link タグは指定された URL を言語ごとに置換した `<a>` タグを生成します。
+
+```html
+<spear-link href="/about.html">About us</spear-link>
+<!-- Replaced the bellow in Japanese -->
+<a href="/ja/about.html">About us</a>
+```
+
+2. 独自構文 (`{%= localize() %}`)
+
+HTML 内に独自構文を書くことで、Spear は指定された URL を言語ごとに置換します。
+
+```html
+<script>
+  function click() {
+    window.location = "{%= localize('./about.html') %}"
+  }
+</script>
+<!-- Replaced the bellow in Japanese -->
+<script>
+  function click() {
+    window.location = "ja/about.html"
+  }
+</script>
+```
+
+リンクは相対パス、絶対パスの指定方法によって生成される結果が変わることに注意してください。
+
 ### ディレクトリ構造
 
 `spear-cli` は以下のディレクトリ構造のルールがあります。
 
-- components : ルートディレクトリ直下の `components' です。
+- components : ルートディレクトリ直下の `components` です。
   - 他のページやコンポーネントへ挿入するための spear コンポーネントを保存する場所です。
   - spear-cli はネストされたコンポーネントディレクトリを保証します。(例： /components/common、/components/cards)
   - spear-cli はネイティブDOM要素と同じ名前のコンポーネントを指定する事はできません。(例：`body` / `header` / `section`)
@@ -143,7 +264,7 @@ spear watch -s <project directory>
         └── favicon.ico
 ```
 
-spear-cli のビルドを実行後は蒸気サンプルは以下のような構成で出力されます。
+spear-cli のビルドを実行後は上記サンプルは以下のような構成で出力されます。
 
 ```bash
 ├── dist
@@ -185,10 +306,10 @@ $ spear build -s <project directory>
 
 ## 設定ファイル
 
-Spear のビルドは `spear.config.js` に従って行われます。このファイルは以下のような設定値を持ちます。
+Spear のビルドは `spear.config.mjs` に従って行われます。このファイルは以下のような設定値を持ちます。
 
 ```js
-module.exports = {
+export default {
   "spearlyAuthKey": string,     // データを取得するための Spearly API トークンを指定します
   "projectName": string,        // プロジェクト名を指定します
   "generateSitemap": boolean,   // サイトマップを生成するかを指定します

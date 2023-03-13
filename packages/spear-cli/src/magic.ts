@@ -14,7 +14,7 @@ import sass from 'sass'
 import chalk from 'chalk'
 import { SitemapStream, streamToPromise } from "sitemap"
 import { Readable } from "stream"
-import { defaultSettingDeepCopy, loadFile, stateDeepCopy } from "./util.js"
+import { defaultSettingDeepCopy, loadFile, stateDeepCopy, generateAPIOptionMap, removeCMSAttributes, insertComponentSlot } from "./util.js"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -64,23 +64,23 @@ async function parseElements(state: State, nodes: Element[]) {
   for (const node of nodes) {
     const tagName = node.rawTagName
     const isTextNode = node.nodeType === 3
-    const component = state.componentsList.find((c) => c.tagName === tagName)
+    const component = state.componentsList.find((c) => c.tagName === tagName) as Component
 
     if (component) {
       // Regenerate node since node-html-parser's HTMLElement doesn't have deep copy.
       // If we consumed this element once, this HTML node might release on memory.
       const minified = await minify(component.rawData, { collapseWhitespace: true })
-      const node = parse(minified) as Element
-      node.childNodes.forEach((child) => res.appendChild(child.clone()))
+      const deepCopyNode = parse(minified) as Element
+      const componentNode = parse(insertComponentSlot(deepCopyNode, node as Element)) as Element
+      componentNode.childNodes.forEach((child) => res.appendChild(child.clone()))
       continue
     }
 
     // Inject CMS loop
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
       const contentType = node.getAttribute("cms-content-type")
-      node.removeAttribute("cms-loop")
-      node.removeAttribute("cms-content-type")
-      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType)
+      removeCMSAttributes(node)
+      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType, "", generateAPIOptionMap(node))
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
       continue
@@ -95,8 +95,7 @@ async function parseElements(state: State, nodes: Element[]) {
     ) {
       const contentType = node.getAttribute("cms-content-type")
       const contentId   = node.getAttribute("cms-content")
-      node.removeAttribute("cms-content-type")
-      node.removeAttribute("cms-content")
+      removeCMSAttributes(node)
       const generatedStr = await jsGenerator.generateContent(node.outerHTML, contentType, contentId)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
@@ -126,7 +125,8 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
     const targetElement = page.node.querySelector("[cms-item]")
     if (page.fname.includes("[alias]") && targetElement) {
       const contentId = targetElement.getAttribute("cms-content-type")
-      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId)
+      removeCMSAttributes(targetElement as Element)
+      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId, generateAPIOptionMap(targetElement as Element))
       generatedContents.forEach(c => {
         targetElement.innerHTML = c.generatedHtml
         const html = page.node.innerHTML.replace(targetElement.innerHTML, c.generatedHtml)

@@ -5,6 +5,7 @@ import { parse } from "node-html-parser"
 import { parse as yamlParse } from "yaml"
 import { AssetFile, Component, Element, State } from "./interfaces/magicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
+import { APIOption } from "@spearly/cms-js-core"
 
 function componentsDeepCopy(components: Component[]): Component[] {
     const ret = [] as Component[]
@@ -86,3 +87,90 @@ export function loadFile(filePath: string) {
       })
     })
   }
+
+export function generateAPIOptionMap(node: Element): APIOption {
+  const attrs = node.attributes
+  const apiOptions = new Map<string, any>()
+  if (!attrs || Object.keys(attrs).length <= 0) return apiOptions
+
+  for (const key in attrs) {
+    const value = attrs[key]
+    const cmsKey = key.replace("cms-option-", "")
+    switch(cmsKey) {
+      case "limit":
+      case "offset":
+        apiOptions.set(cmsKey, parseInt(value))
+        node.removeAttribute(key)
+        break
+      case "order":
+      case "orderDirection":
+      case "orderBy":
+      case "filterBy":
+      case "filterRef":
+      case "filterMode":
+        apiOptions.set(cmsKey, value)
+        node.removeAttribute(key)
+        break
+      case "rangeFrom":
+      case "rangeTo":
+        apiOptions.set(cmsKey, new Date(value))
+        node.removeAttribute(key)
+        break
+      case "filterValue": 
+        apiOptions.set(cmsKey, [...value.split(",")])
+        node.removeAttribute(key)
+        break
+      case "orders":
+      case "filters":
+        // For now, Spear doesn't support multiple specify.
+        break
+
+    }
+  }
+  return apiOptions
+}
+
+export function removeCMSAttributes(node: Element) {
+  for (const key in node.attributes) {
+    if (key.startsWith("cms-")) {
+      node.removeAttribute(key)
+    }
+  }
+}
+
+export function insertComponentSlot(componentElement: Element, parentElement: Element): string {
+  const slotElements = componentElement.querySelectorAll("slot")
+  // If component has not <Slot> element, return component html string as is.
+  if (slotElements.length <= 0) return componentElement.innerHTML
+  if (slotElements.length === 1) {
+
+    // Single Slot
+    const slotElement = slotElements[0]
+    console.log(`parentElement: [${parentElement.innerHTML}]`)
+    if (parentElement.innerHTML !== "") {
+      slotElement.insertAdjacentHTML('afterend', parentElement.innerHTML)
+      slotElement.remove()
+    } else {
+      // Fallback. remove slot element and insert inner of SLot
+      slotElement.insertAdjacentHTML('afterend', slotElement.innerHTML)
+      slotElement.remove()
+    }
+    return componentElement.innerHTML
+  } else {
+    // Multiple Slot(Mean named slot)
+    for (const slotElement of slotElements) {
+      const slotName = slotElement.getAttribute("name")
+      // TODO: We need to conditional process for slotname is undefined.
+      const parentSlotReplaceElement = parentElement.querySelector(`[slot="${slotName}"]`)
+      if (parentSlotReplaceElement) {
+        parentSlotReplaceElement.removeAttribute("slot")
+        slotElement.insertAdjacentHTML('afterend', parentSlotReplaceElement.outerHTML)
+        slotElement.remove()
+      } else {
+        slotElement.insertAdjacentHTML('afterend', slotElement.innerHTML)
+        slotElement.remove()
+      }
+    }
+    return componentElement.innerHTML
+  }
+}

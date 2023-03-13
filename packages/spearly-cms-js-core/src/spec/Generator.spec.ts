@@ -47,6 +47,16 @@ const convertTestData = [
             { identifier: "date", inputType: "calendar", value: "2022-12-05 11:22:33" }
         ]),
         expected: "<date>Mon Dec 05 2022 11:22:33 GMT+0900 (Japan Standard Time)</date>"
+    },
+    {
+        testName: "Custom date formatter",
+        template: "<p>{%= blog_#alias %}</p>",
+        options: {} as unknown as SpearlyJSGeneratorOption,
+        contentType: "blog",
+        mockData: generateServerContent([
+            {identifier: "title", inputType: "text", value: "title" },
+        ]),
+        expected: "<p>content-alias</p>"
     }
 ]
 

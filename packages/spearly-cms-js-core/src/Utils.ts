@@ -1,4 +1,5 @@
-import { FieldTypeAll, FieldTypeCalendar, FieldTypeContentType, FieldTypeImage, FieldTypeMap, FieldTypeNumber, FieldTypeRichText, FieldTypeTags, FieldTypeText } from "@spearly/sdk-js";
+import { FieldTypeAll, FieldTypeCalendar, FieldTypeContentType, FieldTypeImage, FieldTypeMap, FieldTypeNumber, FieldTypeRichText, FieldTypeTags, FieldTypeText, GetParams } from "@spearly/sdk-js";
+import { APIOption } from "./Generator";
 
 
 const isTextType = (fieldType: FieldTypeAll): fieldType is FieldTypeText => {
@@ -158,4 +159,12 @@ export function getCustomDateString(suffix: string, date: Date): string {
       .split('hh').join(numberFormat.format(date.getHours()))
       .split('mm').join(numberFormat.format(date.getMinutes()))
       .split('ss').join(numberFormat.format(date.getSeconds()));
+}
+
+export function generateGetParamsFromAPIOptions(apiOptions: APIOption): GetParams {
+  const params: GetParams = {}
+  apiOptions.forEach((v, k) => {
+    params[k] = v
+  })
+  return params
 }
