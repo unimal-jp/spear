@@ -338,11 +338,10 @@ async function bundle(): Promise<boolean> {
   }
 
   // Run list again to parse children of the components
-  const componentsList = state.componentsList
-  state.componentsList = []
-  for (const component of componentsList) {
+  const componentsList = [] as Component[]
+  for (const component of state.componentsList) {
     const parsedNode = await parseElements(state, component.node.childNodes as Element[]) as Element[]
-    state.componentsList.push({
+    componentsList.push({
       "fname": component.fname,
       "rawData": parsedNode[0].outerHTML,
       "tagName": component.tagName,
@@ -350,6 +349,8 @@ async function bundle(): Promise<boolean> {
       "props": {}
     })
   }
+  state.componentsList = componentsList
+
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[])
