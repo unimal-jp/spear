@@ -11,25 +11,27 @@ header {
     text-align: center;
 }
 
-header .spear-description {
-    font-size: 1.8rem;
+header {
+    .spear-description {
+        font-size: 1.8rem;
+    }
 }
 
 .margined-section {
     margin-top: 77px;
     font-size: 1.2rem;
-}
 
-.margined-section > p {
-    text-align: center;
+    p {
+        text-align: center;
+    }
 }
 
 .container__spear-code {
     width: 430px;
     margin: auto;
-}
 
-.container__spear-code > pre {
-    border: 1px solid #b0b0b0;
-    border-radius: 2px;
+    pre {
+        border: 1px solid #b0b0b0;
+        border-radius: 2px;
+    }
 }
