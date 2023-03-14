@@ -79,10 +79,10 @@ async function parseElements(state: State, nodes: Element[]) {
     // Inject CMS loop
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
       const contentType = node.getAttribute("cms-content-type")
-      removeCMSAttributes(node)
       const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType, "", generateAPIOptionMap(node))
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
+      removeCMSAttributes(node)
       continue
     }
 
@@ -95,10 +95,10 @@ async function parseElements(state: State, nodes: Element[]) {
     ) {
       const contentType = node.getAttribute("cms-content-type")
       const contentId   = node.getAttribute("cms-content")
-      removeCMSAttributes(node)
       const generatedStr = await jsGenerator.generateContent(node.outerHTML, contentType, contentId)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
+      removeCMSAttributes(node)
       continue
     }
 
@@ -125,8 +125,8 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
     const targetElement = page.node.querySelector("[cms-item]")
     if (page.fname.includes("[alias]") && targetElement) {
       const contentId = targetElement.getAttribute("cms-content-type")
-      removeCMSAttributes(targetElement as Element)
       const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId, generateAPIOptionMap(targetElement as Element))
+      removeCMSAttributes(targetElement as Element)
       generatedContents.forEach(c => {
         targetElement.innerHTML = c.generatedHtml
         const html = page.node.innerHTML.replace(targetElement.innerHTML, c.generatedHtml)
