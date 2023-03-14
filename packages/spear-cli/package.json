@@ -19,6 +19,9 @@
   "bin": {
     "spear": "./dist/index.js"
   },
+  "exports": {
+    ".": "./dist/browser/inMemoryMagic.js"
+  },
   "keywords": [],
   "author": "Yo",
   "license": "MIT",
