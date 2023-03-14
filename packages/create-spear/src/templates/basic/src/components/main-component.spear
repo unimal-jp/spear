@@ -1,3 +1,30 @@
-<div>
-  I'm main
-</div>
+  <main class="container">
+    <section class="container__description margined-section">
+      <p>Spearly CMS is headless CMS easy to embed.</p>
+      <p>spear-cli is the magic tools making site more easily🧙</p>
+    </section>
+    <section class="container__usage margined-section">
+      <div class="container__spear-code">
+        <div>
+          <p>You can create component easily, You just create component spear file into components like follow:</p>
+        </div>
+        <pre><code class="html">
+            &lt;div&gt;
+              &lt;h1&gt;Hello first component&lt;/h1&gt;
+            &lt;/div&gt;
+          </code></pre>
+      </div>
+    </section>
+    <section class="container__usage margined-section">
+      <div class="container__spear-code">
+        <div>
+          <p>Then you insert this component like html tags:</p>
+        </div>
+        <pre><code class="html">
+          &lt;section&gt;
+            &lt;first-component&gt;&lt;/first-component&gt;
+          &lt;/section&gt;
+          </code></pre>
+      </div>
+    </section>
+  </main>

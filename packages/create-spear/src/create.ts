@@ -21,6 +21,7 @@ const settings = {
     spearlyCMSApiKey: "",
     generateSitemap: "",
     siteURL: "",
+    useLint: "",
   },
   projectDir: dirname.split("/").slice(-1)[0],
 }
@@ -79,6 +80,13 @@ async function askQuestions() {
       },
       when: (answer) => answer.generateSitemap === "Yes",
     },
+    {
+      name: "useLint",
+      type: "list",
+      message: "Add ESLint for JavaScript code quality?",
+      default: "Yes",
+      choices: ["Yes", "No"],
+    }
   ]
 
   settings.answers = await prompt(questions)
@@ -138,9 +146,16 @@ async function createBoilerplate() {
   // create package.json file
   const packageJson = JSON.parse(fs.readFileSync(`${basePath}/package.json`, "utf-8"))
   packageJson.name = settings.answers.projectName
-  const cliVersion = await getSpearCliVersion()
+  const cliVersion = await getNPMPackageVersion("/@spearly/spear-cli")
   if (cliVersion) {
     packageJson.dependencies["@spearly/spear-cli"] = `^${cliVersion}`
+  }
+  if (settings.answers.useLint === "Yes") {
+    const eslintVersion = await getNPMPackageVersion("/eslint")
+    packageJson.dependencies["eslint"] = `^${eslintVersion}`
+    packageJson.scripts["lint"] = "npx eslint ."
+    packageJson.scripts["build"] = "yarn lint && spear build"
+    fs.writeFileSync(`${basePath}/.eslintrc.json`, JSON.stringify(generateESLintConfigJSON()))
   }
   fs.writeFileSync(`${basePath}/package.json`, JSON.stringify(packageJson, null, 2))
 
@@ -163,12 +178,12 @@ async function createBoilerplate() {
   return true
 }
 
-function getSpearCliVersion() {
+function getNPMPackageVersion(packagePath) {
   return new Promise((resolve) => {
     const options = {
       hostname: "registry.npmjs.org",
       port: 443,
-      path: "/@spearly/spear-cli",
+      path: packagePath,
       method: "GET",
     }
 
@@ -193,6 +208,27 @@ function getSpearCliVersion() {
 
     req.end()
   })
+}
+
+function generateESLintConfigJSON() {
+  return {
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": "eslint:recommended",
+    "overrides": [
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "ignorePatterns": [
+        "dist/*"
+    ],
+    "rules": {
+    }
+  }
 }
 
 export default async function main(projectName: string) {
