@@ -1,6 +1,6 @@
 import { parse } from "node-html-parser"
-import { bufferDeepCopy, loadFile } from "../util.js"
-import { AssetFile, Component, Element, HookApi, SpearSettings, SpearState } from "../interfaces/HookCallback"
+import { bufferDeepCopy } from "../utils/util.js"
+import { AssetFile, Component, Element, HookApi, SpearOption, SpearSettings, SpearState } from "../interfaces/HookCallbackInterface"
 
 
 interface I18nSettings {
@@ -47,10 +47,10 @@ export function spearI18n(settingsFile?: string): HookApi {
     // Use configuration and afterBuild hook for generating SEO.
     return {
         // Build internal variable for converting i18n
-        configuration: async function(settings: SpearSettings) {
+        configuration: async function(settings: SpearSettings, option: SpearOption) {
             if (settingsFile !== "") {
                 try {
-                    const settingFileContent = await loadFile(`${settings.rootDir}/${settingsFile}`)
+                    const settingFileContent = await option.fileUtil.loadFile(`${settings.rootDir}/${settingsFile}`)
                     if (settingFileContent) {
                         Object.keys(settingFileContent).forEach(key => {
                             if (key.toLowerCase() === "settings") {

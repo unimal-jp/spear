@@ -1,6 +1,5 @@
 import { parse } from "node-html-parser"
-import { loadFile } from "../util.js"
-import { Component, Element, HookApi, SpearSettings, SpearState } from "../interfaces/HookCallback"
+import { Component, Element, HookApi, SpearOption, SpearSettings, SpearState } from "../interfaces/HookCallbackInterface"
 
 let globalSettings: Map<string, string>
 
@@ -13,11 +12,11 @@ let globalSettings: Map<string, string>
 export function spearSEO(settingsFile?: string): HookApi {
     // Use configuration and afterBuild hook for generating SEO.
     return {
-        configuration: async function(settings: SpearSettings) {
+        configuration: async function(settings: SpearSettings, option: SpearOption) {
             globalSettings = new Map<string, string>()
             if (settingsFile !== "") {
                 try {
-                    const settingFileContent = await loadFile(`${settings.rootDir}/${settingsFile}`)
+                    const settingFileContent = await option.fileUtil.loadFile(`${settings.rootDir}/${settingsFile}`)
                     if (settingFileContent) {
                         Object.keys(settingFileContent).forEach((k) => {
                             globalSettings.set(k, settingFileContent[k])

@@ -1,4 +1,15 @@
+import { DefaultSettings } from "../interfaces/SettingsInterfaces";
 
+export type InMemoryFile = {
+  id: string;
+  path: string;
+  content: string;
+  language: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export type Settings = DefaultSettings
 
 /**
  * inMemoryMagic
@@ -6,8 +17,9 @@
  * This function should be receive the specified source code structure and build option parameter like spear.config.mjs.
  * 
  */
-export default function inMemoryMagic() {
+export default function inMemoryMagic(inputFiles: InMemoryFile[], settings: Settings) {
     console.log("helle")
+    console.log(inputFiles, settings)
 
     // Alternative for parsing component and page.
     // We should prepare the component and page structure here.

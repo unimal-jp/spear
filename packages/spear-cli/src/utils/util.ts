@@ -1,10 +1,6 @@
-import glob from "glob"
-import fs from "fs"
-import path from "path"
 import { parse } from "node-html-parser"
-import { parse as yamlParse } from "yaml"
-import { AssetFile, Component, Element, State } from "./interfaces/magicInterfaces"
-import { DefaultSettings } from "./interfaces/SettingsInterfaces"
+import { AssetFile, Component, Element, State } from "../interfaces/MagicInterfaces"
+import { DefaultSettings } from "../interfaces/SettingsInterfaces"
 import { APIOption } from "@spearly/cms-js-core"
 
 function componentsDeepCopy(components: Component[]): Component[] {
@@ -54,39 +50,6 @@ export function stateDeepCopy(state: State): State {
 export function defaultSettingDeepCopy(config: DefaultSettings): DefaultSettings {
     return JSON.parse(JSON.stringify(config))
 }
-
-export function loadFile(filePath: string) {
-    return new Promise((resolve, reject) => {
-      glob(filePath, null, async (er, files) => {
-        if (er) {
-          reject(er)
-          return
-        }
-  
-        if (files.length > 0) {
-          const ext = path.extname(files[0])
-  
-          if (ext === ".js" || ext === ".mjs") {
-            const data = await import(
-              files[0],
-              files[0].indexOf("json") > -1 ? { assert: { type: "json" } } : undefined
-            )
-            resolve(data.default)
-          } else if (ext === ".json") {
-            const data = fs.readFileSync(files[0], "utf8")
-            resolve(JSON.parse(data))
-          } else if (ext === ".yaml") {
-            const data = fs.readFileSync(files[0], "utf8")
-            resolve(yamlParse(data))
-          } else {
-            resolve(fs.readFileSync(files[0], "utf8"))
-          }
-        } else {
-          resolve(null)
-        }
-      })
-    })
-  }
 
 export function generateAPIOptionMap(node: Element): APIOption {
   const attrs = node.attributes
@@ -173,4 +136,13 @@ export function insertComponentSlot(componentElement: Element, parentElement: El
     }
     return componentElement.innerHTML
   }
+}
+
+
+export function isParseTarget(ext: string) {
+  return [".html", ".htm", ".spear"].includes(ext)
+}
+
+export function needSASSBuild(ext: string) {
+  return [".scss"].includes(ext)
 }

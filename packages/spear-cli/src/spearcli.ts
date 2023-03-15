@@ -1,7 +1,7 @@
 import path from "path"
 import { parse } from "node-html-parser"
 import { EditorFile } from "./interfaces/EditorFile"
-import { Element } from "./interfaces/magicInterfaces"
+import { Element } from "./interfaces/MagicInterfaces"
 
 /*
  * Traverse for collecting the components list from input files.

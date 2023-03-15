@@ -1,4 +1,4 @@
-import { HookApi } from "./HookCallback"
+import { HookApi } from "./HookCallbackInterface"
 
 export interface DefaultSettings {
   projectName?: string
