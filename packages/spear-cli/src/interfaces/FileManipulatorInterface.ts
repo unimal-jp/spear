@@ -1,7 +1,7 @@
 export interface FileManipulatorInterface {
     readFileSync: (path: string, encode: string) => string,
     readFileSyncAsBuffer: (path: string) => Buffer,
-    readdirSync: (path: string) => string[],
+    readDirSync: (path: string) => string[],
     existsSync: (path: string) => boolean,
     isDirectory: (path: string) => boolean,
     mkDirSync: (path: string, option: any) => void,
