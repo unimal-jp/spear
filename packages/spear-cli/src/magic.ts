@@ -4,20 +4,19 @@ import { minify } from "html-minifier-terser"
 import { parse } from "node-html-parser"
 import liveServer from "live-server"
 import watch from "node-watch"
-import { Args } from "./interfaces/argsInterfaces"
-import { Component, Element, State, SiteMapURL } from "./interfaces/magicInterfaces"
+import { Args } from "./interfaces/ArgsInterfaces"
+import { Component, Element, State } from "./interfaces/MagicInterfaces"
 import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
-import HTML_TAG_LIST from './htmlList.js'
 import { SpearlyJSGenerator } from '@spearly/cms-js-core'
-import sass from 'sass'
 import chalk from 'chalk'
-import { SitemapStream, streamToPromise } from "sitemap"
-import { Readable } from "stream"
-import { defaultSettingDeepCopy, loadFile, stateDeepCopy, generateAPIOptionMap, removeCMSAttributes, insertComponentSlot } from "./util.js"
+import { defaultSettingDeepCopy, stateDeepCopy, generateAPIOptionMap, removeCMSAttributes, insertComponentSlot } from "./utils/util.js"
+import { FileUtil } from "./utils/file.js"
+import { LocalFileManipulator } from "./file/LocalFileManipulator.js"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
+const fileUtil = new FileUtil(new LocalFileManipulator())
 
 let dirname = process.cwd()
 let Settings: DefaultSettings
@@ -79,10 +78,11 @@ async function parseElements(state: State, nodes: Element[]) {
     // Inject CMS loop
     if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
       const contentType = node.getAttribute("cms-content-type")
-      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType, "", generateAPIOptionMap(node))
+      const apiOption = generateAPIOptionMap(node)
+      removeCMSAttributes(node)
+      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType, "", apiOption)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
-      removeCMSAttributes(node)
       continue
     }
 
@@ -95,10 +95,10 @@ async function parseElements(state: State, nodes: Element[]) {
     ) {
       const contentType = node.getAttribute("cms-content-type")
       const contentId   = node.getAttribute("cms-content")
+      removeCMSAttributes(node)
       const generatedStr = await jsGenerator.generateContent(node.outerHTML, contentType, contentId)
       const generatedNode = parse(generatedStr) as Element
       res.appendChild(generatedNode)
-      removeCMSAttributes(node)
       continue
     }
 
@@ -125,8 +125,9 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
     const targetElement = page.node.querySelector("[cms-item]")
     if (page.fname.includes("[alias]") && targetElement) {
       const contentId = targetElement.getAttribute("cms-content-type")
-      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId, generateAPIOptionMap(targetElement as Element))
+      const apiOption = generateAPIOptionMap(targetElement as Element)
       removeCMSAttributes(targetElement as Element)
+      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId, apiOption)
       generatedContents.forEach(c => {
         targetElement.innerHTML = c.generatedHtml
         const html = page.node.innerHTML.replace(targetElement.innerHTML, c.generatedHtml)
@@ -145,84 +146,6 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
   return replacePagesList
 }
 
-function isParseTarget(ext: string) {
-  return [".html", ".htm", ".spear"].includes(ext)
-}
-
-function needSASSBuild(ext: string) {
-  return [".scss"].includes(ext)
-}
-
-async function parsePages(state: State, dirPath: string, relatePath = "") {
-  if (relatePath === "components") return
-  if (!fs.existsSync(dirPath)) return
-  const files = fs.readdirSync(dirPath)
-
-  console.log("")
-  console.log("[Parse Pages]")
-
-  for (const file of files) {
-    const filePath = `${dirPath}/${file}`
-    const ext = path.extname(file)
-    const fname = path.basename(file, ext)
-    const isDir = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()
-
-    if (isDir) {
-      await parsePages(state, filePath, relatePath + (relatePath !== "" ? '/' : '') + file)
-    } else if (needSASSBuild(ext)) {
-      const result = sass.compile(filePath)
-      state.out.assetsFiles.push({ filePath: `${relatePath}/${fname}.css`, rawData: Buffer.from(result.css) })
-      continue
-    } else if (!isParseTarget(ext)) {
-      const rawData = fs.readFileSync(filePath)
-      state.out.assetsFiles.push({ filePath: `${relatePath}/${file}`, rawData })
-      continue
-    } else {
-      const rawData = fs.readFileSync(filePath, "utf8")
-      const minified = await minify(rawData, { collapseWhitespace: true })
-      const tagName = fname.toLowerCase() // todo: keep lowerCase?
-      const node = parse(minified) as Element
-
-      console.log(`  [Page]: ${fname}(/${relatePath})`)
-      state.pagesList.push({ fname: `${relatePath}/${fname}`, tagName, rawData, node, props: {} })
-    }
-  }
-}
-
-async function parseComponents(state: State, dirPath: string) {
-  if (!fs.existsSync(dirPath)) return
-  const files = fs.readdirSync(dirPath)
-
-  console.log("")
-  console.log("[Parse components]")
-
-  for (const file of files) {
-    const filePath = `${dirPath}/${file}`
-    const ext = path.extname(file)
-    const fname = path.basename(file, ext)
-    const isDir = fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()
-
-    if (isDir) {
-      await parseComponents(state, filePath)
-    } else if (!isParseTarget(ext)) {
-      const rawData = fs.readFileSync(filePath)
-      state.out.assetsFiles.push({ filePath: file, rawData })
-      continue
-    } else {
-      const rawData = fs.readFileSync(filePath, "utf8")
-      const minified = await minify(rawData, { collapseWhitespace: true })
-      const tagName = fname.toLowerCase() // todo: keep lowerCase?
-      const node = parse(minified) as Element
-
-      if (HTML_TAG_LIST.includes(tagName)) {
-        throw Error(`Component[${tagName}] is built-in HTML tag. You need specify other name.`)
-      }
-      console.log(`  [Component]: ${fname}`)
-      state.componentsList.push({ fname, tagName, rawData, node, props: {} })
-    }
-  }
-}
-
 function createDir() {
   // Clean old builds
   try {
@@ -231,63 +154,6 @@ function createDir() {
     // ignore error
   }
   fs.mkdirSync(Settings.distDir, { recursive: true })
-}
-
-async function dumpPages(state: State) {
-  const linkList:Array<SiteMapURL> = []
-  for (const page of state.pagesList) {
-    // Read index.html template
-    let indexNode;
-    if (!page.node.innerHTML.includes("</html>")) {
-      const indexRawData = fs.readFileSync(`${libDirname}/templates/index.html`, "utf8")
-      const minified = await minify(indexRawData, { collapseWhitespace: true })
-      indexNode = parse(minified) as Element
-      const body = indexNode.querySelector("body")
-      body.appendChild(page.node)
-    } else {
-      indexNode = page.node;
-    }
-    console.log("")
-    console.log(`[Page]: ${page.fname}`)
-
-    // Inject title
-    if (indexNode) {
-      const head = indexNode.querySelector("head")
-      if (head) {
-        head.innerHTML = head.innerHTML.replace("{{projectName}}", Settings.projectName)
-      }
-    }
-
-    writeFile(`${Settings.distDir}/${page.fname}.html`, indexNode.outerHTML)
-    linkList.push({
-      url: `${page.fname}.html`,
-      changefreq: "daily",
-      priority: 0.7,
-    })
-  }
-
-  // Generate Sitemap
-  if (Settings.generateSitemap) {
-    try {
-      const data = await streamToPromise(Readable.from(linkList).pipe(new SitemapStream({ hostname: Settings.siteURL })))
-      console.log(`[Sitemap]: /sitemap.xml`)
-      writeFile(`${Settings.distDir}/sitemap.xml`, data.toString())
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
-  for (const asset of state.out.assetsFiles) {
-    writeFile(`${Settings.distDir}/${asset.filePath}`, asset.rawData)
-  }
-}
-
-async function writeFile(targetPath, data) {
-  const targetPathDir = path.dirname(targetPath)
-  if (!fs.existsSync(targetPathDir)) {
-    fs.mkdirSync(targetPathDir, { recursive: true })
-  }
-  fs.writeFileSync(targetPath, data)
 }
 
 async function bundle(): Promise<boolean> {
@@ -307,7 +173,7 @@ async function bundle(): Promise<boolean> {
   for (const plugin of Settings.plugins) {
     if (plugin.beforeBuild) {
       try {
-        const newState = await plugin.beforeBuild(state)
+        const newState = await plugin.beforeBuild(state, { fileUtil })
         if (newState) {
           state = stateDeepCopy(newState)
         }
@@ -324,14 +190,14 @@ async function bundle(): Promise<boolean> {
 
   // First parse components from the /components folder
   try {
-    await parseComponents(state, Settings.componentsFolder)
+    await fileUtil.parseComponents(state, Settings.componentsFolder)
   } catch(e) {
     console.log(e);
     return false;
   }
 
   try {
-    await parsePages(state, Settings.srcDir)
+    await fileUtil.parsePages(state, Settings.srcDir)
   } catch(e) {
     console.log(e);
     return false;
@@ -363,7 +229,7 @@ async function bundle(): Promise<boolean> {
   for (const plugin of Settings.plugins) {
     if (plugin.afterBuild) {
       try {
-        const newState = await plugin.afterBuild(state)
+        const newState = await plugin.afterBuild(state, { fileUtil })
         if (newState) {
           state = stateDeepCopy(newState)
         }
@@ -376,13 +242,13 @@ async function bundle(): Promise<boolean> {
   }
 
   // Dump pages
-  dumpPages(state)
+  fileUtil.dumpPages(state, libDirname, Settings)
 
   // Hook API: bundle
   for (const plugin of Settings.plugins) {
     if (plugin.bundle) {
       try {
-        const newState = await plugin.bundle(state)
+        const newState = await plugin.bundle(state, { fileUtil })
         if (newState) {
           state = stateDeepCopy(newState)
         }
@@ -398,7 +264,7 @@ async function bundle(): Promise<boolean> {
 }
 
 async function loadSettingsFromFile() {
-  const data = await loadFile(`${dirname}/${Settings.settingsFile}.?(mjs|js|json)`)
+  const data = await fileUtil.loadFile(`${dirname}/${Settings.settingsFile}.?(mjs|js|json)`)
   if (data) {
     Object.keys(data).forEach((k) => {
       Settings[k] = data[k]
@@ -421,7 +287,7 @@ export default async function magic(args: Args): Promise<boolean> {
   for (const plugin of Settings.plugins) {
     if (plugin.configuration) {
       try {
-        const newSettings = await plugin.configuration(Settings)
+        const newSettings = await plugin.configuration(Settings, { fileUtil })
         if (newSettings) {
           Settings = defaultSettingDeepCopy(newSettings)
         }

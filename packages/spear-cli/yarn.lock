@@ -97,10 +97,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@spearly/cms-js-core@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@spearly/cms-js-core/-/cms-js-core-1.0.7.tgz#8abbbcea50b9717e4bcdbfc65eb671a4cff8443a"
-  integrity sha512-nx6kH3n1sWXbXaGaO801kzUvRlX9Ma9vpYjXrd6juWcswRKohfOf3WTSChxX+InIRizBIr18tC05Zqdn6x2DTg==
+"@spearly/cms-js-core@^1.0.8":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@spearly/cms-js-core/-/cms-js-core-1.0.8.tgz#0b2271a2a621910ca4ea6aa9ae9a7b45023ef192"
+  integrity sha512-IBO/DZjRbB76uwb1QHYmCMimPYHrxRmBp5tuS0tlhBCLFRIt0yu32utCChzO7QOjFDHhBB+j6HWV/aRNIQCq9Q==
   dependencies:
     "@spearly/sdk-js" "^1.0.0"
     node-html-parser "^6.1.4"

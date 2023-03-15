@@ -1,5 +1,6 @@
 import { DefaultSettings } from "./SettingsInterfaces"
 import { HTMLElement } from "node-html-parser"
+import { FileUtil } from "../utils/file"
 
 export type SpearSettings = DefaultSettings
 
@@ -28,13 +29,17 @@ export interface SpearState {
   }
 }
 
+export interface SpearOption {
+  fileUtil: FileUtil
+}
+
 /**
  * Call after configuration has finished.
  * If you change the original settings value, you need to return 
  * SpearSetting object in this function.
  */
 export interface ConfigurationHookFunction {
-    (setting: SpearSettings): Promise<SpearSettings | null>
+    (setting: SpearSettings, option: SpearOption): Promise<SpearSettings | null>
 }
 
 /**
@@ -43,7 +48,7 @@ export interface ConfigurationHookFunction {
  * SpearState object in this function.
  */
 export interface BeforeBuildHookFunction {
-    (state: SpearState): Promise<SpearState | null>
+    (state: SpearState, option: SpearOption): Promise<SpearState | null>
 }
 
 /**
@@ -52,7 +57,7 @@ export interface BeforeBuildHookFunction {
  * SpearState object in this function.
  */
 export interface AfterBuildHookFunction {
-    (state: SpearState): Promise<SpearState | null>
+    (state: SpearState, option: SpearOption): Promise<SpearState | null>
 }
 
 /**
@@ -61,7 +66,7 @@ export interface AfterBuildHookFunction {
  * SpearState object in this function.
  */
 export interface BundleHookFunction {
-    (state: SpearState): Promise<SpearState | null>
+    (state: SpearState, option: SpearOption): Promise<SpearState | null>
 }
 
 /**
