@@ -5,6 +5,7 @@ export interface FileManipulatorInterface {
     existsSync: (path: string) => boolean,
     isDirectory: (path: string) => boolean,
     mkDirSync: (path: string, option: any) => void,
+    rmSync: (path: string, option: any) => void,
     writeFileSync: (path: string, content: string) => void,
     loadFile: (path: string) => any,
 }

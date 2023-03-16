@@ -17,7 +17,7 @@ export class FileUtil {
   }
 
   loadFile(filePath: string): Promise<any> {
-    return this.manipulator.loadFile(filePath)
+    return this.manipulator.loadFile(filePath);
   }
 
   async parseComponents(state: State, dirPath: string): Promise<void> {
@@ -32,7 +32,8 @@ export class FileUtil {
       const ext = path.extname(file);
       const fname = path.basename(file, ext);
       const isDir =
-        this.manipulator.existsSync(filePath) && this.manipulator.isDirectory(filePath);
+        this.manipulator.existsSync(filePath) &&
+        this.manipulator.isDirectory(filePath);
 
       if (isDir) {
         await this.parseComponents(state, filePath);
@@ -156,7 +157,8 @@ export class FileUtil {
       const ext = path.extname(file);
       const fname = path.basename(file, ext);
       const isDir =
-        this.manipulator.existsSync(filePath) && this.manipulator.isDirectory(filePath);
+        this.manipulator.existsSync(filePath) &&
+        this.manipulator.isDirectory(filePath);
 
       if (isDir) {
         await this.parsePages(
@@ -194,5 +196,15 @@ export class FileUtil {
         });
       }
     }
+  }
+
+  createDir(settings: DefaultSettings) {
+    // Clean old builds
+    try {
+      this.manipulator.rmSync(settings.distDir, { recursive: true });
+    } catch (error) {
+      // ignore error
+    }
+    this.manipulator.mkDirSync(settings.distDir, { recursive: true });
   }
 }

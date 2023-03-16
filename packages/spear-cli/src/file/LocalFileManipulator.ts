@@ -59,6 +59,10 @@ export class LocalFileManipulator implements FileManipulatorInterface {
         fs.mkdirSync(filePath, option)
         return
     }
+    rmSync(filePath: string, option: any): void {
+      fs.rmSync(filePath, option)
+      return
+    }
     writeFileSync(filePath: string, content: string): void {
         return fs.writeFileSync(filePath, content)
     }

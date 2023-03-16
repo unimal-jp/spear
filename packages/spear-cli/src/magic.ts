@@ -146,16 +146,6 @@ async function generateAliasPagesFromPagesList(state: State): Promise<Component[
   return replacePagesList
 }
 
-function createDir() {
-  // Clean old builds
-  try {
-    fs.rmSync(Settings.distDir, { recursive: true })
-  } catch (error) {
-    // ignore error
-  }
-  fs.mkdirSync(Settings.distDir, { recursive: true })
-}
-
 async function bundle(): Promise<boolean> {
   let state: State = {
     pagesList: [],
@@ -186,7 +176,7 @@ async function bundle(): Promise<boolean> {
   }
 
   // Create dist folder
-  createDir()
+  fileUtil.createDir(Settings)
 
   // First parse components from the /components folder
   try {
