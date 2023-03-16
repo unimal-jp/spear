@@ -1,15 +1,5 @@
-import { DefaultSettings } from "../interfaces/SettingsInterfaces";
+import { InMemoryFile, Settings } from "../interfaces/FileManipulatorInterface"
 
-export type InMemoryFile = {
-  id: string;
-  path: string;
-  content: string;
-  language: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export type Settings = DefaultSettings
 
 /**
  * inMemoryMagic
