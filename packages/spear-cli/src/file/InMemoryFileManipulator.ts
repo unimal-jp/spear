@@ -27,7 +27,6 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     }
 
     readdirSync(path: string): string[] {
-        console.log(this.files)
         const ret = [] as string[]
         this.files.forEach(file => {
             if (file.path.includes(path)) ret.push(file.path.replace(path, ""))
