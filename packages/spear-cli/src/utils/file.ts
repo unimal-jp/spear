@@ -5,9 +5,8 @@ import { isParseTarget, needSASSBuild } from "./util.js";
 import { minify } from "html-minifier-terser";
 import { parse } from "node-html-parser";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
-import { SitemapStream, streamToPromise } from "sitemap";
-import { Readable } from "stream";
-import sass from "sass";
+//import { SitemapStream, streamToPromise } from "sitemap";
+//import { Readable } from "stream";
 import { FileManipulatorInterface } from "../interfaces/FileManipulatorInterface";
 
 export class FileUtil {
@@ -123,13 +122,9 @@ export class FileUtil {
     // Generate Sitemap
     if (settings.generateSitemap) {
       try {
-        const data = await streamToPromise(
-          Readable.from(linkList).pipe(
-            new SitemapStream({ hostname: settings.siteURL })
-          )
-        );
+        const data = await this.manipulator.generateSiteMap(linkList, settings.siteURL)
         console.log(`[Sitemap]: /sitemap.xml`);
-        this.writeFile(`${settings.distDir}/sitemap.xml`, data.toString());
+        this.writeFile(`${settings.distDir}/sitemap.xml`, data);
       } catch (e) {
         console.log(e);
       }
@@ -167,10 +162,11 @@ export class FileUtil {
           relatePath + (relatePath !== "" ? "/" : "") + file
         );
       } else if (needSASSBuild(ext)) {
-        const result = sass.compile(filePath);
+        const rawData = this.manipulator.readFileSync(filePath, "utf8");
+        const css = this.manipulator.compileSASS(rawData);
         state.out.assetsFiles.push({
           filePath: `${relatePath}/${fname}.css`,
-          rawData: Buffer.from(result.css),
+          rawData: Buffer.from(css),
         });
         continue;
       } else if (!isParseTarget(ext)) {

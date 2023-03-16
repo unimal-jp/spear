@@ -1,3 +1,4 @@
+import { SiteMapURL } from "./MagicInterfaces";
 import { DefaultSettings } from "./SettingsInterfaces";
 
 export interface FileManipulatorInterface {
@@ -10,6 +11,8 @@ export interface FileManipulatorInterface {
   rmSync: (path: string, option: any) => void;
   writeFileSync: (path: string, content: string) => void;
   loadFile: (path: string) => any;
+  compileSASS: (path: string) => string;
+  generateSiteMap: (linkList: Array<SiteMapURL>, siteURL: string) => Promise<string>;
 }
 
 export type InMemoryFile = {

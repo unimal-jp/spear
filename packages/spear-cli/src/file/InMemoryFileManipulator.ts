@@ -1,9 +1,11 @@
 import { FileManipulatorInterface, InMemoryFile } from "../interfaces/FileManipulatorInterface";
-
+import { SiteMapURL } from "../interfaces/MagicInterfaces";
+import { DefaultSettings } from "../interfaces/SettingsInterfaces";
 
 export class InMemoryFileManipulator implements FileManipulatorInterface {
     files: InMemoryFile[]
-    constructor(files: InMemoryFile[]) {
+    settingsObject: DefaultSettings
+    constructor(files: InMemoryFile[], settingsObject) {
         this.files = files
     }
 
@@ -25,6 +27,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     }
 
     readdirSync(path: string): string[] {
+        console.log(this.files)
         const ret = [] as string[]
         this.files.forEach(file => {
             if (file.path.includes(path)) ret.push(file.path.replace(path, ""))
@@ -89,5 +92,26 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
             updatedAt: new Date(),
         })
     }
-    loadFile: (path: string) => any;
+
+    loadFile(pathPattern: string): any {
+        return Promise.resolve(this.settingsObject)
+    }
+
+    compileSASS(path: string):string {
+        return ""
+    }
+
+    async generateSiteMap(linkList: Array<SiteMapURL>, siteURL: string): Promise<string> {
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  ${linkList.map(item => `
+    <url>
+      <loc>${siteURL}/${item.url}</loc>
+      <changefreq>${item.changefreq}</changefreq>
+      <priority>${item.priority}</priority>
+    </url>
+  `).join('')}
+</urlset>`;
+        return Promise.resolve(xml)
+    }
 }
