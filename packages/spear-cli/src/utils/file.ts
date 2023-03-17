@@ -5,8 +5,6 @@ import { isParseTarget, needSASSBuild } from "./util.js";
 import { minify } from "html-minifier-terser";
 import { parse } from "node-html-parser";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
-//import { SitemapStream, streamToPromise } from "sitemap";
-//import { Readable } from "stream";
 import { FileManipulatorInterface } from "../interfaces/FileManipulatorInterface";
 
 export class FileUtil {
