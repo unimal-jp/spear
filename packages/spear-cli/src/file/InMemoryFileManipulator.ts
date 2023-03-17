@@ -43,7 +43,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
 
     isDirectory(path: string): boolean {
         for (const file of this.files) {
-            if (file.path === path && file.content === "") return true
+            if (file.path === path && file.content === null) return true
         }
         return false
     }
