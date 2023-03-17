@@ -1,6 +1,4 @@
-import fs from "fs"
 import path from "path"
-import { minify } from "html-minifier-terser"
 import { parse } from "node-html-parser"
 import liveServer from "live-server"
 import watch from "node-watch"
@@ -10,9 +8,10 @@ import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import { SpearlyJSGenerator } from '@spearly/cms-js-core'
 import chalk from 'chalk'
-import { defaultSettingDeepCopy, stateDeepCopy, generateAPIOptionMap, removeCMSAttributes, insertComponentSlot } from "./utils/util.js"
+import { defaultSettingDeepCopy, stateDeepCopy } from "./utils/util.js"
 import { FileUtil } from "./utils/file.js"
 import { LocalFileManipulator } from "./file/LocalFileManipulator.js"
+import { generateAliasPagesFromPagesList, parseElements } from "./utils/dom.js"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
@@ -46,116 +45,6 @@ function initializeArgument(args: Args) {
   }
 }
 
-function extractProps(state: State, node: Element) {
-  const { key, value, scoped } = node.attributes
-
-  if (scoped !== undefined) {
-    state.globalProps[key] = value
-  } else {
-    node.props[key] = value
-  }
-}
-
-async function parseElements(state: State, nodes: Element[]) {
-  const res = parse("") as Element
-
-  //nodes.forEach((node) => {
-  for (const node of nodes) {
-    const tagName = node.rawTagName
-    const isTextNode = node.nodeType === 3
-    const component = state.componentsList.find((c) => c.tagName === tagName) as Component
-
-    if (component) {
-      // Regenerate node since node-html-parser's HTMLElement doesn't have deep copy.
-      // If we consumed this element once, this HTML node might release on memory.
-      const minified = await minify(component.rawData, { collapseWhitespace: true })
-      const deepCopyNode = parse(minified) as Element
-      const componentNode = parse(insertComponentSlot(deepCopyNode, node as Element)) as Element
-      componentNode.childNodes.forEach((child) => res.appendChild(child.clone()))
-      continue
-    }
-
-    // Inject CMS loop
-    if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
-      const contentType = node.getAttribute("cms-content-type")
-      const apiOption = generateAPIOptionMap(node)
-      removeCMSAttributes(node)
-      const generatedStr = await jsGenerator.generateList(node.outerHTML, contentType, "", apiOption)
-      const generatedNode = parse(generatedStr) as Element
-      res.appendChild(generatedNode)
-      continue
-    }
-
-    // Inject CMS single page(Specified cms-content)
-    if (
-      !isTextNode &&
-      node.getAttribute("cms-item") !== undefined &&
-      node.getAttribute("cms-content-type") !== undefined &&
-      node.getAttribute("cms-content") !== undefined
-    ) {
-      const contentType = node.getAttribute("cms-content-type")
-      const contentId   = node.getAttribute("cms-content")
-      removeCMSAttributes(node)
-      const generatedStr = await jsGenerator.generateContent(node.outerHTML, contentType, contentId)
-      const generatedNode = parse(generatedStr) as Element
-      res.appendChild(generatedNode)
-      continue
-    }
-
-    if (!isTextNode && !component) {
-      node.props = {}
-      extractProps(state, node)
-    }
-
-    // Todo: Check better way to do this, components are being parsed twice
-    if (node.childNodes.length > 0) {
-      node.childNodes = await parseElements(state, node.childNodes as Element[])
-    }
-
-    // console.log("  append node", node.outerHTML)
-    res.appendChild(node)
-  }
-
-  return res.childNodes
-}
-
-async function generateAliasPagesFromPagesList(state: State): Promise<Component[]> {
-  const replacePagesList: Component[] = []
-  for (const page of state.pagesList) {
-    const targetElement = page.node.querySelector("[cms-item]")
-    if (page.fname.includes("[alias]") && targetElement) {
-      const contentId = targetElement.getAttribute("cms-content-type")
-      const apiOption = generateAPIOptionMap(targetElement as Element)
-      removeCMSAttributes(targetElement as Element)
-      const generatedContents = await jsGenerator.generateEachContentFromList(targetElement.innerHTML, contentId, apiOption)
-      generatedContents.forEach(c => {
-        targetElement.innerHTML = c.generatedHtml
-        const html = page.node.innerHTML.replace(targetElement.innerHTML, c.generatedHtml)
-        replacePagesList.push({
-          fname: page.fname.split("[alias]").join(c.alias),
-          node: parse(html) as Element,
-          props: page.props,
-          tagName: page.tagName,
-          rawData: html
-        })
-      })
-    } else {
-      replacePagesList.push(page)
-    }
-  }
-  return replacePagesList
-}
-
-function createDir() {
-  // Clean old builds
-  try {
-    fs.rmSync(Settings.distDir, { recursive: true })
-  } catch (error) {
-    // ignore error
-  }
-  fs.mkdirSync(Settings.distDir, { recursive: true })
-}
-
 async function bundle(): Promise<boolean> {
   let state: State = {
     pagesList: [],
@@ -186,7 +75,7 @@ async function bundle(): Promise<boolean> {
   }
 
   // Create dist folder
-  createDir()
+  fileUtil.createDir(Settings)
 
   // First parse components from the /components folder
   try {
@@ -206,7 +95,7 @@ async function bundle(): Promise<boolean> {
   // Run list again to parse children of the components
   const componentsList = [] as Component[]
   for (const component of state.componentsList) {
-    const parsedNode = await parseElements(state, component.node.childNodes as Element[]) as Element[]
+    const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator) as Element[]
     componentsList.push({
       "fname": component.fname,
       "rawData": parsedNode[0].outerHTML,
@@ -219,11 +108,11 @@ async function bundle(): Promise<boolean> {
 
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[])
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator)
   }
 
   // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state)
+  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator)
 
   // Hook API: afterBuild
   for (const plugin of Settings.plugins) {
