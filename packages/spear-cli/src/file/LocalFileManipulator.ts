@@ -3,6 +3,10 @@ import glob from "glob";
 import path from "path";
 import { parse as yamlParse } from "yaml";
 import { FileManipulatorInterface } from "../interfaces/FileManipulatorInterface";
+import sass from "sass"
+import { SiteMapURL } from "../interfaces/MagicInterfaces";
+import { SitemapStream, streamToPromise } from "sitemap";
+import { Readable } from "stream";
 
 export class LocalFileManipulator implements FileManipulatorInterface {
     loadFile(filePath: string): any {
@@ -59,7 +63,29 @@ export class LocalFileManipulator implements FileManipulatorInterface {
         fs.mkdirSync(filePath, option)
         return
     }
+    rmSync(filePath: string, option: any): void {
+      fs.rmSync(filePath, option)
+      return
+    }
     writeFileSync(filePath: string, content: string): void {
         return fs.writeFileSync(filePath, content)
+    }
+
+    compileSASS(filePath: string): string {
+      const result = sass.compile(filePath);
+      return result.css;
+    }
+
+    async generateSiteMap(linkList: Array<SiteMapURL>, siteURL: string): Promise<string> {
+      try {
+        const data = await streamToPromise(
+          Readable.from(linkList).pipe(
+            new SitemapStream({ hostname: siteURL })
+          )
+        );
+        return data.toString()
+      } catch (e) {
+        console.log(e);
+      }
     }
 }
