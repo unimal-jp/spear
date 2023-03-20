@@ -27,9 +27,10 @@ const settings = {
 }
 
 const prompt = inquirer.createPromptModule()
+const { version } = JSON.parse(fs.readFileSync(`${libDirname}/package.json`, "utf-8"))
 
 async function askQuestions() {
-  console.log(` ### Welcome to ${SpearlyGradient("Spear CLI")} ###\n\r\n\r`)
+  console.log(` ### Welcome to ${SpearlyGradient("Spear CLI")} ###(v${version})\n\r\n\r`)
 
   const questions = [
     {

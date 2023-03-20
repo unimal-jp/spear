@@ -16,7 +16,5 @@ const args = parser.parse_args()
 parser.add_argument("-v", "--version", { action: "version", version })
 
 export async function main() {
-  console.log(args)
-
   create(args.projectName)
 }
