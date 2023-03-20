@@ -1,5 +1,5 @@
 import { HTMLElement, Node, parse } from 'node-html-parser';
-import { SpearlyApiClient } from '@spearly/sdk-js';
+import { FieldTypeAll, FieldTypeTags, SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { generateGetParamsFromAPIOptions, getCustomDateString, ReplaceDefinition } from './Utils.js'
 import type { Content } from '@spearly/sdk-js'
 
@@ -14,6 +14,11 @@ type SpearlyJSGeneratorInternalOption = {
 export type GeneratedContent = {
     alias : string,
     generatedHtml: string,
+    tag: string[],
+}
+export type GeneratedListContent = {
+    generatedHtml: string,
+    tag: string
 }
 
 export type APIOption = Map<string, string | Date | number | string[] | { [key: string]: string | string[] } >
@@ -133,16 +138,66 @@ export class SpearlyJSGenerator {
         }
     }
 
-    async generateEachContentFromList(templateHtml: string, contentType: string, apiOptions: APIOption) : Promise<GeneratedContent[]> {
+    async generateListGroupByTag(templateHtml: string, contentType: string, apiOption, tagFieldName: string, variableName?: string): Promise<GeneratedListContent[]> {
+        try {
+            // Searching sub-loop in html
+            if (templateHtml.includes("cms-loop")) {
+                templateHtml = await this.generateSubLoop(templateHtml, apiOption)
+            }
+
+            const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOption))
+            const allTags = [] as string[]
+            result.data.forEach(content => {
+                const tags = content.attributes.fields.data.filter(field => {
+                    field.attributes.identifier === tagFieldName
+                    return field
+                }) as FieldTypeTags[]
+                if (tags && tags.length === 1)
+                    allTags.concat(tags[0].attributes.value)
+            })
+            const tags = [...new Set(allTags.flat())]
+            const contentsByTag: GeneratedListContent[] = []
+            tags.forEach(tag => {
+                const targetContents: Content[] = []
+                result.data.forEach(c => {
+                    const searchTag = c.attributes.fields.data.filter(f => f.attributes.identifier === tagFieldName) as FieldTypeTags[]
+                    if (!searchTag || searchTag.length > 2) return
+                    if (searchTag[0].attributes.value.includes(tag)) {
+                        targetContents.push(c)
+                    }
+                })
+                let resultHtml = ""
+                targetContents.forEach(c => {
+                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter);
+                    resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType)
+                })
+                contentsByTag.push({
+                    generatedHtml: resultHtml,
+                    tag
+                })
+            })
+            return contentsByTag
+        } catch(e) {
+            return Promise.reject(e)
+        }
+    }
+
+    async generateEachContentFromList(templateHtml: string, contentType: string, apiOptions: APIOption, tagFieldName?: string) : Promise<GeneratedContent[]> {
         try {
             const generatedContents: GeneratedContent[] = []
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             result.data.forEach(c => {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter)
+                const tags = c.attributes.fields.data.filter(field => field.attributes.identifier === tagFieldName)
+                const tag: string[] = []
+                if (tags && tags.length > 0 && Array.isArray(tags[0].attributes.value)) {
+                    tag.concat(tags[0].attributes.value as [])
+                }
 
                 generatedContents.push({
                     alias: c.attributes.contentAlias || c.attributes.publicUid,
                     generatedHtml: this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType),
+                    tag
                 })
             });
             return generatedContents
