@@ -146,14 +146,11 @@ export class SpearlyJSGenerator {
             }
 
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOption))
-            const allTags = [] as string[]
+            let allTags = [] as string[]
             result.data.forEach(content => {
-                const tags = content.attributes.fields.data.filter(field => {
-                    field.attributes.identifier === tagFieldName
-                    return field
-                }) as FieldTypeTags[]
+                const tags = content.attributes.fields.data.filter(field => field.attributes.identifier === tagFieldName) as FieldTypeTags[]
                 if (tags && tags.length === 1)
-                    allTags.concat(tags[0].attributes.value)
+                    allTags = allTags.concat(tags[0].attributes.value)
             })
             const tags = [...new Set(allTags.flat())]
             const contentsByTag: GeneratedListContent[] = []
@@ -169,6 +166,11 @@ export class SpearlyJSGenerator {
                 let resultHtml = ""
                 targetContents.forEach(c => {
                     const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter);
+                    // Special replacement string
+                    replacementArray.push({
+                        definitionString: `{%= ${contentType}_#tag %}`,
+                        fieldValue: tag,
+                    })
                     resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType)
                 })
                 contentsByTag.push({
@@ -189,9 +191,9 @@ export class SpearlyJSGenerator {
             result.data.forEach(c => {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter)
                 const tags = c.attributes.fields.data.filter(field => field.attributes.identifier === tagFieldName)
-                const tag: string[] = []
+                let tag: string[] = []
                 if (tags && tags.length > 0 && Array.isArray(tags[0].attributes.value)) {
-                    tag.concat(tags[0].attributes.value as [])
+                    tag = tag.concat(tags[0].attributes.value as [])
                 }
 
                 generatedContents.push({

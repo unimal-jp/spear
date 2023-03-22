@@ -42,7 +42,7 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
     }
 
     // Inject CMS loop
-    if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
+    if (!isTextNode && node.getAttribute("cms-loop") !== undefined && node.getAttribute("cms-tag-loop") === undefined) {
       const contentType = node.getAttribute("cms-content-type");
       const apiOption = generateAPIOptionMap(node);
       removeCMSAttributes(node);
@@ -108,7 +108,8 @@ export async function generateAliasPagesFromPagesList(
       // Path has [tags].
       const tagAndAliasLoopElement = page.node.querySelector("[cms-item][cms-tag-loop]");
       const tagAndLoopElement = page.node.querySelector("[cms-loop][cms-tag-loop]");
-      const aliasLoopElement = page.node.querySelector("[cms-item]"); // In [alias].html, cms-item should be treat as cms-loop.
+      // In [alias].html, cms-item should be treat as cms-loop.
+      const aliasLoopElement = page.node.querySelector("[cms-item]");
       if (tagAndAliasLoopElement) {
         const tagFieldName = tagAndAliasLoopElement.getAttribute("cms-tag-loop");
         const contentType  = tagAndAliasLoopElement.getAttribute("cms-content-type");
@@ -164,7 +165,7 @@ export async function generateAliasPagesFromPagesList(
 
         if (page.fname.includes("[tags]")) {
           const apiOption = generateAPIOptionMap(tagAndLoopElement as Element);
-          removeCMSAttributes(tagAndAliasLoopElement as Element);
+          removeCMSAttributes(tagAndLoopElement as Element);
 
           const generatedLists = await jsGenerator.generateListGroupByTag(
             tagAndLoopElement.innerHTML,
