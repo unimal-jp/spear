@@ -72,7 +72,7 @@ export class LocalFileManipulator implements FileManipulatorInterface {
     }
 
     compileSASS(filePath: string): string {
-      const result = sass.compile(filePath);
+      const result = sass.compileString(filePath);
       return result.css;
     }
 

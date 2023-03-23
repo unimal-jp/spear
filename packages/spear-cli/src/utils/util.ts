@@ -109,7 +109,7 @@ export function insertComponentSlot(componentElement: Element, parentElement: El
 
     // Single Slot
     const slotElement = slotElements[0]
-    console.log(`parentElement: [${parentElement.innerHTML}]`)
+    slotElement.removeAttribute("name")
     if (parentElement.innerHTML !== "") {
       slotElement.insertAdjacentHTML('afterend', parentElement.innerHTML)
       slotElement.remove()
@@ -123,6 +123,7 @@ export function insertComponentSlot(componentElement: Element, parentElement: El
     // Multiple Slot(Mean named slot)
     for (const slotElement of slotElements) {
       const slotName = slotElement.getAttribute("name")
+      slotElement.removeAttribute("name")
       // TODO: We need to conditional process for slotname is undefined.
       const parentSlotReplaceElement = parentElement.querySelector(`[slot="${slotName}"]`)
       if (parentSlotReplaceElement) {
