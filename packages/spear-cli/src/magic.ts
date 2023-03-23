@@ -109,6 +109,8 @@ async function bundle(): Promise<boolean> {
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator)
+    // We need to parseElement twice due to embed nested component.
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator)
   }
 
   // generate static routing files.
