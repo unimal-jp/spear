@@ -42,7 +42,7 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
     }
 
     // Inject CMS loop
-    if (!isTextNode && node.getAttribute("cms-loop") !== undefined) {
+    if (!isTextNode && node.getAttribute("cms-loop") !== undefined && node.getAttribute("cms-tag-loop") === undefined) {
       const contentType = node.getAttribute("cms-content-type");
       const apiOption = generateAPIOptionMap(node);
       removeCMSAttributes(node);
@@ -104,9 +104,138 @@ export async function generateAliasPagesFromPagesList(
 ): Promise<Component[]> {
   const replacePagesList: Component[] = [];
   for (const page of state.pagesList) {
-    const targetElement = page.node.querySelector("[cms-item]");
-    if (page.fname.includes("[alias]") && targetElement) {
+    if (page.fname.includes("[tags]")) {
+      // Path has [tags].
+      const tagAndAliasLoopElement = page.node.querySelector("[cms-item][cms-tag-loop]");
+      const tagAndLoopElement = page.node.querySelector("[cms-loop][cms-tag-loop]");
+      // In [alias].html, cms-item should be treat as cms-loop.
+      const aliasLoopElement = page.node.querySelector("[cms-item]");
+      if (tagAndAliasLoopElement) {
+        const tagFieldName = tagAndAliasLoopElement.getAttribute("cms-tag-loop");
+        const contentType  = tagAndAliasLoopElement.getAttribute("cms-content-type");
+        if (!tagFieldName) throw new Error("You should specify the cms-tag-loop");
+        if (!contentType)  throw new Error("You should specify the cms-content-type");
+
+        if (page.fname.includes("[alias]")) {
+          const apiOption = generateAPIOptionMap(tagAndAliasLoopElement as Element);
+          removeCMSAttributes(tagAndAliasLoopElement as Element);
+          const generatedContents = await jsGenerator.generateEachContentFromList(
+            tagAndAliasLoopElement.innerHTML,
+            contentType,
+            apiOption,
+            tagFieldName
+          );
+          generatedContents.forEach(c => {
+            tagAndAliasLoopElement.innerHTML = c.generatedHtml;
+            const html = page.node.innerHTML.replace(
+              tagAndAliasLoopElement.innerHTML,
+              c.generatedHtml
+            );
+            if (c.tag.length > 0) {
+              c.tag.forEach(tag => {
+                replacePagesList.push({
+                  fname: page.fname.split("[tags]").join(tag).split("[alias]").join(c.alias),
+                  node: parse(html) as Element,
+                  props: page.props,
+                  tagName: page.tagName,
+                  rawData: html,
+                })
+              })
+            } else {
+              // In this case, content doesn't have tag.
+                replacePagesList.push({
+                  fname: page.fname.split("[alias]").join(c.alias),
+                  node: parse(html) as Element,
+                  props: page.props,
+                  tagName: page.tagName,
+                  rawData: html,
+                })
+            }
+          })
+        } else {
+          // In this case, target file doesn't have [alias] path. 
+          throw new Error(`You specified the cms-tag-loop attribute in ${page.fname}. However, this path doesn't include [tags] directory.`);
+        }
+      } else if (tagAndLoopElement) {
+        // In this case, target file has cms-tag-loop and cms-loop.
+        const tagFieldName = tagAndLoopElement.getAttribute("cms-tag-loop");
+        const contentType  = tagAndLoopElement.getAttribute("cms-content-type");
+        if (!tagFieldName) throw new Error("Yous should specify the cms-tag-loop");
+        if (!contentType) throw new Error("You should specify the cms-content-type");
+
+        if (page.fname.includes("[tags]")) {
+          const apiOption = generateAPIOptionMap(tagAndLoopElement as Element);
+          removeCMSAttributes(tagAndLoopElement as Element);
+
+          const generatedLists = await jsGenerator.generateListGroupByTag(
+            tagAndLoopElement.innerHTML,
+            contentType,
+            apiOption,
+            tagFieldName
+          )
+          generatedLists.forEach(c => {
+            tagAndLoopElement.innerHTML = c.generatedHtml;
+            const html = page.node.innerHTML.replace(
+              tagAndLoopElement.innerHTML,
+              c.generatedHtml
+            )
+            replacePagesList.push({
+              fname: page.fname.split("[tags]").join(c.tag),
+              node: parse(html) as Element,
+              props: page.props,
+              tagName: page.tagName,
+              rawData: html
+            })
+          })
+        } else {
+          // In this case, target file doesn't have [tags] path.
+          throw new Error(`You specified the cms-tag-loop attribute in ${page.fname}. However, this path doesn't include [tags] directory.`);
+        }
+      } else if (aliasLoopElement) {
+        // In this case, target file has cms-item. (This mean we need to treat this file as loop if path contain the [alias].)
+        if (page.fname.includes("[alias]")) {
+          // path contain [alias]
+          const contentType = aliasLoopElement.getAttribute("cms-content-type");
+          if (!contentType) throw new Error("You should specify the cms-content-type in alias page with cms-item");
+
+          const apiOption = generateAPIOptionMap(aliasLoopElement as Element);
+          removeCMSAttributes(aliasLoopElement as Element);
+          const generatedContents = await jsGenerator.generateEachContentFromList(
+            aliasLoopElement.innerHTML,
+            contentType,
+            apiOption
+          );
+          generatedContents.forEach(c => {
+            aliasLoopElement.innerHTML = c.generatedHtml;
+            const html = page.node.innerHTML.replace(
+              aliasLoopElement.innerHTML,
+              c.generatedHtml
+            );
+            replacePagesList.push({
+              fname: page.fname.split("[alias]").join(c.alias),
+              node: parse(html) as Element,
+              props: page.props,
+              tagName: page.tagName,
+              rawData: html,
+            })
+          })
+        } else {
+          // path doesn't contain [alias]. So we need to treat this file as item file.
+          replacePagesList.push({
+            fname: page.fname,
+            node: parse(page.node.innerHTML) as Element,
+            props: page.props,
+            tagName: page.tagName,
+            rawData: page.rawData,
+          })
+        }
+      }
+    } else if (page.fname.includes("[alias]") && page.node.querySelector("[cms-item]")) {
+      const targetElement = page.node.querySelector("[cms-item]");
+      // [alias].html only (This mean path doesn't be included the [tags].)
       const contentId = targetElement.getAttribute("cms-content-type");
+      if (!contentId) throw new Error("You should specify the cms-content-type in alias page with cms-item.");
+
       const apiOption = generateAPIOptionMap(targetElement as Element);
       removeCMSAttributes(targetElement as Element);
       const generatedContents = await jsGenerator.generateEachContentFromList(
