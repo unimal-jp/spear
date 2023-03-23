@@ -101,45 +101,6 @@ export function removeCMSAttributes(node: Element) {
   }
 }
 
-export function insertComponentSlot(componentElement: Element, parentElement: Element): string {
-  const slotElements = componentElement.querySelectorAll("slot")
-  // If component has not <Slot> element, return component html string as is.
-  if (slotElements.length <= 0) return componentElement.innerHTML
-  if (slotElements.length === 1) {
-
-    // Single Slot
-    const slotElement = slotElements[0]
-    slotElement.removeAttribute("name")
-    if (parentElement.innerHTML !== "") {
-      slotElement.insertAdjacentHTML('afterend', parentElement.innerHTML)
-      slotElement.remove()
-    } else {
-      // Fallback. remove slot element and insert inner of SLot
-      slotElement.insertAdjacentHTML('afterend', slotElement.innerHTML)
-      slotElement.remove()
-    }
-    return componentElement.innerHTML
-  } else {
-    // Multiple Slot(Mean named slot)
-    for (const slotElement of slotElements) {
-      const slotName = slotElement.getAttribute("name")
-      slotElement.removeAttribute("name")
-      // TODO: We need to conditional process for slotname is undefined.
-      const parentSlotReplaceElement = parentElement.querySelector(`[slot="${slotName}"]`)
-      if (parentSlotReplaceElement) {
-        parentSlotReplaceElement.removeAttribute("slot")
-        slotElement.insertAdjacentHTML('afterend', parentSlotReplaceElement.outerHTML)
-        slotElement.remove()
-      } else {
-        slotElement.insertAdjacentHTML('afterend', slotElement.innerHTML)
-        slotElement.remove()
-      }
-    }
-    return componentElement.innerHTML
-  }
-}
-
-
 export function isParseTarget(ext: string) {
   return [".html", ".htm", ".spear"].includes(ext)
 }
