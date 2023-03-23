@@ -160,8 +160,7 @@ export class FileUtil {
           relatePath + (relatePath !== "" ? "/" : "") + file
         );
       } else if (needSASSBuild(ext)) {
-        const rawData = this.manipulator.readFileSync(filePath, "utf8");
-        const css = this.manipulator.compileSASS(rawData);
+        const css = this.manipulator.compileSASS(filePath);
         state.out.assetsFiles.push({
           filePath: `${relatePath}/${fname}.css`,
           rawData: Buffer.from(css),
