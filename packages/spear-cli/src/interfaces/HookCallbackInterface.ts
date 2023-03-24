@@ -1,37 +1,4 @@
-import { DefaultSettings } from "./SettingsInterfaces"
-import { HTMLElement } from "node-html-parser"
-import { FileUtil } from "../utils/file"
-
-export type SpearSettings = DefaultSettings
-
-export type Element = HTMLElement & { props: { [key: string]: string } }
-
-export interface Component {
-  fname: string
-  tagName: string
-  rawData?: string
-  node: Element
-  props: { [key: string]: string }
-}
-
-export interface AssetFile {
-  filePath: string
-  rawData?: Buffer
-}
-
-export interface SpearState {
-  pagesList: Component[]
-  componentsList: Component[]
-  body: Element
-  globalProps: { [key: string]: string }
-  out: {
-    assetsFiles: AssetFile[]
-  }
-}
-
-export interface SpearOption {
-  fileUtil: FileUtil
-}
+import { SpearSettings, SpearOption, SpearState } from './APIInterface.js'
 
 /**
  * Call after configuration has finished.

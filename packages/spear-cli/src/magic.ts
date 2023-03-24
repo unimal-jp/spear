@@ -41,7 +41,8 @@ function initializeArgument(args: Args) {
     generateSitemap: false,
     siteURL: "",
     rootDir: dirname,
-    plugins: []
+    plugins: [],
+    contentCollector: undefined,
   }
 }
 
@@ -71,6 +72,19 @@ async function bundle(): Promise<boolean> {
         // For more information, see the https://github.com/unimal-jp/spear/issues/111
         console.warn(` plugin process failed. `)
       }
+    }
+  }
+
+  // Content Collection API: collecting the content from specified source.
+  if (Settings.contentCollector) {
+    try {
+      const contents = await Settings.contentCollector.collector()
+      state.globalProps = {
+        ...state.globalProps,
+        content,
+      }
+    } catch (e) {
+      console.warn(` content collection failed. `)
     }
   }
 
@@ -187,6 +201,20 @@ export default async function magic(args: Args): Promise<boolean> {
         // For more information, see the https://github.com/unimal-jp/spear/issues/111
         console.warn(` plugin process failed. `)
       }
+    }
+  }
+
+  // Hook Content Collector API
+  if (Settings.contentCollector) {
+    try {
+      const newSettings = await Settings.contentCollector.configuration(Settings, { fileUtil })
+      if (newSettings) {
+        Settings = defaultSettingDeepCopy(newSettings)
+      }
+    } catch (e) {
+      // TODO. This error should have a plugin information.
+      // For more information, see the
+      console.warn(` content collector process failed. `)
     }
   }
 

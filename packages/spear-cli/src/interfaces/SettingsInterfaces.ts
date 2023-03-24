@@ -1,3 +1,4 @@
+import { ContentCollectionAPI } from "./ContentCollectionInterface"
 import { HookApi } from "./HookCallbackInterface"
 
 export interface DefaultSettings {
@@ -16,5 +17,6 @@ export interface DefaultSettings {
   generateSitemap: boolean,
   siteURL: string,
   rootDir: string,
-  plugins: HookApi[]
+  plugins: HookApi[],
+  contentCollector: ContentCollectionAPI,
 }
