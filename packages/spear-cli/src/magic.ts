@@ -29,8 +29,8 @@ function initializeArgument(args: Args) {
     projectName: "Spear CLI",
     settingsFile: "spear.config",
     pagesFolder: `${dirname}/src/pages`,
-    componentsFolder: `${dirname}/src/components`,
-    srcDir: `${dirname}/src`,
+    componentsFolder: [ `${dirname}/src/components` ],
+    srcDir: [ `${dirname}/src` ],
     distDir: `${dirname}/dist`,
     entry: `${dirname}/src/pages/index.?(spear|html)`,
     template: `${dirname}/public/index.html`,
@@ -79,14 +79,18 @@ async function bundle(): Promise<boolean> {
 
   // First parse components from the /components folder
   try {
-    await fileUtil.parseComponents(state, Settings.componentsFolder)
+    for (const componentsFolder of Settings.componentsFolder) {
+      await fileUtil.parseComponents(state, componentsFolder)
+    }
   } catch(e) {
     console.log(e);
     return false;
   }
 
   try {
-    await fileUtil.parsePages(state, Settings.srcDir)
+    for (const srcDir of Settings.srcDir) {
+      await fileUtil.parsePages(state, srcDir)
+    }
   } catch(e) {
     console.log(e);
     return false;
@@ -174,6 +178,14 @@ export default async function magic(args: Args): Promise<boolean> {
   // Load default settings from spear.config.{js,json}|package.json
   await loadSettingsFromFile()
 
+  // If directory has the same name, it will be removed. 
+  Settings.srcDir = Settings.srcDir.filter((srcDir) => {
+    return !Settings.srcDir.some((srcDir2) => {
+      if (srcDir !== srcDir2 && !srcDir2.endsWith("components")) return false
+      return srcDir !== srcDir2 && srcDir.startsWith(srcDir2)
+    })
+  })
+
   // Hook API after settings
   for (const plugin of Settings.plugins) {
     if (plugin.configuration) {
@@ -224,4 +236,5 @@ export default async function magic(args: Args): Promise<boolean> {
   } else if (args.action === "build") {
     return await bundle()
   }
+  return false
 }

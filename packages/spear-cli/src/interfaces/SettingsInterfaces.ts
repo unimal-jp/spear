@@ -4,8 +4,8 @@ export interface DefaultSettings {
   projectName?: string
   settingsFile?: string
   pagesFolder?: string
-  componentsFolder?: string
-  srcDir?: string
+  componentsFolder?: string[]
+  srcDir?: string[]
   distDir?: string
   entry?: string
   template?: string
