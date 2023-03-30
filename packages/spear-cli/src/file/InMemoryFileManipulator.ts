@@ -7,6 +7,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     settingsObject: DefaultSettings
     constructor(files: InMemoryFile[], settingsObject) {
         this.files = files
+        this.settingsObject = settingsObject
     }
 
     // In memory environment, we don't care the file encoding.
@@ -48,7 +49,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         return false
     }
 
-    mkDirSync(path: string, option: any): void {
+    mkDirSync(path: string): void {
         this.files.push({
             id: (Date.now()).toString(),
             path,
