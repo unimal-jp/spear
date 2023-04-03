@@ -42,7 +42,11 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
     }
 
     // Inject CMS loop
-    if (!isTextNode && node.getAttribute("cms-loop") !== undefined && node.getAttribute("cms-tag-loop") === undefined) {
+    if (
+      !isTextNode && node.getAttribute("cms-loop") !== undefined &&
+      node.getAttribute("cms-ignore-static") === undefined &&
+      node.getAttribute("cms-tag-loop") === undefined
+    ) {
       const contentType = node.getAttribute("cms-content-type");
       const apiOption = generateAPIOptionMap(node);
       removeCMSAttributes(node);
@@ -61,6 +65,7 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
     if (
       !isTextNode &&
       node.getAttribute("cms-item") !== undefined &&
+      node.getAttribute("cms-ignore-static") === undefined &&
       node.getAttribute("cms-content-type") !== undefined &&
       node.getAttribute("cms-content") !== undefined
     ) {
@@ -110,7 +115,7 @@ export async function generateAliasPagesFromPagesList(
       const tagAndLoopElement = page.node.querySelector("[cms-loop][cms-tag-loop]");
       // In [alias].html, cms-item should be treat as cms-loop.
       const aliasLoopElement = page.node.querySelector("[cms-item]");
-      if (tagAndAliasLoopElement) {
+      if (tagAndAliasLoopElement && !tagAndAliasLoopElement.getAttribute("cms-ignore-static")) {
         const tagFieldName = tagAndAliasLoopElement.getAttribute("cms-tag-loop");
         const contentType  = tagAndAliasLoopElement.getAttribute("cms-content-type");
         if (!tagFieldName) throw new Error("You should specify the cms-tag-loop");
@@ -156,7 +161,7 @@ export async function generateAliasPagesFromPagesList(
           // In this case, target file doesn't have [alias] path. 
           throw new Error(`You specified the cms-tag-loop attribute in ${page.fname}. However, this path doesn't include [tags] directory.`);
         }
-      } else if (tagAndLoopElement) {
+      } else if (tagAndLoopElement && !tagAndLoopElement.getAttribute("cms-ignore-static")) {
         // In this case, target file has cms-tag-loop and cms-loop.
         const tagFieldName = tagAndLoopElement.getAttribute("cms-tag-loop");
         const contentType  = tagAndLoopElement.getAttribute("cms-content-type");
@@ -191,7 +196,7 @@ export async function generateAliasPagesFromPagesList(
           // In this case, target file doesn't have [tags] path.
           throw new Error(`You specified the cms-tag-loop attribute in ${page.fname}. However, this path doesn't include [tags] directory.`);
         }
-      } else if (aliasLoopElement) {
+      } else if (aliasLoopElement && !aliasLoopElement.getAttribute("cms-ignore-static")) {
         // In this case, target file has cms-item. (This mean we need to treat this file as loop if path contain the [alias].)
         if (page.fname.includes("[alias]")) {
           // path contain [alias]
@@ -230,8 +235,9 @@ export async function generateAliasPagesFromPagesList(
           })
         }
       }
-    } else if (page.fname.includes("[alias]") && page.node.querySelector("[cms-item]")) {
+    } else if (page.fname.includes("[alias]")) {
       const targetElement = page.node.querySelector("[cms-item]");
+      if (targetElement.getAttribute("cms-ignore-static")) continue;
       // [alias].html only (This mean path doesn't be included the [tags].)
       const contentId = targetElement.getAttribute("cms-content-type");
       if (!contentId) throw new Error("You should specify the cms-content-type in alias page with cms-item.");
