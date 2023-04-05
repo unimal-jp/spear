@@ -13,6 +13,7 @@ export interface FileManipulatorInterface {
   loadFile: (path: string) => any;
   compileSASS: (path: string) => string;
   generateSiteMap: (linkList: Array<SiteMapURL>, siteURL: string) => Promise<string>;
+  debug: () => void;
 }
 
 export type InMemoryFile = {

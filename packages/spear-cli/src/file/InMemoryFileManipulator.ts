@@ -37,14 +37,15 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
 
     existsSync(path: string): boolean {
         for (const file of this.files) {
-            if (file.path === path) return true
+            if (file.path.includes(path)) return true
         }
         return false
     }
 
     isDirectory(path: string): boolean {
         for (const file of this.files) {
-            if (file.path === path && file.content === null) return true
+            if (file.path === path && (file.content === null || file.content === ""))
+                return true
         }
         return false
     }
@@ -63,9 +64,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     rmSync(path: string, option: any): void {
         const files = [] as InMemoryFile[]
         for (const file of this.files) {
-            // TODO: This condition is incompletely.
-            //  We should care the 
-            if ((option.recursive && file.path.includes(path)) || file.path == path) {
+            if ((option.recursive && !file.path.includes(path)) && file.path !== path) {
                 files.push(file)
             }
         }
@@ -113,5 +112,10 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
   `).join('')}
 </urlset>`;
         return Promise.resolve(xml)
+    }
+
+    debug(): void {
+      console.log("InMemoryFileManipulator debug");
+      console.log(this.files);
     }
 }

@@ -55,7 +55,7 @@ async function bundle(): Promise<boolean> {
       assetsFiles: [],
     },
   }
-  
+
   jsGenerator = new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain)
 
   // Hook API: beforeBuild
@@ -178,7 +178,7 @@ export default async function magic(args: Args): Promise<boolean> {
   // Load default settings from spear.config.{js,json}|package.json
   await loadSettingsFromFile()
 
-  // If directory has the same name, it will be removed. 
+  // If directory has the same name, it will be removed.
   Settings.srcDir = Settings.srcDir.filter((srcDir) => {
     return !Settings.srcDir.some((srcDir2) => {
       if (srcDir !== srcDir2 && !srcDir2.endsWith("components")) return false
@@ -229,7 +229,7 @@ export default async function magic(args: Args): Promise<boolean> {
     console.log(chalk.green(`
     Server started on port ${Settings.port} 🚀
     You can access the following URL:
-    
+
       http://localhost:${Settings.port}
     `))
     return true

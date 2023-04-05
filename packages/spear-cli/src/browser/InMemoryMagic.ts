@@ -53,10 +53,13 @@ export default async function inMemoryMagic(
 
   // Create dist folder
   fileUtil.createDir(settings);
+  console.log("------------------:1");
+  fileUtil.debug();
 
   // First parse components from the /components folder
   try {
     for (const componentsFolder of settings.componentsFolder) {
+      console.log(`componentsFolder: ${componentsFolder}`);
       await fileUtil.parseComponents(state, componentsFolder);
     }
   } catch (e) {
@@ -73,6 +76,9 @@ export default async function inMemoryMagic(
     return false;
   }
 
+  console.log("------------------:2");
+  console.log(state);
+  
   // Run list again to parse children of the components
   const componentsList = [] as Component[];
   for (const component of state.componentsList) {
@@ -81,6 +87,8 @@ export default async function inMemoryMagic(
       component.node.childNodes as Element[],
       jsGenerator
     )) as Element[];
+    console.log("------------------:2.1");
+    console.log(parsedNode);
     componentsList.push({
       fname: component.fname,
       rawData: parsedNode[0].outerHTML,
@@ -91,6 +99,9 @@ export default async function inMemoryMagic(
   }
   state.componentsList = componentsList;
 
+  console.log("------------------:3");
+  console.log(state);
+
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
     page.node.childNodes = await parseElements(
@@ -100,9 +111,14 @@ export default async function inMemoryMagic(
     );
   }
 
+  console.log("------------------:4");
+  console.log(state);
+
   // generate static routing files.
   state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator);
 
+  console.log("------------------:5");
+  console.log(state);
   // Hook API: afterBuild
   for (const plugin of settings.plugins) {
     if (plugin.afterBuild) {
@@ -119,6 +135,8 @@ export default async function inMemoryMagic(
     }
   }
 
+  console.log("------------------:6");
+  console.log(state);
   // Dump pages
   fileUtil.dumpPages(state, "/", settings);
 

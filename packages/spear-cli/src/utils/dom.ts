@@ -42,7 +42,8 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
     }
 
     // Inject CMS loop
-    if (!isTextNode && node.getAttribute("cms-loop") !== undefined && node.getAttribute("cms-tag-loop") === undefined) {
+    if (!isTextNode && node.getAttribute("cms-loop") !== undefined &&
+        node.getAttribute("cms-tag-loop") === undefined) {
       const contentType = node.getAttribute("cms-content-type");
       const apiOption = generateAPIOptionMap(node);
       removeCMSAttributes(node);

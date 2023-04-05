@@ -17,6 +17,10 @@ export class FileUtil {
     return this.manipulator.loadFile(filePath);
   }
 
+  debug(): void {
+    this.manipulator.debug();
+  }
+
   async parseComponents(state: State, dirPath: string): Promise<void> {
     if (!this.manipulator.existsSync(dirPath)) return;
     const files = this.manipulator.readdirSync(dirPath);
