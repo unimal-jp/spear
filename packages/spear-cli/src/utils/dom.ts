@@ -16,7 +16,6 @@ function extractProps(state: State, node: Element) {
 
 export async function parseElements(state: State, nodes: Element[], jsGenerator: SpearlyJSGenerator) {
   const res = parse("") as Element;
-  console.log(nodes);
 
   //nodes.forEach((node) => {
   for (const node of nodes) {
@@ -25,7 +24,6 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
     const component = state.componentsList.find(
       (c) => c.tagName === tagName
     ) as Component;
-    console.log(tagName);
 
     if (component) {
       // Regenerate node since node-html-parser's HTMLElement doesn't have deep copy.
