@@ -24,6 +24,8 @@ export class FileUtil {
   async parseComponents(state: State, dirPath: string): Promise<void> {
     if (!this.manipulator.existsSync(dirPath)) return;
     const files = this.manipulator.readdirSync(dirPath);
+    console.log(`parseComponents: files:`);
+    console.log(files);
 
     console.log("");
     console.log("[Parse components]");

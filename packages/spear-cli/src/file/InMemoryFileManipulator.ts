@@ -10,10 +10,18 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         this.settingsObject = settingsObject
     }
 
+    getInMemoryFile(path: string): InMemoryFile {
+        for (const file of this.files) {
+            if (file.path === path) return file
+        }
+        return null
+    }
+
     // In memory environment, we don't care the file encoding.
     // These files is based on UTF-8.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     readFileSync(path: string, encode: string): string {
+        console.log(`readFileSync ${path}`)
         for (const file of this.files) {
             if (file.path === path) return file.content
         }
@@ -30,7 +38,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     readdirSync(path: string): string[] {
         const ret = [] as string[]
         this.files.forEach(file => {
-            if (file.path.includes(path)) ret.push(file.path.replace(path, ""))
+            if (file.path.includes(path)) ret.push(file.path.replace(path, "").replace("/", ""))
         })
         return ret
     }

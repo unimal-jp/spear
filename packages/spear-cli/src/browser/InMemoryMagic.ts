@@ -17,9 +17,6 @@ export default async function inMemoryMagic(
   inputFiles: InMemoryFile[],
   settings: Settings
 ) {
-  console.log("helle");
-  console.log(inputFiles, settings);
-
   const jsGenerator = new SpearlyJSGenerator(
     settings.spearlyAuthKey,
     settings.apiDomain
@@ -33,6 +30,36 @@ export default async function inMemoryMagic(
       assetsFiles: [],
     },
   };
+
+    // If directory has the same name, it will be removed.
+  settings.srcDir = settings.srcDir.filter((srcDir) => {
+    return !settings.srcDir.some((srcDir2) => {
+      if (srcDir !== srcDir2 && !srcDir2.endsWith("components")) return false
+      return srcDir !== srcDir2 && srcDir.startsWith(srcDir2)
+    })
+  })
+
+  // Template file
+  const templateIndex = `<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{projectName}}</title>
+    </head>
+    <body>
+    </body>
+  </html>
+  `;
+  inputFiles.push({
+    content: templateIndex,
+    id: "0",
+    language: "",
+    path: "/lib/templates/index.html",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  })
   const fileUtil = new FileUtil(new InMemoryFileManipulator(inputFiles, settings));
 
   // Hook API: beforeBuild
@@ -53,13 +80,10 @@ export default async function inMemoryMagic(
 
   // Create dist folder
   fileUtil.createDir(settings);
-  console.log("------------------:1");
-  fileUtil.debug();
 
   // First parse components from the /components folder
   try {
     for (const componentsFolder of settings.componentsFolder) {
-      console.log(`componentsFolder: ${componentsFolder}`);
       await fileUtil.parseComponents(state, componentsFolder);
     }
   } catch (e) {
@@ -75,9 +99,6 @@ export default async function inMemoryMagic(
     console.log(e);
     return false;
   }
-
-  console.log("------------------:2");
-  console.log(state);
   
   // Run list again to parse children of the components
   const componentsList = [] as Component[];
@@ -87,8 +108,6 @@ export default async function inMemoryMagic(
       component.node.childNodes as Element[],
       jsGenerator
     )) as Element[];
-    console.log("------------------:2.1");
-    console.log(parsedNode);
     componentsList.push({
       fname: component.fname,
       rawData: parsedNode[0].outerHTML,
@@ -99,9 +118,6 @@ export default async function inMemoryMagic(
   }
   state.componentsList = componentsList;
 
-  console.log("------------------:3");
-  console.log(state);
-
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
     page.node.childNodes = await parseElements(
@@ -111,14 +127,9 @@ export default async function inMemoryMagic(
     );
   }
 
-  console.log("------------------:4");
-  console.log(state);
-
   // generate static routing files.
   state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator);
 
-  console.log("------------------:5");
-  console.log(state);
   // Hook API: afterBuild
   for (const plugin of settings.plugins) {
     if (plugin.afterBuild) {
@@ -135,11 +146,10 @@ export default async function inMemoryMagic(
     }
   }
 
-  console.log("------------------:6");
-  console.log(state);
   // Dump pages
-  fileUtil.dumpPages(state, "/", settings);
-
+  await fileUtil.dumpPages(state, "/lib", settings);
+  fileUtil.manipulator.rmSync("/lib", { recursive: true });
+  
   // Hook API: bundle
   for (const plugin of settings.plugins) {
     if (plugin.bundle) {
@@ -155,4 +165,13 @@ export default async function inMemoryMagic(
       }
     }
   }
+
+  const distFiles = fileUtil.manipulator.readdirSync("dist");
+  const returnFiles = [] as InMemoryFile[];
+  for (const file of distFiles) {
+    if (!fileUtil.manipulator.isDirectory(`dist/${file}`)) {
+      returnFiles.push((fileUtil.manipulator as InMemoryFileManipulator).getInMemoryFile(`dist/${file}`));
+    }
+  }
+  return returnFiles;
 }
