@@ -88,4 +88,8 @@ export class LocalFileManipulator implements FileManipulatorInterface {
         console.log(e);
       }
     }
+
+    debug(): void {
+      console.log("LocalFileManipulator");
+    }
 }

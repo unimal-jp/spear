@@ -17,9 +17,6 @@ export default async function inMemoryMagic(
   inputFiles: InMemoryFile[],
   settings: Settings
 ) {
-  console.log("helle");
-  console.log(inputFiles, settings);
-
   const jsGenerator = new SpearlyJSGenerator(
     settings.spearlyAuthKey,
     settings.apiDomain
@@ -33,6 +30,36 @@ export default async function inMemoryMagic(
       assetsFiles: [],
     },
   };
+
+    // If directory has the same name, it will be removed.
+  settings.srcDir = settings.srcDir.filter((srcDir) => {
+    return !settings.srcDir.some((srcDir2) => {
+      if (srcDir !== srcDir2 && !srcDir2.endsWith("components")) return false
+      return srcDir !== srcDir2 && srcDir.startsWith(srcDir2)
+    })
+  })
+
+  // Template file
+  const templateIndex = `<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>{{projectName}}</title>
+    </head>
+    <body>
+    </body>
+  </html>
+  `;
+  inputFiles.push({
+    content: templateIndex,
+    id: "0",
+    language: "",
+    path: "/lib/templates/index.html",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  })
   const fileUtil = new FileUtil(new InMemoryFileManipulator(inputFiles, settings));
 
   // Hook API: beforeBuild
@@ -72,7 +99,7 @@ export default async function inMemoryMagic(
     console.log(e);
     return false;
   }
-
+  
   // Run list again to parse children of the components
   const componentsList = [] as Component[];
   for (const component of state.componentsList) {
@@ -120,8 +147,9 @@ export default async function inMemoryMagic(
   }
 
   // Dump pages
-  fileUtil.dumpPages(state, "/", settings);
-
+  await fileUtil.dumpPages(state, "/lib", settings);
+  fileUtil.manipulator.rmSync("/lib", { recursive: true });
+  
   // Hook API: bundle
   for (const plugin of settings.plugins) {
     if (plugin.bundle) {
@@ -137,4 +165,13 @@ export default async function inMemoryMagic(
       }
     }
   }
+
+  const distFiles = fileUtil.manipulator.readdirSync("dist");
+  const returnFiles = [] as InMemoryFile[];
+  for (const file of distFiles) {
+    if (!fileUtil.manipulator.isDirectory(`dist/${file}`)) {
+      returnFiles.push((fileUtil.manipulator as InMemoryFileManipulator).getInMemoryFile(`dist/${file}`));
+    }
+  }
+  return returnFiles;
 }
