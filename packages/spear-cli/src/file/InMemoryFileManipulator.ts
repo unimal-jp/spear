@@ -21,7 +21,6 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     // These files is based on UTF-8.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     readFileSync(path: string, encode: string): string {
-        console.log(`readFileSync ${path}`)
         for (const file of this.files) {
             if (file.path === path) return file.content
         }
