@@ -17,6 +17,8 @@ export default async function inMemoryMagic(
   inputFiles: InMemoryFile[],
   settings: Settings
 ) {
+  settings.targetPagesPathList = settings.targetPagesPathList || [];
+  console.log(settings);
   const jsGenerator = new SpearlyJSGenerator(
     settings.spearlyAuthKey,
     settings.apiDomain
@@ -126,6 +128,26 @@ export default async function inMemoryMagic(
       jsGenerator
     );
   }
+
+  // This process is only for the in-browser mode.
+  // If specified targetPagesPathList is not empty, replace the state.pagesList with the specified pages.
+  console.log(state.pagesList);
+  if (settings.targetPagesPathList.length > 0) {
+    const targetPagesList = [] as State["pagesList"];
+    for (const targetPagePath of settings.targetPagesPathList) {
+      const targetPage = state.pagesList.find(
+        (page) => page.fname === targetPagePath
+      );
+      if (targetPage) {
+        targetPagesList.push(targetPage);
+      }
+    }
+    state.pagesList = targetPagesList;
+    console.log(targetPagesList);
+  }
+
+  console.log(settings.targetPagesPathList);
+  console.log(state.pagesList);
 
   // generate static routing files.
   state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator);

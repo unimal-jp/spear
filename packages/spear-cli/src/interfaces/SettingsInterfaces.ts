@@ -16,5 +16,7 @@ export interface DefaultSettings {
   generateSitemap: boolean,
   siteURL: string,
   rootDir: string,
-  plugins: HookApi[]
+  plugins: HookApi[],
+  // This option is for the in-browser mode option.
+  targetPagesPathList?: string[],
 }
