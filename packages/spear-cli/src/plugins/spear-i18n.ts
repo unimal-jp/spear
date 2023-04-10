@@ -1,6 +1,7 @@
 import { parse } from "node-html-parser"
 import { bufferDeepCopy } from "../utils/util.js"
 import { AssetFile, Component, Element, HookApi, SpearOption, SpearSettings, SpearState } from "../interfaces/HookCallbackInterface"
+import { SpearLog } from "../utils/log.js"
 
 
 interface I18nSettings {
@@ -44,10 +45,12 @@ const i18nLanguages: I18nLanguages = new Map<string, I18nWords>()
 //        - description: This is blog site.
 
 export function spearI18n(settingsFile?: string): HookApi {
+    let logger: SpearLog
     // Use configuration and afterBuild hook for generating SEO.
     return {
         // Build internal variable for converting i18n
         configuration: async function(settings: SpearSettings, option: SpearOption) {
+            logger = option.logger
             if (settingsFile !== "") {
                 try {
                     const settingFileContent = await option.fileUtil.loadFile(`${settings.rootDir}/${settingsFile}`)
@@ -76,28 +79,28 @@ export function spearI18n(settingsFile?: string): HookApi {
                         throw new Error(`Specify the correct i18n file name. [${settingsFile}]`)
                     }
                 } catch (e) {
-                    console.log("  [Plugins] Reading settings file failure:")
-                    console.error(e)
+                    logger.log("  [Plugins] Reading settings file failure:")
+                    logger.error(e)
                     throw e
                 }
             }
             return null
         },
         beforeBuild: undefined,
-        afterBuild: generateI18nBeforeBundle,
+        afterBuild: (state: SpearState) => generateI18nBeforeBundle(state, logger),
         bundle: undefined,
     }
 }
 
-async function generateI18nBeforeBundle(state: SpearState): Promise<SpearState> {
+async function generateI18nBeforeBundle(state: SpearState, logger: SpearLog): Promise<SpearState> {
     const generatedState = Object.assign({}, state) as SpearState
     const pageList = [] as Component[]
     const assetsFiles = [] as AssetFile[]
 
-    console.log('  [Plugins] Spear i18n:')
+    logger.log('  [Plugins] Spear i18n:')
     i18nLanguages.forEach((words, lang) => {
         for (const page of generatedState.pagesList) {
-            console.log(`  [Plugins] Traverse i18n Tag on :${page.fname} in ${lang}`)
+            logger.log(`  [Plugins] Traverse i18n Tag on :${page.fname} in ${lang}`)
             // If target Node doesn't have <html> element,
             // wrap it by empty html.
             let indexNode: Element

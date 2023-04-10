@@ -1,6 +1,7 @@
 import { DefaultSettings } from "./SettingsInterfaces"
 import { HTMLElement } from "node-html-parser"
 import { FileUtil } from "../utils/file"
+import { SpearLog } from "../utils/log"
 
 export type SpearSettings = DefaultSettings
 
@@ -30,7 +31,8 @@ export interface SpearState {
 }
 
 export interface SpearOption {
-  fileUtil: FileUtil
+  fileUtil: FileUtil,
+  logger: SpearLog
 }
 
 /**

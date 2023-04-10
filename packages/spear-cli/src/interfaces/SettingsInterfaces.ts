@@ -16,5 +16,6 @@ export interface DefaultSettings {
   generateSitemap: boolean,
   siteURL: string,
   rootDir: string,
-  plugins: HookApi[]
+  plugins: HookApi[],
+  quiteMode?: boolean,
 }

@@ -85,7 +85,7 @@ export class LocalFileManipulator implements FileManipulatorInterface {
         );
         return data.toString()
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
     }
 

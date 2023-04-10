@@ -237,6 +237,8 @@ export async function generateAliasPagesFromPagesList(
       }
     } else if (page.fname.includes("[alias]")) {
       const targetElement = page.node.querySelector("[cms-item]");
+      if (!targetElement) continue;
+
       if (targetElement.getAttribute("cms-ignore-static")) continue;
       // [alias].html only (This mean path doesn't be included the [tags].)
       const contentId = targetElement.getAttribute("cms-content-type");
@@ -280,7 +282,6 @@ function insertComponentSlot(
   if (slotElements.length === 1) {
     // Single Slot
     const slotElement = slotElements[0];
-    console.log(`parentElement: [${parentElement.innerHTML}]`);
     if (parentElement.innerHTML !== "") {
       slotElement.insertAdjacentHTML("afterend", parentElement.innerHTML);
       slotElement.remove();

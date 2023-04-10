@@ -20,7 +20,9 @@
     "spear": "./dist/index.js"
   },
   "exports": {
-    ".": "./dist/browser/InMemoryMagic.js"
+    ".": "./dist/browser/InMemoryMagic.js",
+    "./dist/plugins/*": "./dist/plugins/*",
+    "./plugins/*": "./dist/plugins/*.js"
   },
   "keywords": [],
   "author": "Yo",
