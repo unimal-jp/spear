@@ -12,10 +12,12 @@ import { defaultSettingDeepCopy, stateDeepCopy } from "./utils/util.js"
 import { FileUtil } from "./utils/file.js"
 import { LocalFileManipulator } from "./file/LocalFileManipulator.js"
 import { generateAliasPagesFromPagesList, parseElements } from "./utils/dom.js"
+import { SpearLog } from "./utils/log.js"
 
 const libFilename = fileURLToPath(import.meta.url)
 const libDirname = path.dirname(libFilename)
-const fileUtil = new FileUtil(new LocalFileManipulator())
+const logger = new SpearLog(false)
+const fileUtil = new FileUtil(new LocalFileManipulator(), logger)
 
 let dirname = process.cwd()
 let Settings: DefaultSettings
@@ -41,7 +43,8 @@ function initializeArgument(args: Args) {
     generateSitemap: false,
     siteURL: "",
     rootDir: dirname,
-    plugins: []
+    plugins: [],
+    quiteMode: false,
   }
 }
 
@@ -62,7 +65,7 @@ async function bundle(): Promise<boolean> {
   for (const plugin of Settings.plugins) {
     if (plugin.beforeBuild) {
       try {
-        const newState = await plugin.beforeBuild(state, { fileUtil })
+        const newState = await plugin.beforeBuild(state, { fileUtil, logger })
         if (newState) {
           state = stateDeepCopy(newState)
         }
@@ -83,7 +86,7 @@ async function bundle(): Promise<boolean> {
       await fileUtil.parseComponents(state, componentsFolder)
     }
   } catch(e) {
-    console.log(e);
+    logger.error(e);
     return false;
   }
 
@@ -92,7 +95,7 @@ async function bundle(): Promise<boolean> {
       await fileUtil.parsePages(state, srcDir)
     }
   } catch(e) {
-    console.log(e);
+    logger.error(e);
     return false;
   }
 
@@ -124,7 +127,7 @@ async function bundle(): Promise<boolean> {
   for (const plugin of Settings.plugins) {
     if (plugin.afterBuild) {
       try {
-        const newState = await plugin.afterBuild(state, { fileUtil })
+        const newState = await plugin.afterBuild(state, { fileUtil, logger })
         if (newState) {
           state = stateDeepCopy(newState)
         }
@@ -143,7 +146,7 @@ async function bundle(): Promise<boolean> {
   for (const plugin of Settings.plugins) {
     if (plugin.bundle) {
       try {
-        const newState = await plugin.bundle(state, { fileUtil })
+        const newState = await plugin.bundle(state, { fileUtil, logger })
         if (newState) {
           state = stateDeepCopy(newState)
         }
@@ -168,7 +171,6 @@ async function loadSettingsFromFile() {
 }
 
 export default async function magic(args: Args): Promise<boolean> {
-  console.log(args.action)
   initializeArgument(args)
 
   if (args.action === "watch") {
@@ -177,6 +179,7 @@ export default async function magic(args: Args): Promise<boolean> {
 
   // Load default settings from spear.config.{js,json}|package.json
   await loadSettingsFromFile()
+  logger.isQuite = Settings.quiteMode
 
   // If directory has the same name, it will be removed.
   Settings.srcDir = Settings.srcDir.filter((srcDir) => {
@@ -190,7 +193,7 @@ export default async function magic(args: Args): Promise<boolean> {
   for (const plugin of Settings.plugins) {
     if (plugin.configuration) {
       try {
-        const newSettings = await plugin.configuration(Settings, { fileUtil })
+        const newSettings = await plugin.configuration(Settings, { fileUtil, logger })
         if (newSettings) {
           Settings = defaultSettingDeepCopy(newSettings)
         }
@@ -210,7 +213,7 @@ export default async function magic(args: Args): Promise<boolean> {
     await bundle()
 
     watch(Settings.srcDir, { recursive: true }, function (evt, name) {
-      console.log("changed: %s", name)
+      logger.log("changed: %s", name)
       bundle()
     })
 
@@ -226,7 +229,7 @@ export default async function magic(args: Args): Promise<boolean> {
     }
 
     liveServer.start(params)
-    console.log(chalk.green(`
+    logger.log(chalk.green(`
     Server started on port ${Settings.port} 🚀
     You can access the following URL:
 

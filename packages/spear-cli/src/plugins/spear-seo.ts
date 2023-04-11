@@ -1,5 +1,6 @@
 import { parse } from "node-html-parser"
 import { Component, Element, HookApi, SpearOption, SpearSettings, SpearState } from "../interfaces/HookCallbackInterface"
+import { SpearLog } from "../utils/log"
 
 let globalSettings: Map<string, string>
 
@@ -10,9 +11,11 @@ let globalSettings: Map<string, string>
 //     title: "Blog site.",
 //   }
 export function spearSEO(settingsFile?: string): HookApi {
+    let logger: SpearLog
     // Use configuration and afterBuild hook for generating SEO.
     return {
         configuration: async function(settings: SpearSettings, option: SpearOption) {
+            logger = option.logger
             globalSettings = new Map<string, string>()
             if (settingsFile !== "") {
                 try {
@@ -23,25 +26,25 @@ export function spearSEO(settingsFile?: string): HookApi {
                         })
                     }
                 } catch (e) {
-                    console.log("  [Plugins] Reading settings file failure:")
-                    console.error(e)
+                    logger.log("  [Plugins] Reading settings file failure:")
+                    logger.error(e)
                     throw e
                 }
             }
             return null
         },
         beforeBuild: undefined,
-        afterBuild: generateSEOBeforeBundle,
+        afterBuild: (state: SpearState) => generateSEOBeforeBundle(state, logger),
         bundle: undefined,
     }
 }
 
-async function generateSEOBeforeBundle(state: SpearState): Promise<SpearState> {
-    console.log('  [Plugins] Spear SEO Generation:')
+async function generateSEOBeforeBundle(state: SpearState, logger: SpearLog): Promise<SpearState> {
+    logger.log('  [Plugins] Spear SEO Generation:')
     const generatedState = Object.assign({}, state) as SpearState
     const pageList = [] as Component[]
     for (const page of generatedState.pagesList) {
-        console.log("  [Plugins] Traverse SEO Tag on :" + page.fname)
+        logger.log("  [Plugins] Traverse SEO Tag on :" + page.fname)
         // If target Node doesn't have <html> element,
         // wrap it by empty html.
         let indexNode: Element
@@ -67,7 +70,7 @@ async function generateSEOBeforeBundle(state: SpearState): Promise<SpearState> {
         // Support one spear-seo tag in one HTML file.
         const spearSEOTag = indexNode.querySelector("spear-seo")
         if (spearSEOTag) {
-            console.log("  [Plugins] separ-seo found.")
+            logger.log("  [Plugins] separ-seo found.")
             const headerTag = indexNode.querySelector("head")
             Object.keys(spearSEOTag.attributes).forEach((k) => {
                 if (k === "title") {

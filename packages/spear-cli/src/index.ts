@@ -24,8 +24,6 @@ parser.add_argument("-s", "--src", { help: "Specify source directory. "})
 
 const args = parser.parse_args()
 
-console.log(args)
-
 if (args.action === "watch" || args.action === "build") {
   if (!magic(args)) {
     // Notify caller to magic fail.
