@@ -6,11 +6,14 @@ import { minify } from "html-minifier-terser";
 import { parse } from "node-html-parser";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
 import { FileManipulatorInterface } from "../interfaces/FileManipulatorInterface";
+import { SpearLog } from "./log";
 
 export class FileUtil {
   manipulator: FileManipulatorInterface;
-  constructor(manipulator: FileManipulatorInterface) {
+  logger: SpearLog
+  constructor(manipulator: FileManipulatorInterface, logger: SpearLog) {
     this.manipulator = manipulator;
+    this.logger = logger;
   }
 
   loadFile(filePath: string): Promise<any> {
@@ -25,8 +28,8 @@ export class FileUtil {
     if (!this.manipulator.existsSync(dirPath)) return;
     const files = this.manipulator.readdirSync(dirPath);
 
-    console.log("");
-    console.log("[Parse components]");
+    this.logger.log("");
+    this.logger.log("[Parse components]");
 
     for (const file of files) {
       const filePath = `${dirPath}/${file}`;
@@ -53,7 +56,7 @@ export class FileUtil {
             `Component[${tagName}] is built-in HTML tag. You need specify other name.`
           );
         }
-        console.log(`  [Component]: ${fname}`);
+        this.logger.log(`  [Component]: ${fname}`);
         state.componentsList.push({
           fname,
           tagName,
@@ -96,8 +99,8 @@ export class FileUtil {
       } else {
         indexNode = page.node;
       }
-      console.log("");
-      console.log(`[Page]: ${page.fname}`);
+      this.logger.log("");
+      this.logger.log(`[Page]: ${page.fname}`);
 
       // Inject title
       if (indexNode) {
@@ -122,13 +125,13 @@ export class FileUtil {
     }
 
     // Generate Sitemap
-    if (settings.generateSitemap) {
+    if (settings.generateSitemap && linkList.length > 0) {
       try {
         const data = await this.manipulator.generateSiteMap(linkList, settings.siteURL)
-        console.log(`[Sitemap]: /sitemap.xml`);
+        this.logger.log(`[Sitemap]: /sitemap.xml`);
         this.writeFile(`${settings.distDir}/sitemap.xml`, data);
       } catch (e) {
-        console.log(e);
+        this.logger.error(e);
       }
     }
 
@@ -146,8 +149,8 @@ export class FileUtil {
     if (!this.manipulator.existsSync(dirPath)) return;
     const files = this.manipulator.readdirSync(dirPath);
 
-    console.log("");
-    console.log("[Parse Pages]");
+    this.logger.log("");
+    this.logger.log("[Parse Pages]");
 
     for (const file of files) {
       const filePath = `${dirPath}/${file}`;
@@ -183,7 +186,7 @@ export class FileUtil {
         const tagName = fname.toLowerCase(); // todo: keep lowerCase?
         const node = parse(minified) as Element;
 
-        console.log(`  [Page]: ${fname}(/${relatePath})`);
+        this.logger.log(`  [Page]: ${fname}(/${relatePath})`);
         state.pagesList.push({
           fname: `${relatePath}/${fname}`,
           tagName,

@@ -6,6 +6,7 @@ import { generateAliasPagesFromPagesList, parseElements } from "../utils/dom.js"
 import { InMemoryFile, Settings } from "../interfaces/FileManipulatorInterface";
 import { Component, Element, State } from "../interfaces/MagicInterfaces";
 import { InMemoryFileManipulator } from "../file/InMemoryFileManipulator";
+import { SpearLog } from "../utils/log.js";
 
 /**
  * inMemoryMagic
@@ -17,8 +18,12 @@ export default async function inMemoryMagic(
   inputFiles: InMemoryFile[],
   settings: Settings
 ) {
+  // Initial Settings
+  settings.quiteMode = settings.quiteMode || false;
+  const logger = new SpearLog(settings.quiteMode);
   settings.targetPagesPathList = settings.targetPagesPathList || [];
   console.log(settings);
+
   const jsGenerator = new SpearlyJSGenerator(
     settings.spearlyAuthKey,
     settings.apiDomain
@@ -62,13 +67,13 @@ export default async function inMemoryMagic(
     createdAt: new Date(),
     updatedAt: new Date(),
   })
-  const fileUtil = new FileUtil(new InMemoryFileManipulator(inputFiles, settings));
+  const fileUtil = new FileUtil(new InMemoryFileManipulator(inputFiles, settings), logger);
 
   // Hook API: beforeBuild
   for (const plugin of settings.plugins) {
     if (plugin.beforeBuild) {
       try {
-        const newState = await plugin.beforeBuild(state, { fileUtil });
+        const newState = await plugin.beforeBuild(state, { fileUtil, logger });
         if (newState) {
           state = stateDeepCopy(newState);
         }
@@ -89,7 +94,7 @@ export default async function inMemoryMagic(
       await fileUtil.parseComponents(state, componentsFolder);
     }
   } catch (e) {
-    console.log(e);
+    logger.log(e);
     return false;
   }
 
@@ -98,7 +103,7 @@ export default async function inMemoryMagic(
       await fileUtil.parsePages(state, srcDir);
     }
   } catch (e) {
-    console.log(e);
+    logger.log(e);
     return false;
   }
   
@@ -156,7 +161,7 @@ export default async function inMemoryMagic(
   for (const plugin of settings.plugins) {
     if (plugin.afterBuild) {
       try {
-        const newState = await plugin.afterBuild(state, { fileUtil });
+        const newState = await plugin.afterBuild(state, { fileUtil, logger });
         if (newState) {
           state = stateDeepCopy(newState);
         }
@@ -176,7 +181,7 @@ export default async function inMemoryMagic(
   for (const plugin of settings.plugins) {
     if (plugin.bundle) {
       try {
-        const newState = await plugin.bundle(state, { fileUtil });
+        const newState = await plugin.bundle(state, { fileUtil, logger });
         if (newState) {
           state = stateDeepCopy(newState);
         }
