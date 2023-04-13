@@ -21,6 +21,8 @@ export default async function inMemoryMagic(
   // Initial Settings
   settings.quiteMode = settings.quiteMode || false;
   const logger = new SpearLog(settings.quiteMode);
+  settings.targetPagesPathList = settings.targetPagesPathList || [];
+
   const jsGenerator = new SpearlyJSGenerator(
     settings.spearlyAuthKey,
     settings.apiDomain
@@ -129,6 +131,21 @@ export default async function inMemoryMagic(
       page.node.childNodes as Element[],
       jsGenerator
     );
+  }
+
+  // This process is only for the in-browser mode.
+  // If specified targetPagesPathList is not empty, replace the state.pagesList with the specified pages.
+  if (settings.targetPagesPathList.length > 0) {
+    const targetPagesList = [] as State["pagesList"];
+    for (const targetPagePath of settings.targetPagesPathList) {
+      const targetPage = state.pagesList.find(
+        (page) => page.fname === targetPagePath
+      );
+      if (targetPage) {
+        targetPagesList.push(targetPage);
+      }
+    }
+    state.pagesList = targetPagesList;
   }
 
   // generate static routing files.

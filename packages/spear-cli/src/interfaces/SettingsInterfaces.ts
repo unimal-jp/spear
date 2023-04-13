@@ -17,5 +17,7 @@ export interface DefaultSettings {
   siteURL: string,
   rootDir: string,
   plugins: HookApi[],
+  // This option is for the in-browser mode option.
+  targetPagesPathList?: string[],
   quiteMode?: boolean,
 }
