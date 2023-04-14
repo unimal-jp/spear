@@ -48,7 +48,6 @@ export function spearI18n(settingsFile?: string): HookApi {
     let logger: SpearLog
     // Use configuration and afterBuild hook for generating SEO.
     return {
-        pluginName: "spear-i18n",
         // Build internal variable for converting i18n
         configuration: async function(settings: SpearSettings, option: SpearOption) {
             logger = option.logger

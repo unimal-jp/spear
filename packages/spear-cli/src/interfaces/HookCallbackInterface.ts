@@ -76,6 +76,7 @@ export interface BundleHookFunction {
  * You can specify this object into spear.config.mjs.
  */
 export interface HookApi {
+    pluginName: string,
     configuration?: ConfigurationHookFunction,
     beforeBuild?: BeforeBuildHookFunction,
     afterBuild? : AfterBuildHookFunction,
