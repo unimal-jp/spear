@@ -18,7 +18,6 @@ export default async function inMemoryMagic(
   inputFiles: InMemoryFile[],
   settings: Settings
 ) {
-  console.log(inputFiles, settings);
   // Initial Settings
   settings.quiteMode = settings.quiteMode || false;
   const logger = new SpearLog(settings.quiteMode);
@@ -191,7 +190,6 @@ export default async function inMemoryMagic(
   const distFiles = fileUtil.manipulator.readdirSync("dist");
   const returnFiles = [] as InMemoryFile[];
   for (const file of distFiles) {
-    console.log(file);
     if (file && file !== '' && !fileUtil.manipulator.isDirectory(`dist/${file}`)) {
       returnFiles.push((fileUtil.manipulator as InMemoryFileManipulator).getInMemoryFile(`dist/${file}`));
     }
