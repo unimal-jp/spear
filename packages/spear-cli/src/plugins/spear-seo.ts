@@ -14,6 +14,7 @@ export function spearSEO(settingsFile?: string): HookApi {
     let logger: SpearLog
     // Use configuration and afterBuild hook for generating SEO.
     return {
+        pluginName: "spear-seo",
         configuration: async function(settings: SpearSettings, option: SpearOption) {
             logger = option.logger
             globalSettings = new Map<string, string>()
