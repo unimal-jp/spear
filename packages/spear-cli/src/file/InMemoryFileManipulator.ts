@@ -12,7 +12,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
 
     getInMemoryFile(path: string): InMemoryFile {
         for (const file of this.files) {
-            if (file.path === path) return file
+            if (this.isSamePath(file.path, path)) return file
         }
         return null
     }
@@ -22,14 +22,14 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     readFileSync(path: string, encode: string): string {
         for (const file of this.files) {
-            if (file.path === path) return file.content
+            if (this.isSamePath(file.path, path)) return file.content
         }
         return ""
     }
 
     readFileSyncAsBuffer(path: string): Buffer {
         for (const file of this.files) {
-            if (file.path === path) return Buffer.from(file.content, 'base64')
+            if (this.isSamePath(file.path, path)) return Buffer.from(file.content, 'base64')
         }
         return Buffer.from("", 'base64')
     }
@@ -51,7 +51,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
 
     isDirectory(path: string): boolean {
         for (const file of this.files) {
-            if (file.path === path && (file.content === null || file.content === ""))
+            if (this.isSamePath(file.path, path) && (file.content === null || file.content === ""))
                 return true
         }
         return false
@@ -81,7 +81,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     writeFileSync(path: string, content: string): void {
         // If file path is exists, override content.
         for (const file of this.files) {
-            if (file.path === path) {
+            if (this.isSamePath(file.path, path)) {
                 file.content = content
                 return
             }
@@ -124,5 +124,9 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     debug(): void {
       console.log("InMemoryFileManipulator debug");
       console.log(this.files);
+    }
+
+    isSamePath(path1: string, path2: string): boolean {
+      return path1.replace('//', '/') === path2.replace('//', '/');
     }
 }
