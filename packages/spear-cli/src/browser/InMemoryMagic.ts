@@ -190,7 +190,7 @@ export default async function inMemoryMagic(
   const distFiles = fileUtil.manipulator.readdirSync("dist");
   const returnFiles = [] as InMemoryFile[];
   for (const file of distFiles) {
-    if (!fileUtil.manipulator.isDirectory(`dist/${file}`)) {
+    if (file && file !== '' && !fileUtil.manipulator.isDirectory(`dist/${file}`)) {
       returnFiles.push((fileUtil.manipulator as InMemoryFileManipulator).getInMemoryFile(`dist/${file}`));
     }
   }
