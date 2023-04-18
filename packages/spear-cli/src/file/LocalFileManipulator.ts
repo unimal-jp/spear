@@ -31,7 +31,7 @@ export class LocalFileManipulator implements FileManipulatorInterface {
               } else if (ext === ".json") {
                 const data = this.readFileSync(files[0], "utf8");
                 resolve(JSON.parse(data));
-              } else if (ext === ".yaml") {
+              } else if (ext === ".yaml" || ext === ".yml") {
                 const data = this.readFileSync(files[0], "utf8");
                 resolve(yamlParse(data));
               } else {

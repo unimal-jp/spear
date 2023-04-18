@@ -14,6 +14,14 @@ const i18nSettings: I18nSettings = {
     default: "",
 }
 const i18nLanguages: I18nLanguages = new Map<string, I18nWords>()
+const generateDefaultFallbackHtml = () => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- redirect to default language -->
+  <meta http-equiv="refresh" content="0; url=/${i18nSettings.default}/">
+</head><body></body>
+</html>`;
 
 // This plugin will replace i18n syntax.
 // SettingsFile:
@@ -21,7 +29,6 @@ const i18nLanguages: I18nLanguages = new Map<string, I18nWords>()
 //   export default {
 //     settings: {
 //       default: "jp",
-//       fallback: "jp",
 //     },
 //     "jp": [
 //       { title: "ブログです" },
@@ -35,7 +42,6 @@ const i18nLanguages: I18nLanguages = new Map<string, I18nWords>()
 //  Or Yaml object file which has key and value like the bellow:
 //    settings:
 //      default: "jp"
-//      fallback: "jp"
 //    lang:
 //      jp:
 //        - title: ブログだよ
@@ -116,7 +122,7 @@ async function generateI18nBeforeBundle(state: SpearState, logger: SpearLog): Pr
                 indexNode = parse(page.node.outerHTML) as Element
             }
 
-            // i18n attributes process
+            // Replace i18n attributes
             // If we found the i18n attr, replace all of child to translate word
             const i18nAttrs = indexNode.querySelectorAll("[i18n]")
             i18nAttrs.forEach(i18nElement => {
@@ -188,6 +194,18 @@ async function generateI18nBeforeBundle(state: SpearState, logger: SpearLog): Pr
             assetsFiles.push({
                 filePath: `/${lang}/${asset.filePath}`,
                 rawData: bufferDeepCopy(asset.rawData),
+            })
+        }
+
+        // Generate fallback page.
+        if (i18nSettings.default === lang) {
+            const html = generateDefaultFallbackHtml();
+            pageList.push({
+                fname: "/index",
+                tagName: "html",
+                rawData: html,
+                node: parse(html) as Element,
+                props: {},
             })
         }
     })
