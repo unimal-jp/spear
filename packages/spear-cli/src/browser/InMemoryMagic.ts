@@ -63,6 +63,7 @@ export default async function inMemoryMagic(
     id: "0",
     language: "",
     path: "/lib/templates/index.html",
+    children: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   })
@@ -105,7 +106,7 @@ export default async function inMemoryMagic(
     logger.log(e);
     return false;
   }
-  
+
   // Run list again to parse children of the components
   const componentsList = [] as Component[];
   for (const component of state.componentsList) {
@@ -140,9 +141,23 @@ export default async function inMemoryMagic(
     for (const targetPagePath of settings.targetPagesPathList) {
       const targetPage = state.pagesList.find(
         (page) => page.fname === targetPagePath
-      );
+      )
       if (targetPage) {
         targetPagesList.push(targetPage);
+      }
+      // Support components preview
+      const targetComponent = state.componentsList.find(
+        (component) => {
+          return "/components/" + component.fname === targetPagePath
+        }
+      )
+      if (targetComponent) {
+        targetPagesList.push({
+          fname: targetComponent.fname,
+          tagName: targetComponent.tagName,
+          node: targetComponent.node,
+          props: {},
+        });
       }
     }
     state.pagesList = targetPagesList;

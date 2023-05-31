@@ -21,6 +21,7 @@ export type InMemoryFile = {
   path: string;
   content: string;
   language: string;
+  children: InMemoryFile[];
   createdAt?: Date;
   updatedAt?: Date;
 };

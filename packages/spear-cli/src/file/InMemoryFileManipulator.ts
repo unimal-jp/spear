@@ -78,7 +78,11 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
 
     rmSync(path: string, option: any): void {
         if (!this.existsSync(path)) return
-        if (option.recursive) {
+        if (option.recursive && this.isDirectory(path)) {
+            const files = this.readdirSync(path)
+            files.forEach(file => {
+                this.rmSync(path + "/" + file, option)
+            })
             return fs.rmdirSync(path)
         }
         return fs.unlinkSync(path)
