@@ -9,7 +9,6 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     constructor(files: InMemoryFile[], settingsObject) {
         // Convert InMemoryFile array to falt JSON array.
         const jsonObject = this.extractInMemoryFilesToObject(files, "/")
-        console.log(jsonObject)
         vol.fromJSON(jsonObject, '/')
 
         const ret = fs.readdirSync('/src')
