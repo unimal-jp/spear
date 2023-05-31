@@ -12,7 +12,6 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         vol.fromJSON(jsonObject, '/')
 
         const ret = fs.readdirSync('/src')
-        console.log(ret)
 
         this.files = files
         this.settingsObject = settingsObject
