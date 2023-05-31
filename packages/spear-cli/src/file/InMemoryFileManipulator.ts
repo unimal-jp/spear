@@ -1,3 +1,4 @@
+import { fs, vol } from "memfs";
 import { FileManipulatorInterface, InMemoryFile } from "../interfaces/FileManipulatorInterface";
 import { SiteMapURL } from "../interfaces/MagicInterfaces";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
@@ -6,97 +7,85 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     files: InMemoryFile[]
     settingsObject: DefaultSettings
     constructor(files: InMemoryFile[], settingsObject) {
+        // Convert InMemoryFile array to falt JSON array.
+        const jsonObject = this.extractInMemoryFilesToObject(files, "/")
+        console.log(jsonObject)
+        vol.fromJSON(jsonObject, '/')
+
+        const ret = fs.readdirSync('/src')
+        console.log(ret)
+
         this.files = files
         this.settingsObject = settingsObject
     }
 
+    extractInMemoryFilesToObject(files: InMemoryFile[], path: string): { [key: string]: string } {
+        const ret = {} as { [key: string]: string }
+        files.forEach(file => {
+            if (file.children && file.children.length > 0) {
+                const children = this.extractInMemoryFilesToObject(file.children, path + "/" + file.path)
+                Object.assign(ret, children)
+            } else {
+                ret[path + "/" + file.path] = file.content
+            }
+        })
+        return ret
+    }
+
     getInMemoryFile(path: string): InMemoryFile {
-        for (const file of this.files) {
-            if (this.isSamePath(file.path, path)) return file
+        if (!this.existsSync(path)) return null
+        const content = this.readFileSync(path, 'utf8')
+        const ext = path.split('.').pop()
+
+        return {
+            id: path,
+            path: path,
+            content: content,
+            language: ext,
+            children: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
         }
-        return null
     }
 
     // In memory environment, we don't care the file encoding.
     // These files is based on UTF-8.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     readFileSync(path: string, encode: string): string {
-        for (const file of this.files) {
-            if (this.isSamePath(file.path, path)) return file.content
-        }
-        return ""
+        return fs.readFileSync(path, encode) as string
     }
 
     readFileSyncAsBuffer(path: string): Buffer {
-        for (const file of this.files) {
-            if (this.isSamePath(file.path, path)) return Buffer.from(file.content, 'base64')
-        }
-        return Buffer.from("", 'base64')
+        return Buffer.from(fs.readFileSync(path) as string, 'base64')
     }
 
+    // Read file list in specified directory.
     readdirSync(path: string): string[] {
-        const ret = [] as string[]
-        this.files.forEach(file => {
-            if (file.path.includes(path)) ret.push(file.path.replace(path, "").replace("/", ""))
-        })
-        return ret
+        return fs.readdirSync(path) as string[]
     }
 
     existsSync(path: string): boolean {
-        for (const file of this.files) {
-            if (file.path.includes(path)) return true
-        }
-        return false
+        return fs.existsSync(path)
     }
 
     isDirectory(path: string): boolean {
-        for (const file of this.files) {
-            if (this.isSamePath(file.path, path) && (file.content === null || file.content === ""))
-                return true
-        }
-        return false
+        return fs.lstatSync(path).isDirectory()
     }
 
     mkDirSync(path: string): void {
-        this.files.push({
-            id: (Date.now()).toString(),
-            path,
-            content: "",
-            language: "",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        })
+        return fs.mkdirSync(path)
     }
 
     rmSync(path: string, option: any): void {
-        const files = [] as InMemoryFile[]
-        for (const file of this.files) {
-            if ((option.recursive && !file.path.includes(path)) && file.path !== path) {
-                files.push(file)
-            }
+        if (!this.existsSync(path)) return
+        if (option.recursive) {
+            return fs.rmdirSync(path)
         }
-        this.files = files
+        return fs.unlinkSync(path)
     }
 
     writeFileSync(path: string, content: string): void {
-        // If file path is exists, override content.
-        for (const file of this.files) {
-            if (this.isSamePath(file.path, path)) {
-                file.content = content
-                return
-            }
-        }
-
-        const lastDotPosition = path.lastIndexOf('.')
-        const language = path.substring(lastDotPosition + 1)
-        this.files.push({
-            id: (Date.now()).toString(),
-            path,
-            content,
-            language,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        })
+        return fs.writeFileSync(path, content)
     }
 
     loadFile(pathPattern: string): any {
@@ -124,9 +113,5 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     debug(): void {
       console.log("InMemoryFileManipulator debug");
       console.log(this.files);
-    }
-
-    isSamePath(path1: string, path2: string): boolean {
-      return path1.replace('//', '/') === path2.replace('//', '/');
     }
 }
