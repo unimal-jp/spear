@@ -2,6 +2,7 @@ import { fs, vol } from "memfs";
 import { FileManipulatorInterface, InMemoryFile } from "../interfaces/FileManipulatorInterface";
 import { SiteMapURL } from "../interfaces/MagicInterfaces";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
+import { compileString } from "sass";
 
 export class InMemoryFileManipulator implements FileManipulatorInterface {
     files: InMemoryFile[]
@@ -70,8 +71,12 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         return fs.lstatSync(path).isDirectory()
     }
 
-    mkDirSync(path: string): void {
-        return fs.mkdirSync(path)
+    mkDirSync(path: string, option: any): void {
+        if (option && option.recursive) {
+            fs.mkdirSync(path, { recursive: true })
+        } else {
+            fs.mkdirSync(path)
+        }
     }
 
     rmSync(path: string, option: any): void {
@@ -95,7 +100,9 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     }
 
     compileSASS(path: string):string {
-        return ""
+        const content = this.readFileSync(path, 'utf8')
+        const result = compileString(content)
+        return result.css.toString()
     }
 
     async generateSiteMap(linkList: Array<SiteMapURL>, siteURL: string): Promise<string> {

@@ -20,4 +20,5 @@ export interface DefaultSettings {
   // This option is for the in-browser mode option.
   targetPagesPathList?: string[],
   quiteMode?: boolean,
+  embedMode? : boolean,
 }

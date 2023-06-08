@@ -85,7 +85,7 @@ export class FileUtil {
     for (const page of state.pagesList) {
       // Read index.html template
       let indexNode;
-      if (!page.node.innerHTML.includes("</html>")) {
+      if (!page.node.outerHTML || !page.node.outerHTML.includes("</html>")) {
         const indexRawData = this.manipulator.readFileSync(
           `${libDirName}/templates/index.html`,
           "utf8"
@@ -153,7 +153,7 @@ export class FileUtil {
     this.logger.log("[Parse Pages]");
 
     for (const file of files) {
-      const filePath = `${dirPath}/${file}`;
+      const filePath = `${dirPath}${dirPath.lastIndexOf('/') === dirPath.length - 1 ? "" : "/"}${file}`;
       const ext = path.extname(file);
       const fname = path.basename(file, ext);
       const isDir =
@@ -163,20 +163,20 @@ export class FileUtil {
       if (isDir) {
         await this.parsePages(
           state,
-          filePath,
+          filePath + "/",
           relatePath + (relatePath !== "" ? "/" : "") + file
         );
       } else if (needSASSBuild(ext)) {
         const css = this.manipulator.compileSASS(filePath);
         state.out.assetsFiles.push({
-          filePath: `${relatePath}/${fname}.css`,
+          filePath: `${dirPath}/${fname}.css`,
           rawData: Buffer.from(css),
         });
         continue;
       } else if (!isParseTarget(ext)) {
         const rawData = this.manipulator.readFileSyncAsBuffer(filePath);
         state.out.assetsFiles.push({
-          filePath: `${relatePath}/${file}`,
+          filePath: `${dirPath}/${file}`,
           rawData,
         });
         continue;

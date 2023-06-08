@@ -315,6 +315,62 @@ function insertComponentSlot(
   }
 }
 
+export function embedAssets(state: State, assets: {[key:string]: string}, nodes: Element[], parent?: Element) {
+  const res = parse("") as Element;
+
+  //nodes.forEach((node) => {
+  for (const node of nodes) {
+    const tagName = node.rawTagName;
+    const isTextNode = node.nodeType === 3;
+
+    if (!isTextNode) {
+      switch(tagName) {
+        case "img": {
+          const imgURL = new URL(node.getAttribute("src"), location.href).href;
+          if (assets[imgURL]) {
+            node.setAttribute("src", `data:image/png;base64,${assets[imgURL]}`);
+          }
+          break;
+        }
+        case "link": {
+          const linkURL = new URL(node.getAttribute("href").replace(/\.scss$/, '.css'), location.href).href;
+          if (assets[linkURL]) {
+            // Replace link tag to style tag
+            if (parent) {
+              const styleNode = parse(`<style>${assets[linkURL]}</style>`) as Element;
+              parent.appendChild(styleNode.childNodes[0]);
+              node.remove();
+            }
+          }
+          break;
+        }
+        case "script": {
+          const scriptURL = new URL(node.getAttribute("src"), location.href).href;
+          if (assets[scriptURL]) {
+            node.innerHTML = assets[scriptURL];
+            node.removeAttribute("src");
+          }
+          break;
+        }
+        default:
+      }
+    }
+
+    if (node.childNodes.length > 0) {
+      node.childNodes = embedAssets(
+        state,
+        assets,
+        node.childNodes as Element[],
+        node
+      );
+    }
+
+    res.appendChild(node);
+  }
+
+  return res.childNodes;
+}
+
 function removeCMSAttributes(node: Element) {
   for (const key in node.attributes) {
     if (key.startsWith("cms-")) {
