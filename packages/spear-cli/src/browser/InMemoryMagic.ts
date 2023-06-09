@@ -182,9 +182,10 @@ export default async function inMemoryMagic(
     ) as Element[];
     embedPageList.push({
       fname: page.fname,
-      rawData: parsedNode[parsedNode.length > 1 ? 1 : 0].outerHTML,
+      // If page html has <!DOCTYPE html>, it will be removed.
+      rawData: parsedNode[parsedNode.length - 1].outerHTML,
       tagName: page.tagName,
-      node: parsedNode[parsedNode.length > 1 ? 1 : 0],
+      node: parsedNode[parsedNode.length - 1],
       props: {},
     });
   }
