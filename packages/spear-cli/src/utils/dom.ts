@@ -318,7 +318,6 @@ function insertComponentSlot(
 export function embedAssets(state: State, assets: {[key:string]: string}, nodes: Element[], parent?: Element) {
   const res = parse("") as Element;
 
-  //nodes.forEach((node) => {
   for (const node of nodes) {
     const tagName = node.rawTagName;
     const isTextNode = node.nodeType === 3;
