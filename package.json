@@ -27,5 +27,6 @@
   },
   "devDependencies": {
     "pnpm": "^7.18.2"
-  }
+  },
+  "version": "0.1.0"
 }
