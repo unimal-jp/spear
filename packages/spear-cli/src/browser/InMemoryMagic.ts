@@ -2,7 +2,7 @@ import { SpearlyJSGenerator } from "@spearly/cms-js-core";
 import parse from "node-html-parser";
 import { FileUtil } from "../utils/file.js";
 import { stateDeepCopy } from "../utils/util.js";
-import { generateAliasPagesFromPagesList, parseElements } from "../utils/dom.js";
+import { embedAssets, generateAliasPagesFromPagesList, parseElements } from "../utils/dom.js";
 import { InMemoryFile, Settings } from "../interfaces/FileManipulatorInterface";
 import { Component, Element, State } from "../interfaces/MagicInterfaces";
 import { InMemoryFileManipulator } from "../file/InMemoryFileManipulator";
@@ -165,6 +165,31 @@ export default async function inMemoryMagic(
 
   // generate static routing files.
   state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator);
+
+  // Embed assets
+  const asettsUrlAndRaw: {[key: string]: string} = {};
+  for (const assetFile of state.out.assetsFiles) {
+    const orgPath = assetFile.filePath.replace(settings.srcDir[0], "").replace(/\/\//, "/").replace(/^\//, "");
+    const orgURL = new URL(orgPath, window.location.href).href;
+    asettsUrlAndRaw[orgURL] = assetFile.rawData.toString();
+  }
+  const embedPageList = [] as Component[];
+  for (const page of state.pagesList) {
+    const parsedNode = embedAssets(
+      state,
+      asettsUrlAndRaw,
+      page.node.childNodes as Element[]
+    ) as Element[];
+    embedPageList.push({
+      fname: page.fname,
+      // If page html has <!DOCTYPE html>, it will be removed.
+      rawData: parsedNode[parsedNode.length - 1].outerHTML,
+      tagName: page.tagName,
+      node: parsedNode[parsedNode.length - 1],
+      props: {},
+    });
+  }
+  state.pagesList = embedPageList;
 
   // Hook API: afterBuild
   for (const plugin of settings.plugins) {
