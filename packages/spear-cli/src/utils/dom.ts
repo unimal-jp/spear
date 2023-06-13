@@ -1,6 +1,6 @@
 import { Component, Element, State } from "../interfaces/MagicInterfaces";
 import { parse } from "node-html-parser";
-import { mime } from "mime-types";
+import mime from "mime-types";
 import { minify } from "html-minifier-terser";
 import { SpearlyJSGenerator } from "@spearly/cms-js-core"
 import { generateAPIOptionMap } from "./util.js";
@@ -331,8 +331,8 @@ export function embedAssets(state: State, assets: {[key:string]: string}, nodes:
             // Get the extension of image.
             // (We need to specify the extension for data url.)
             const ext = imgURL.split(".").pop();
-            const mimeType = mime.getType(ext) || "png";
-            node.setAttribute("src", `data:image/${mimeType};base64,${assets[imgURL]}`);
+            const mimeType = mime.lookup(ext) || "png";
+            node.setAttribute("src", `data:${mimeType};base64,${assets[imgURL]}`);
           }
           break;
         }
