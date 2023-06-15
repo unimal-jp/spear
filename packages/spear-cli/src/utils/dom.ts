@@ -316,7 +316,7 @@ function insertComponentSlot(
   }
 }
 
-export function embedAssets(state: State, assets: {[key:string]: string}, nodes: Element[], parent?: Element) {
+export function embedAssets(filepath: string, state: State, assets: {[key:string]: string}, nodes: Element[], parent?: Element) {
   const res = parse("") as Element;
 
   for (const node of nodes) {
@@ -324,9 +324,10 @@ export function embedAssets(state: State, assets: {[key:string]: string}, nodes:
     const isTextNode = node.nodeType === 3;
 
     if (!isTextNode) {
+      const currentURL = new URL(filepath, location.href);
       switch(tagName) {
         case "img": {
-          const imgURL = new URL(node.getAttribute("src"), location.href).href;
+          const imgURL = new URL(node.getAttribute("src"), currentURL).href;
           if (assets[imgURL]) {
             // Get the extension of image.
             // (We need to specify the extension for data url.)
@@ -337,7 +338,7 @@ export function embedAssets(state: State, assets: {[key:string]: string}, nodes:
           break;
         }
         case "link": {
-          const linkURL = new URL(node.getAttribute("href").replace(/\.scss$/, '.css'), location.href).href;
+          const linkURL = new URL(node.getAttribute("href").replace(/\.scss$/, '.css'), currentURL).href;
           if (assets[linkURL]) {
             // Replace link tag to style tag
             if (parent) {
@@ -349,7 +350,7 @@ export function embedAssets(state: State, assets: {[key:string]: string}, nodes:
           break;
         }
         case "script": {
-          const scriptURL = new URL(node.getAttribute("src"), location.href).href;
+          const scriptURL = new URL(node.getAttribute("src"), currentURL).href;
           if (assets[scriptURL]) {
             node.innerHTML = assets[scriptURL];
             node.removeAttribute("src");
@@ -362,6 +363,7 @@ export function embedAssets(state: State, assets: {[key:string]: string}, nodes:
 
     if (node.childNodes.length > 0) {
       node.childNodes = embedAssets(
+        filepath,
         state,
         assets,
         node.childNodes as Element[],

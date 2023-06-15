@@ -1,7 +1,7 @@
 import { SpearlyJSGenerator } from "@spearly/cms-js-core";
 import parse from "node-html-parser";
 import { FileUtil } from "../utils/file.js";
-import { stateDeepCopy } from "../utils/util.js";
+import { isSamePath, stateDeepCopy } from "../utils/util.js";
 import { embedAssets, generateAliasPagesFromPagesList, parseElements } from "../utils/dom.js";
 import { InMemoryFile, Settings } from "../interfaces/FileManipulatorInterface";
 import { Component, Element, State } from "../interfaces/MagicInterfaces";
@@ -140,7 +140,7 @@ export default async function inMemoryMagic(
     const targetPagesList = [] as State["pagesList"];
     for (const targetPagePath of settings.targetPagesPathList) {
       const targetPage = state.pagesList.find(
-        (page) => page.fname === targetPagePath
+        (page) => isSamePath(page.fname, targetPagePath)
       )
       if (targetPage) {
         targetPagesList.push(targetPage);
@@ -176,6 +176,7 @@ export default async function inMemoryMagic(
   const embedPageList = [] as Component[];
   for (const page of state.pagesList) {
     const parsedNode = embedAssets(
+      `.${page.fname}.html`,
       state,
       asettsUrlAndRaw,
       page.node.childNodes as Element[]
@@ -227,12 +228,20 @@ export default async function inMemoryMagic(
     }
   }
 
-  const distFiles = fileUtil.manipulator.readdirSync("dist");
-  const returnFiles = [] as InMemoryFile[];
-  for (const file of distFiles) {
-    if (file && file !== '' && !fileUtil.manipulator.isDirectory(`dist/${file}`)) {
-      returnFiles.push((fileUtil.manipulator as InMemoryFileManipulator).getInMemoryFile(`dist/${file}`));
+  // Pick up the target files.
+  const getTargetFiles = (dirPath: string): InMemoryFile[] => {
+    const dirFiles = fileUtil.manipulator.readdirSync(dirPath);
+    let retFiles = [] as InMemoryFile[];
+    for (const file of dirFiles) {
+      if (file === "src") continue;
+      if (!file || file === '') continue;
+      if (fileUtil.manipulator.isDirectory(`${dirPath}/${file}`)) {
+        retFiles = retFiles.concat(getTargetFiles(`${dirPath}/${file}`));
+      } else {
+        retFiles.push((fileUtil.manipulator as InMemoryFileManipulator).getInMemoryFile(`${dirPath}/${file}`));
+      }
     }
+    return retFiles
   }
-  return returnFiles;
+  return getTargetFiles(`${settings.distDir}`);
 }
