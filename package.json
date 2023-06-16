@@ -9,15 +9,17 @@
   ],
   "preferGlobal": true,
   "scripts": {
-    "tsc": "tsc",
-    "clean": "rm -rf dist",
-    "build": "pnpm -r --filter='./packages/*' run build",
-    "dev": "pnpm -r --parallel --filter='./packages/*' run dev"
+    "clean": "rm -rf packages/**/dist",
+    "install-packages": "npm-run-all --parallel install:*",
+    "install:create-spear": "yarn --cwd ./packages/create-spear",
+    "install:spear-cli": "yarn --cwd packages/spear-cli",
+    "install:spearly-cms-js-core": "yarn --cwd packages/spearly-cms-js-core",
+    "build": "npm-run-all install-packages build:*",
+    "build:create-spear": "yarn --cwd ./packages/create-spear build",
+    "build:spear-cli": "yarn --cwd ./packages/spear-cli build",
+    "build:spearly-cms-js-core": "yarn --cwd ./packages/spearly-cms-js-core build"
   },
-  "bin": {
-    "spear": "./dist/index.js"
-  },
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/unimal-jp/spear.git"
@@ -25,8 +27,8 @@
   "bugs": {
     "url": "https://github.com/unimal-jp/spear/issues"
   },
+  "version": "0.1.0",
   "devDependencies": {
-    "pnpm": "^7.18.2"
-  },
-  "version": "0.1.0"
+    "npm-run-all": "^4.1.5"
+  }
 }
