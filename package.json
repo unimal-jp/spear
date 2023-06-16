@@ -10,14 +10,10 @@
   "preferGlobal": true,
   "scripts": {
     "clean": "rm -rf packages/**/dist",
-    "install-packages": "npm-run-all --parallel install:*",
-    "install:create-spear": "yarn --cwd ./packages/create-spear",
-    "install:spear-cli": "yarn --cwd packages/spear-cli",
-    "install:spearly-cms-js-core": "yarn --cwd packages/spearly-cms-js-core",
-    "build": "npm-run-all install-packages build:*",
-    "build:create-spear": "yarn --cwd ./packages/create-spear build",
-    "build:spear-cli": "yarn --cwd ./packages/spear-cli build",
-    "build:spearly-cms-js-core": "yarn --cwd ./packages/spearly-cms-js-core build"
+    "build": "npm-run-all build:*",
+    "build:create-spear": "yarn workspace create-spear build",
+    "build:spear-cli": "yarn workspace @spearly/spear-cli build",
+    "build:spearly-cms-js-core": "yarn workspace @spearly/cms-js-core build"
   },
   "license": "MIT",
   "repository": {
@@ -30,5 +26,8 @@
   "version": "0.1.0",
   "devDependencies": {
     "npm-run-all": "^4.1.5"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }
