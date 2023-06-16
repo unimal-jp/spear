@@ -108,3 +108,9 @@ export function isParseTarget(ext: string) {
 export function needSASSBuild(ext: string) {
   return [".scss"].includes(ext)
 }
+
+export function isSamePath(path1: string, path2: string) {
+  const normalizedPath1 = path1.replace(/^\//, "");
+  const normalizedPath2 = path2.replace(/^\//, "");
+  return normalizedPath1 === normalizedPath2;
+}
