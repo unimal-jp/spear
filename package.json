@@ -12,8 +12,8 @@
     "clean": "rm -rf packages/**/dist",
     "build": "npm-run-all build:*",
     "build:create-spear": "yarn workspace create-spear build",
-    "build:spear-cli": "yarn workspace @spearly/spear-cli build",
-    "build:spearly-cms-js-core": "yarn workspace @spearly/cms-js-core build"
+    "build:spearly-cms-js-core": "yarn workspace @spearly/cms-js-core build",
+    "build:spear-cli": "yarn workspace @spearly/spear-cli build"
   },
   "license": "MIT",
   "repository": {
