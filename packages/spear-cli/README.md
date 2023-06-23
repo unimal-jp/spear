@@ -4,7 +4,10 @@
 
 [![npm version](https://badge.fury.io/js/@spearly%2Fspear-cli.svg)](https://badge.fury.io/js/@spearly%2Fspear-cli)
 
-This is SSG(Static Site Generator) for Spearly.  
+Note:
+- v1.3.2 is disabling the SCSS feature because some build toolchanin has build error.(Vite)
+
+This is SSG(Static Site Generator) for Spearly.
 
 ## Usage
 
