@@ -91,7 +91,7 @@ export default async function inMemoryMagic(
   // First parse components from the /components folder
   try {
     for (const componentsFolder of settings.componentsFolder) {
-      await fileUtil.parseComponents(state, componentsFolder);
+      await fileUtil.parseComponents(state, componentsFolder, settings);
     }
   } catch (e) {
     logger.log(e);

@@ -5,7 +5,7 @@ import { isParseTarget, needSASSBuild } from "./util.js";
 import { minify } from "html-minifier-terser";
 import { parse } from "node-html-parser";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
-import { FileManipulatorInterface } from "../interfaces/FileManipulatorInterface";
+import { FileManipulatorInterface, Settings } from "../interfaces/FileManipulatorInterface";
 import { SpearLog } from "./log";
 
 export class FileUtil {
@@ -24,7 +24,7 @@ export class FileUtil {
     this.manipulator.debug();
   }
 
-  async parseComponents(state: State, dirPath: string): Promise<void> {
+  async parseComponents(state: State, dirPath: string, settings: Settings): Promise<void> {
     if (!this.manipulator.existsSync(dirPath)) return;
     const files = this.manipulator.readdirSync(dirPath);
 
@@ -40,7 +40,7 @@ export class FileUtil {
         this.manipulator.isDirectory(filePath);
 
       if (isDir) {
-        await this.parseComponents(state, filePath);
+        await this.parseComponents(state, filePath, settings);
       } else if (!isParseTarget(ext)) {
         const rawData = this.manipulator.readFileSyncAsBuffer(filePath);
         state.out.assetsFiles.push({ filePath: file, rawData });
@@ -50,6 +50,12 @@ export class FileUtil {
         const minified = await minify(rawData, { collapseWhitespace: true });
         const tagName = fname.toLowerCase(); // todo: keep lowerCase?
         const node = parse(minified) as Element;
+
+        // If debug mode is on, insert file name into data-spear-component attribute.
+        if (settings.debugMode) {
+          (node.firstChild as Element).setAttribute("data-spear-component", fname);
+          node.attributes
+        }
 
         if (HTML_TAG_LIST.includes(tagName)) {
           throw Error(
@@ -110,6 +116,14 @@ export class FileUtil {
             "{{projectName}}",
             settings.projectName
           );
+        }
+      }
+
+      // Insert file name into data-spear-component attribute.
+      if (settings.debugMode) {
+        const targetNode = indexNode.querySelector("html");
+        if (targetNode) {
+          targetNode.setAttribute("data-spear-page", page.fname);
         }
       }
 

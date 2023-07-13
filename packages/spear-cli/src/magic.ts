@@ -83,7 +83,7 @@ async function bundle(): Promise<boolean> {
   // First parse components from the /components folder
   try {
     for (const componentsFolder of Settings.componentsFolder) {
-      await fileUtil.parseComponents(state, componentsFolder)
+      await fileUtil.parseComponents(state, componentsFolder, Settings)
     }
   } catch(e) {
     logger.error(e);
@@ -100,6 +100,7 @@ async function bundle(): Promise<boolean> {
   }
 
   // Run list again to parse children of the components
+  // Due to support nested components.
   const componentsList = [] as Component[]
   for (const component of state.componentsList) {
     const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator) as Element[]
