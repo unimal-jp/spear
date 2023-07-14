@@ -75,9 +75,14 @@ export class SpearlyJSGenerator {
         return result
     }
 
-    async generateContent(templateHtml: string, contentType: string, contentId: string): Promise<string> {
+    async generateContent(templateHtml: string, contentType: string, contentId: string, distinctId: string, patternName: string, previewToken?: string): Promise<string> {
         try {
-            const result = await this.client.getContent(contentId)
+            const result = previewToken
+                ? await this.client.getContentPreview(contentId, previewToken)
+                : await this.client.getContent(contentId, {
+                    distinctId: distinctId,
+                    patternName: patternName
+                });
             const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
 
             return this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType)

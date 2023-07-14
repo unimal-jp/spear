@@ -1,6 +1,5 @@
 node_modules
-dist/*.ts
-dist/tsconfig.tsbuildinfo
-dist/spec
+dist/**/*.tsbuildinfo
+dist/**/spec
 src
 jest.config.ts

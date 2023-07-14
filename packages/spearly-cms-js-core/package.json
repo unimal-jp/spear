@@ -3,14 +3,18 @@
   "private": false,
   "version": "1.0.9",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "tsc": "tsc",
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc --build src",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p ./src/tsconfig.cjs.json",
+    "build:esm": "tsc -p ./src/tsconfig.esm.json",
     "dev": "nodemon --watch \".\" -e js,ts --exec \"npm run build\"",
     "test": "jest"
   },
@@ -26,7 +30,7 @@
   "homepage": "https://github.com/unimal-jp/spear#readme",
   "dependencies": {
     "node-html-parser": "^6.1.4",
-    "@spearly/sdk-js": "^1.0.0"
+    "@spearly/sdk-js": "^1.2.0"
   },
   "devDependencies": {
     "@types/jest": "^29.2.3",

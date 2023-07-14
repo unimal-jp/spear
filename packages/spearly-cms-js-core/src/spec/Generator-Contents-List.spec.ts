@@ -14,6 +14,23 @@ const convertTestData = [
             {identifier: "description", inputType: "text", value: "description"}
         ], 2),
         expected: "<h1>title</h1><div>description</div>"
+    },
+    {
+        testName: "Sub loop",
+        template: 
+            `<h1>{%= blog_title %}</h1>
+              <div cms-loop cms-field="ref">
+                <h4>{%= blog_ref_author %}</h4>
+              </div>
+            </h1>`,
+        options: {} as unknown as SpearlyJSGeneratorOption,
+        apiOptions: new Map<string, string>(),
+        contentType: "blog",
+        mockData: generateServerList([
+            {identifier: "title", inputType: "text", value: "title" },
+            {identifier: "ref", inputType: "reference", value: "ref"},
+        ], 2),
+        expected: `<h1>title</h1>`
     }
 ]
 
