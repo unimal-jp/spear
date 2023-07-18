@@ -21,8 +21,7 @@ const convertTestData = [
             `<h1>{%= blog_title %}</h1>
               <div cms-loop cms-field="ref">
                 <h4>{%= blog_ref_author %}</h4>
-              </div>
-            </h1>`,
+              </div>`,
         options: {} as unknown as SpearlyJSGeneratorOption,
         apiOptions: new Map<string, string>(),
         contentType: "blog",

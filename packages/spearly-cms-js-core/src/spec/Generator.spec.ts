@@ -82,9 +82,9 @@ describe('SpearlyJSGenerator', () => {
                 });
 
                 // 変換
-                let result
+                let result, patternName;
                 try {
-                    result = await generator.generateContent(testData.template, testData.contentType, 'contentId', {
+                    [result, patternName] = await generator.generateContent(testData.template, testData.contentType, 'contentId', {
                         patternName: 'patternName'
                     } as GetContentOption)
                 } catch(e) {
