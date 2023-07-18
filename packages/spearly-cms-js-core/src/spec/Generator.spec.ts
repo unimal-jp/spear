@@ -1,4 +1,4 @@
-import { SpearlyJSGenerator, SpearlyJSGeneratorOption } from '../Generator'
+import { GetContentOption, SpearlyJSGenerator, SpearlyJSGeneratorOption } from '../Generator'
 import { generateServerContent } from './TestUtils';
 
 const convertTestData = [
@@ -63,14 +63,14 @@ const convertTestData = [
 describe('SpearlyJSGenerator', () => {
     describe('constructor: コンストラクタ', () => {
         it('コンストラクタが正常にオブジェクトを生成する', () => {
-            const generator = new SpearlyJSGenerator('aaa', 'bbb')
+            const generator = new SpearlyJSGenerator('aaa', 'bbb', 'ccc')
             expect(generator).not.toBeNull()
         })
     }),
 
     describe('generateContent: コンテンツ生成', () => {        
         convertTestData.forEach(testData => {
-            let generator = new SpearlyJSGenerator('apikey', 'domain', testData.options)
+            let generator = new SpearlyJSGenerator('apikey', 'domain', 'analyticsDomain', testData.options)
             it(`generateContent: ${testData.testName}`, async () => {
                 // モック
                 Object.defineProperty(generator, 'client', {
@@ -84,7 +84,9 @@ describe('SpearlyJSGenerator', () => {
                 // 変換
                 let result
                 try {
-                    result = await generator.generateContent(testData.template, testData.contentType, 'contentId', "distinctId", "patternName", "");
+                    result = await generator.generateContent(testData.template, testData.contentType, 'contentId', {
+                        patternName: 'patternName'
+                    } as GetContentOption)
                 } catch(e) {
                     console.log(e)
                 }

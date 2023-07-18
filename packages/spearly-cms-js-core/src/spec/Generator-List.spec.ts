@@ -20,7 +20,7 @@ const convertTestData = [
 describe('SpearlyJSGenerator', () => {
     describe('generateContent-list: リスト生成', () => {        
         convertTestData.forEach(testData => {
-            let generator = new SpearlyJSGenerator('apikey', 'domain', testData.options)
+            let generator = new SpearlyJSGenerator('apikey', 'domain', 'analyticsDomain', testData.options)
             it(`generateContent: ${testData.testName}`, async () => {
                 // モック
                 Object.defineProperty(generator, 'client', {
