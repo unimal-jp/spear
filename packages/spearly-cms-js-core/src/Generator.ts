@@ -62,6 +62,16 @@ export class SpearlyJSGenerator {
             result = result.split(aliasMatchResult[0]).join(alias);
         }
 
+        const uidMatchResult = result.match(`{%= ${contentType}_#uid %}`)
+        if (!!uidMatchResult && uidMatchResult.length > 0) {
+            result = result.split(uidMatchResult[0]).join(content.attributes.publicUid);
+        }
+
+        const contentTypeResult = result.match(`{%= ${contentType}_#content_type %}`)
+        if (!!contentTypeResult && contentTypeResult.length > 0) {
+            result = result.split(contentTypeResult[0]).join(contentType);
+        }
+
         // Special converting for {%= <ContentType>_#published_at %} and {%= <ContentType>_#updated_at %}.
         const publishedAtResult = result.match(`{%= ${contentType}_#published_at %}`)
         if (!!publishedAtResult && publishedAtResult.length > 0) {

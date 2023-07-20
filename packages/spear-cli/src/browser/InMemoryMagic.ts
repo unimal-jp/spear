@@ -113,7 +113,8 @@ export default async function inMemoryMagic(
     const parsedNode = (await parseElements(
       state,
       component.node.childNodes as Element[],
-      jsGenerator
+      jsGenerator,
+      settings
     )) as Element[];
     componentsList.push({
       fname: component.fname,
@@ -130,7 +131,8 @@ export default async function inMemoryMagic(
     page.node.childNodes = await parseElements(
       state,
       page.node.childNodes as Element[],
-      jsGenerator
+      jsGenerator,
+      settings
     );
   }
 
@@ -164,7 +166,7 @@ export default async function inMemoryMagic(
   }
 
   // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator);
+  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator, settings);
 
   // Embed assets
   const asettsUrlAndRaw: {[key: string]: string} = {};
