@@ -21,4 +21,5 @@ export interface DefaultSettings {
   targetPagesPathList?: string[],
   quiteMode?: boolean,
   embedMode? : boolean,
+  debugMode? : boolean,
 }
