@@ -4,6 +4,7 @@ import mime from "mime-types";
 import { minify } from "html-minifier-terser";
 import { SpearlyJSGenerator } from "@spearly/cms-js-core"
 import { generateAPIOptionMap } from "./util.js";
+import { SpearSettings } from "../interfaces/HookCallbackInterface";
 
 function extractProps(state: State, node: Element) {
   const { key, value, scoped } = node.attributes;
@@ -15,7 +16,7 @@ function extractProps(state: State, node: Element) {
   }
 }
 
-export async function parseElements(state: State, nodes: Element[], jsGenerator: SpearlyJSGenerator) {
+export async function parseElements(state: State, nodes: Element[], jsGenerator: SpearlyJSGenerator, settings: SpearSettings) {
   const res = parse("") as Element;
 
   //nodes.forEach((node) => {
@@ -51,6 +52,10 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
       const contentType = node.getAttribute("cms-content-type");
       const apiOption = generateAPIOptionMap(node);
       removeCMSAttributes(node);
+      if (settings.debugMode) {
+        node.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+        node.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+      }
       const generatedStr = await jsGenerator.generateList(
         node.outerHTML,
         contentType,
@@ -73,6 +78,10 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
       const contentType = node.getAttribute("cms-content-type");
       const contentId = node.getAttribute("cms-content");
       removeCMSAttributes(node);
+      if (settings.debugMode) {
+        node.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+        node.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+      }
       const generatedStr = await jsGenerator.generateContent(
         node.outerHTML,
         contentType,
@@ -93,7 +102,8 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
       node.childNodes = await parseElements(
         state,
         node.childNodes as Element[],
-        jsGenerator
+        jsGenerator,
+        settings
       );
     }
 
@@ -106,7 +116,8 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
 
 export async function generateAliasPagesFromPagesList(
   state: State,
-  jsGenerator: SpearlyJSGenerator
+  jsGenerator: SpearlyJSGenerator,
+  settings: SpearSettings
 ): Promise<Component[]> {
   const replacePagesList: Component[] = [];
   for (const page of state.pagesList) {
@@ -125,6 +136,10 @@ export async function generateAliasPagesFromPagesList(
         if (page.fname.includes("[alias]")) {
           const apiOption = generateAPIOptionMap(tagAndAliasLoopElement as Element);
           removeCMSAttributes(tagAndAliasLoopElement as Element);
+          if (settings.debugMode) {
+            tagAndAliasLoopElement.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+            tagAndAliasLoopElement.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+          }
           const generatedContents = await jsGenerator.generateEachContentFromList(
             tagAndAliasLoopElement.innerHTML,
             contentType,
@@ -172,6 +187,10 @@ export async function generateAliasPagesFromPagesList(
         if (page.fname.includes("[tags]")) {
           const apiOption = generateAPIOptionMap(tagAndLoopElement as Element);
           removeCMSAttributes(tagAndLoopElement as Element);
+          if (settings.debugMode) {
+            tagAndLoopElement.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+            tagAndLoopElement.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+          }
 
           const generatedLists = await jsGenerator.generateListGroupByTag(
             tagAndLoopElement.innerHTML,
@@ -206,6 +225,10 @@ export async function generateAliasPagesFromPagesList(
 
           const apiOption = generateAPIOptionMap(aliasLoopElement as Element);
           removeCMSAttributes(aliasLoopElement as Element);
+          if (settings.debugMode) {
+            aliasLoopElement.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+            aliasLoopElement.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+          }
           const generatedContents = await jsGenerator.generateEachContentFromList(
             aliasLoopElement.innerHTML,
             contentType,
@@ -242,14 +265,18 @@ export async function generateAliasPagesFromPagesList(
 
       if (targetElement.getAttribute("cms-ignore-static")) continue;
       // [alias].html only (This mean path doesn't be included the [tags].)
-      const contentId = targetElement.getAttribute("cms-content-type");
-      if (!contentId) throw new Error("You should specify the cms-content-type in alias page with cms-item.");
+      const contentType = targetElement.getAttribute("cms-content-type");
+      if (!contentType) throw new Error("You should specify the cms-content-type in alias page with cms-item.");
 
       const apiOption = generateAPIOptionMap(targetElement as Element);
       removeCMSAttributes(targetElement as Element);
+      if (settings.debugMode) {
+        targetElement.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+        targetElement.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+      }
       const generatedContents = await jsGenerator.generateEachContentFromList(
         targetElement.innerHTML,
-        contentId,
+        contentType,
         apiOption
       );
       generatedContents.forEach((c) => {

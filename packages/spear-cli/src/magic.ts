@@ -83,7 +83,7 @@ async function bundle(): Promise<boolean> {
   // First parse components from the /components folder
   try {
     for (const componentsFolder of Settings.componentsFolder) {
-      await fileUtil.parseComponents(state, componentsFolder)
+      await fileUtil.parseComponents(state, componentsFolder, Settings)
     }
   } catch(e) {
     logger.error(e);
@@ -100,9 +100,10 @@ async function bundle(): Promise<boolean> {
   }
 
   // Run list again to parse children of the components
+  // Due to support nested components.
   const componentsList = [] as Component[]
   for (const component of state.componentsList) {
-    const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator) as Element[]
+    const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator, Settings) as Element[]
     componentsList.push({
       "fname": component.fname,
       "rawData": parsedNode[0].outerHTML,
@@ -115,13 +116,13 @@ async function bundle(): Promise<boolean> {
 
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, Settings)
     // We need to parseElement twice due to embed nested component.
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, Settings)
   }
 
   // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator)
+  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator, Settings)
 
   // Hook API: afterBuild
   for (const plugin of Settings.plugins) {
