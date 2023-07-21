@@ -30,7 +30,7 @@
   "homepage": "https://github.com/unimal-jp/spear#readme",
   "dependencies": {
     "node-html-parser": "^6.1.4",
-    "@spearly/sdk-js": "^1.3.0"
+    "@spearly/sdk-js": "^1.3.1"
   },
   "devDependencies": {
     "@types/jest": "^29.2.3",
