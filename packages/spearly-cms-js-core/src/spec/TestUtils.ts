@@ -3,7 +3,7 @@ import { SpearlyJSGenerator, SpearlyJSGeneratorOption } from '../Generator'
 export type ATTR = {
     identifier: string;
     inputType: string;
-    value: string;
+    value: string | ATTR;
 }
 
 export const generateServerContent = (attrs: ATTR[]) :any => {

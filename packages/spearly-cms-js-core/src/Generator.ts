@@ -1,7 +1,7 @@
 import { HTMLElement, Node, parse } from 'node-html-parser';
-import { FieldTypeAll, FieldTypeTags, SpearlyApiClient } from '@spearly/sdk-js';
+import { FieldTypeTags, SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { generateGetParamsFromAPIOptions, getCustomDateString, ReplaceDefinition } from './Utils.js'
-import type { Content } from '@spearly/sdk-js'
+import type { AnalyticsPostParams, Content } from '@spearly/sdk-js'
 
 export type SpearlyJSGeneratorOption = {
     linkBaseUrl: string | undefined;
@@ -10,6 +10,10 @@ export type SpearlyJSGeneratorOption = {
 type SpearlyJSGeneratorInternalOption = {
     linkBaseUrl: string;
     dateFormatter: Function;
+}
+export type GetContentOption = {
+    patternName: string,
+    previewToken?: string,
 }
 export type GeneratedContent = {
     alias : string,
@@ -27,8 +31,8 @@ export class SpearlyJSGenerator {
     client: SpearlyApiClient
     options: SpearlyJSGeneratorInternalOption
 
-    constructor(apiKey: string, domain: string, options: SpearlyJSGeneratorOption | undefined = undefined) {
-        this.client = new SpearlyApiClient(apiKey, domain)
+    constructor(apiKey: string, domain: string, analyticsDomain: string, options: SpearlyJSGeneratorOption | undefined = undefined) {
+        this.client = new SpearlyApiClient(apiKey, domain, analyticsDomain)
         this.options = {
             linkBaseUrl: options?.linkBaseUrl || "",
             dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date) {
@@ -85,12 +89,20 @@ export class SpearlyJSGenerator {
         return result
     }
 
-    async generateContent(templateHtml: string, contentType: string, contentId: string): Promise<string> {
+    async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption): Promise<[html: string, patternName: string | null]> {
         try {
-            const result = await this.client.getContent(contentId)
+            const result = option.previewToken
+                ? await this.client.getContentPreview(contentId, option.previewToken)
+                : await this.client.getContent(contentId, 
+                    option.patternName
+                    ? {
+                        patternName: option.patternName
+                    } 
+                    : {}
+                );
             const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
-
-            return this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType)
+            const patternName = result.attributes.patternName;
+            return [this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType), patternName]
         } catch (e: any) {
             return Promise.reject(e);
         }
@@ -216,5 +228,13 @@ export class SpearlyJSGenerator {
         } catch (e: any) {
             return Promise.reject(e)
         }
+    }
+
+    async pageView(contentId: string, patternName: string, expires?: number) {
+        this.client.analytics.pageView({
+            contentId,
+            patternName,
+            expires
+        } as AnalyticsPostParams)
     }
 }

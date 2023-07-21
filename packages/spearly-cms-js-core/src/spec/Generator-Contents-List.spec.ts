@@ -14,13 +14,29 @@ const convertTestData = [
             {identifier: "description", inputType: "text", value: "description"}
         ], 2),
         expected: "<h1>title</h1><div>description</div>"
+    },
+    {
+        testName: "Sub loop",
+        template: 
+            `<h1>{%= blog_title %}</h1>
+              <div cms-loop cms-field="ref">
+                <h4>{%= blog_ref_author %}</h4>
+              </div>`,
+        options: {} as unknown as SpearlyJSGeneratorOption,
+        apiOptions: new Map<string, string>(),
+        contentType: "blog",
+        mockData: generateServerList([
+            {identifier: "title", inputType: "text", value: "title" },
+            {identifier: "ref", inputType: "reference", value: "ref"},
+        ], 2),
+        expected: `<h1>title</h1>`
     }
 ]
 
 describe('SpearlyJSGenerator', () => {
     describe('generateEachContentFromList: リスト生成', () => {
         convertTestData.forEach(testData => {
-            let generator = new SpearlyJSGenerator('apikey', 'domain', testData.options)
+            let generator = new SpearlyJSGenerator('apikey', 'domain', 'analyticsDomain', testData.options)
             it(`generateEachContentFromList: ${testData.testName}`, async () => {
                 // モック
                 Object.defineProperty(generator, 'client', {

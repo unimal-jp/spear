@@ -1,9 +1,8 @@
 {
     "compilerOptions": {
-      "module": "ESNext",
       "target": "es6",
-      "moduleResolution": "node",
-      "allowSyntheticDefaultImports": true,
+      "moduleResolution": "Node",
+      "declaration": true,
       "rootDir": ".",
       "outDir": "../dist/",
       "composite": true
