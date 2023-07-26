@@ -35,7 +35,7 @@
     "url": "https://github.com/unimal-jp/spear/issues"
   },
   "dependencies": {
-    "@spearly/cms-js-core": "^1.0.10",
+    "@spearly/cms-js-core": "1.0.10",
     "@types/live-server": "^1.2.1",
     "argparse": "^2.0.1",
     "chalk": "^5.2.0",
