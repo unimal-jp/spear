@@ -89,7 +89,7 @@ export class SpearlyJSGenerator {
         return result
     }
 
-    async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption): Promise<[html: string, patternName: string | null]> {
+    async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption): Promise<[html: string, uid: string,  patternName: string | null]> {
         try {
             const result = option.previewToken
                 ? await this.client.getContentPreview(contentId, option.previewToken)
@@ -101,8 +101,9 @@ export class SpearlyJSGenerator {
                     : {}
                 );
             const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
+            const uid = result.attributes.publicUid;
             const patternName = result.attributes.patternName;
-            return [this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType), patternName]
+            return [this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType), uid, patternName]
         } catch (e: any) {
             return Promise.reject(e);
         }
