@@ -37,7 +37,8 @@ export default function getFieldsValuesDefinitions(
     prefix = "",
     depth = 0,
     disableContentType = false,
-    dateFormatter: Function
+    dateFormatter: Function,
+    insertDebugInfo: boolean
 ): ReplaceDefinition[] {
     if (depth >= 3) {
       return [];
@@ -49,56 +50,56 @@ export default function getFieldsValuesDefinitions(
       if (isTextType(field)) {
         replaceDefinitions.push({
           definitionString: "{%= " + prefix + "_" + key + " %}",
-          fieldValue: getEscapedString(field.attributes.value)
+          fieldValue: insertDebugAttribute(getEscapedString(field.attributes.value), field.attributes.identifier, insertDebugInfo)
         });
       } else if (isNumberType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: field.attributes.value.toString()
+            fieldValue: insertDebugAttribute(field.attributes.value.toString(), field.attributes.identifier, insertDebugInfo)
         })
       } else if (isRichTextType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: getEscapedStringRichText(field.attributes.value)
+            fieldValue: insertDebugAttribute(getEscapedStringRichText(field.attributes.value), field.attributes.identifier, insertDebugInfo)
         })
       } else if (isImageType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: getEscapedString(field.attributes.value)
+            fieldValue: insertDebugAttribute(getEscapedString(field.attributes.value), field.attributes.identifier, insertDebugInfo)
         })
       } else if (isCalendarType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: dateFormatter(new Date(field.attributes.value))
+            fieldValue: insertDebugAttribute(dateFormatter(new Date(field.attributes.value)), field.attributes.identifier, insertDebugInfo)
         })
       } else if (isTagType(field)) {
         // TODO: タグの取り扱いを今後変更する必要がある
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: getEscapedString(field.attributes.value.join(','))
+            fieldValue: insertDebugAttribute(getEscapedString(field.attributes.value.join(',')), field.attributes.identifier, insertDebugInfo)
         })
       } else if (isMapType(field)) {
         const value = field.attributes.value
         if (value.address) {
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#address %}",
-            fieldValue: encodeURIComponent(getEscapedString(value.address))
+            fieldValue: insertDebugAttribute(encodeURIComponent(getEscapedString(value.address)), field.attributes.identifier, insertDebugInfo)
           });
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#address_decoded %}",
-            fieldValue: getEscapedString(value.address)
+            fieldValue: insertDebugAttribute(getEscapedString(value.address), field.attributes.identifier, insertDebugInfo)
           });
         }
         if (value.latitude) {
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#latitude %}",
-            fieldValue: value.latitude.toString()
+            fieldValue: insertDebugAttribute(value.latitude.toString(), field.attributes.identifier, insertDebugInfo)
           });
         }
         if (value.longitude) {
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#longitude %}",
-            fieldValue: value.longitude.toString()
+            fieldValue: insertDebugAttribute(value.longitude.toString(), field.attributes.identifier, insertDebugInfo)
           });
         }
       } else if (isContentType(field)) {
@@ -110,7 +111,8 @@ export default function getFieldsValuesDefinitions(
                     `${prefix}_${key}`,
                     depth++,
                     disableContentType,
-                    dateFormatter
+                    dateFormatter,
+                    insertDebugInfo
                 ));
         } catch(e) {
             console.log('Spearly found the non value of reference type', e)
@@ -144,6 +146,13 @@ const getEscapedStringRichText = (str: string): string => {
         .split("\r").join("\\r")
     }
     return ""
+}
+
+// wrap the targetHTML by span tag with debug attribute(value is fieldId)
+const insertDebugAttribute = (targetHTML: string, fieldId: string, insertDebugInfo: boolean): string => {
+  return insertDebugInfo 
+    ? `<span data-spear-content-field="${fieldId}">${targetHTML}</span>`
+    : targetHTML
 }
 
 
