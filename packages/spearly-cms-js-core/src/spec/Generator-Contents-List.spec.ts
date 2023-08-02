@@ -50,7 +50,7 @@ describe('SpearlyJSGenerator', () => {
                 // 変換
                 let result
                 try {
-                    result = await generator.generateEachContentFromList(testData.template, testData.contentType, testData.apiOptions)
+                    result = await generator.generateEachContentFromList(testData.template, testData.contentType, testData.apiOptions, "", false)
                 } catch(e) {
                     console.log(e)
                 }

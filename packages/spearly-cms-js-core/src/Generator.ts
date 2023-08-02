@@ -89,7 +89,7 @@ export class SpearlyJSGenerator {
         return result
     }
 
-    async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption): Promise<[html: string, uid: string,  patternName: string | null]> {
+    async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption, insertDebugInfo: boolean): Promise<[html: string, uid:string, patternName: string | null]> {
         try {
             const result = option.previewToken
                 ? await this.client.getContentPreview(contentId, option.previewToken)
@@ -100,7 +100,7 @@ export class SpearlyJSGenerator {
                     } 
                     : {}
                 );
-            const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
+            const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
             const uid = result.attributes.publicUid;
             const patternName = result.attributes.patternName;
             return [this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType), uid, patternName]
@@ -109,7 +109,7 @@ export class SpearlyJSGenerator {
         }
     }
 
-    async traverseInjectionSubLoop(nodes: HTMLElement[], apiOptions: APIOption): Promise<Node[]> {
+    async traverseInjectionSubLoop(nodes: HTMLElement[], apiOptions: APIOption, insertDebugInfo: boolean): Promise<Node[]> {
         const resultNode = parse("") as HTMLElement
         for (const node of nodes) {
             const isTextNode = node.nodeType === 3
@@ -123,35 +123,35 @@ export class SpearlyJSGenerator {
                 node.removeAttribute("cms-loop")
                 node.removeAttribute("cms-field")
                 node.removeAttribute("cms-item-variable")
-                const generatedStr = await this.generateList(node.outerHTML, contentType, varName || contentType, apiOptions)
+                const generatedStr = await this.generateList(node.outerHTML, contentType, varName || contentType, apiOptions, insertDebugInfo)
                 const generatedNode = parse(generatedStr) as HTMLElement
                 resultNode.childNodes = generatedNode.childNodes
                 continue
             }
             if (node.childNodes.length > 0) {
-                node.childNodes = await this.traverseInjectionSubLoop(node.childNodes as HTMLElement[], apiOptions)
+                node.childNodes = await this.traverseInjectionSubLoop(node.childNodes as HTMLElement[], apiOptions, insertDebugInfo)
             } 
             resultNode.appendChild(node)
         }
         return resultNode.childNodes
     }
 
-    async generateSubLoop(templateHtml: string, apiOptions: APIOption): Promise<string> {
+    async generateSubLoop(templateHtml: string, apiOptions: APIOption, insertDebugInfo): Promise<string> {
         const parsedNode = parse(templateHtml)
-        parsedNode.childNodes = await this.traverseInjectionSubLoop(parsedNode.childNodes as HTMLElement[], apiOptions)
+        parsedNode.childNodes = await this.traverseInjectionSubLoop(parsedNode.childNodes as HTMLElement[], apiOptions, insertDebugInfo)
         return parsedNode.outerHTML
     }
 
-    async generateList(templateHtml: string, contentType: string, variableName = "", apiOptions: APIOption): Promise<string> {
+    async generateList(templateHtml: string, contentType: string, variableName = "", apiOptions: APIOption, insertDebugInfo: boolean): Promise<string> {
         try {
             // Searching sub-loop in html.
             if (templateHtml.includes("cms-loop")) {
-                templateHtml = await this.generateSubLoop(templateHtml, apiOptions)
+                templateHtml = await this.generateSubLoop(templateHtml, apiOptions, insertDebugInfo)
             }
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             let resultHtml = ""
             result.data.forEach(c => {
-                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter);
+                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
                 resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType)
             })
 
@@ -161,11 +161,11 @@ export class SpearlyJSGenerator {
         }
     }
 
-    async generateListGroupByTag(templateHtml: string, contentType: string, apiOption, tagFieldName: string, variableName?: string): Promise<GeneratedListContent[]> {
+    async generateListGroupByTag(templateHtml: string, contentType: string, apiOption, tagFieldName: string, variableName: string, insertDebugInfo: boolean): Promise<GeneratedListContent[]> {
         try {
             // Searching sub-loop in html
             if (templateHtml.includes("cms-loop")) {
-                templateHtml = await this.generateSubLoop(templateHtml, apiOption)
+                templateHtml = await this.generateSubLoop(templateHtml, apiOption, insertDebugInfo)
             }
 
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOption))
@@ -188,7 +188,7 @@ export class SpearlyJSGenerator {
                 })
                 let resultHtml = ""
                 targetContents.forEach(c => {
-                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter);
+                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
                     // Special replacement string
                     replacementArray.push({
                         definitionString: `{%= ${contentType}_#tag %}`,
@@ -207,12 +207,12 @@ export class SpearlyJSGenerator {
         }
     }
 
-    async generateEachContentFromList(templateHtml: string, contentType: string, apiOptions: APIOption, tagFieldName?: string) : Promise<GeneratedContent[]> {
+    async generateEachContentFromList(templateHtml: string, contentType: string, apiOptions: APIOption, tagFieldName: string, insertDebugInfo: boolean) : Promise<GeneratedContent[]> {
         try {
             const generatedContents: GeneratedContent[] = []
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             result.data.forEach(c => {
-                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter)
+                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter, insertDebugInfo)
                 const tags = c.attributes.fields.data.filter(field => field.attributes.identifier === tagFieldName)
                 let tag: string[] = []
                 if (tags && tags.length > 0 && Array.isArray(tags[0].attributes.value)) {

@@ -86,7 +86,7 @@ describe('SpearlyJSGenerator', () => {
                 try {
                     [result, uid, patternName] = await generator.generateContent(testData.template, testData.contentType, 'contentId', {
                         patternName: 'patternName'
-                    } as GetContentOption)
+                    } as GetContentOption, false)
                 } catch(e) {
                     console.log(e)
                 }
