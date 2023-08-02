@@ -183,14 +183,14 @@ export class FileUtil {
       } else if (needSASSBuild(ext)) {
         const css = this.manipulator.compileSASS(filePath);
         state.out.assetsFiles.push({
-          filePath: `${dirPath}/${fname}.css`,
+          filePath: `${relatePath}/${fname}.css`,
           rawData: Buffer.from(css),
         });
         continue;
       } else if (!isParseTarget(ext)) {
         const rawData = this.manipulator.readFileSyncAsBuffer(filePath);
         state.out.assetsFiles.push({
-          filePath: `${dirPath}/${file}`,
+          filePath: `${relatePath}/${file}`,
           rawData,
         });
         continue;
