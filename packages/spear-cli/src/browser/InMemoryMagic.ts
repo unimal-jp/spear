@@ -25,7 +25,8 @@ export default async function inMemoryMagic(
 
   const jsGenerator = new SpearlyJSGenerator(
     settings.spearlyAuthKey,
-    settings.apiDomain
+    settings.apiDomain,
+    settings.analysysDomain || "analytics.spearly.com",
   );
   let state: State = {
     pagesList: [],

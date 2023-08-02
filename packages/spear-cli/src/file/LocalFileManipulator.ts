@@ -22,10 +22,7 @@ export class LocalFileManipulator implements FileManipulatorInterface {
     
               if (ext === ".js" || ext === ".mjs") {
                 const data = await import(
-                  files[0],
-                  files[0].indexOf("json") > -1
-                    ? { assert: { type: "json" } }
-                    : undefined
+                  files[0]
                 );
                 resolve(data.default);
               } else if (ext === ".json") {

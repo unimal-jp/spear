@@ -40,6 +40,7 @@ function initializeArgument(args: Args) {
     port: 8080,
     host: "0.0.0.0",
     apiDomain: "api.spearly.com",
+    analysysDomain: "analytics.spearly.com",
     generateSitemap: false,
     siteURL: "",
     rootDir: dirname,
@@ -59,7 +60,7 @@ async function bundle(): Promise<boolean> {
     },
   }
 
-  jsGenerator = new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain)
+  jsGenerator = new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain, Settings.analysysDomain)
 
   // Hook API: beforeBuild
   for (const plugin of Settings.plugins) {

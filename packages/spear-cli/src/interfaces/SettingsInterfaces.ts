@@ -13,6 +13,7 @@ export interface DefaultSettings {
   port?: number
   host?: string
   apiDomain: string,
+  analysysDomain: string,
   generateSitemap: boolean,
   siteURL: string,
   rootDir: string,
