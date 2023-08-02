@@ -2,7 +2,7 @@ import { Component, Element, State } from "../interfaces/MagicInterfaces";
 import { parse } from "node-html-parser";
 import mime from "mime-types";
 import { minify } from "html-minifier-terser";
-import { SpearlyJSGenerator } from "@spearly/cms-js-core"
+import { GetContentOption, SpearlyJSGenerator } from "@spearly/cms-js-core"
 import { generateAPIOptionMap } from "./util.js";
 import { SpearSettings } from "../interfaces/HookCallbackInterface";
 
@@ -60,7 +60,8 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
         node.outerHTML,
         contentType,
         "",
-        apiOption
+        apiOption,
+        settings.debugMode
       );
       const generatedNode = parse(generatedStr) as Element;
       res.appendChild(generatedNode);
@@ -82,10 +83,12 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
         node.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
         node.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
       }
-      const generatedStr = await jsGenerator.generateContent(
+      const [generatedStr, _] = await jsGenerator.generateContent(
         node.outerHTML,
         contentType,
-        contentId
+        contentId,
+        {} as GetContentOption,
+        settings.debugMode
       );
       const generatedNode = parse(generatedStr) as Element;
       res.appendChild(generatedNode);
@@ -144,7 +147,8 @@ export async function generateAliasPagesFromPagesList(
             tagAndAliasLoopElement.innerHTML,
             contentType,
             apiOption,
-            tagFieldName
+            tagFieldName,
+            settings.debugMode
           );
           generatedContents.forEach(c => {
             tagAndAliasLoopElement.innerHTML = c.generatedHtml;
@@ -196,7 +200,9 @@ export async function generateAliasPagesFromPagesList(
             tagAndLoopElement.innerHTML,
             contentType,
             apiOption,
-            tagFieldName
+            tagFieldName,
+            "",
+            settings.debugMode
           )
           generatedLists.forEach(c => {
             tagAndLoopElement.innerHTML = c.generatedHtml;
@@ -232,7 +238,9 @@ export async function generateAliasPagesFromPagesList(
           const generatedContents = await jsGenerator.generateEachContentFromList(
             aliasLoopElement.innerHTML,
             contentType,
-            apiOption
+            apiOption,
+            "",
+            settings.debugMode
           );
           generatedContents.forEach(c => {
             aliasLoopElement.innerHTML = c.generatedHtml;
@@ -277,7 +285,9 @@ export async function generateAliasPagesFromPagesList(
       const generatedContents = await jsGenerator.generateEachContentFromList(
         targetElement.innerHTML,
         contentType,
-        apiOption
+        apiOption,
+        "",
+        settings.debugMode
       );
       generatedContents.forEach((c) => {
         targetElement.innerHTML = c.generatedHtml;
