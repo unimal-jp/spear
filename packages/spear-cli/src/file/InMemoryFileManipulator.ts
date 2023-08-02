@@ -2,7 +2,7 @@ import { fs, vol } from "memfs";
 import { FileManipulatorInterface, InMemoryFile } from "../interfaces/FileManipulatorInterface";
 import { SiteMapURL } from "../interfaces/MagicInterfaces";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
-import { parse, stringify } from 'scss-parser';
+import { compileString } from "sass"
 
 export class InMemoryFileManipulator implements FileManipulatorInterface {
     files: InMemoryFile[]
@@ -101,9 +101,9 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
 
     // Use Salesforce Light SCSS parser on in-browser mode.
     compileSASS(path: string):string {
-      const cssFile = this.readFileSync(path, 'utf8');
-      const ast = parse(cssFile);
-      return stringify(ast);
+      const fileContent = fs.readFileSync(path, 'utf8');
+      const result = compileString(fileContent.toString());
+      return result.css;
     }
 
     async generateSiteMap(linkList: Array<SiteMapURL>, siteURL: string): Promise<string> {
