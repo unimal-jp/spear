@@ -3,13 +3,15 @@ import { FieldTypeTags, SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { generateGetParamsFromAPIOptions, getCustomDateString, ReplaceDefinition } from './Utils.js'
 import type { AnalyticsPostParams, Content } from '@spearly/sdk-js'
 
+export type DateFormatter = (date: Date, dateOnly?: boolean) => string
+
 export type SpearlyJSGeneratorOption = {
     linkBaseUrl: string | undefined;
-    dateFormatter: Function | undefined;
+    dateFormatter: DateFormatter | undefined;
 }
 type SpearlyJSGeneratorInternalOption = {
     linkBaseUrl: string;
-    dateFormatter: Function;
+    dateFormatter: DateFormatter;
 }
 export type GetContentOption = {
     patternName: string,
@@ -35,8 +37,8 @@ export class SpearlyJSGenerator {
         this.client = new SpearlyApiClient(apiKey, domain, analyticsDomain)
         this.options = {
             linkBaseUrl: options?.linkBaseUrl || "",
-            dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date) {
-                return getCustomDateString("YYYY年MM月DD日 hh時mm分ss秒", date)
+            dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date, dateOnly?: boolean) {
+                return getCustomDateString(`YYYY年MM月DD日${!dateOnly ? " hh時mm分ss秒" : ""}`, date)
             }
         }
     }
