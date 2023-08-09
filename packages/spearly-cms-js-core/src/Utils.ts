@@ -72,6 +72,11 @@ export default function getFieldsValuesDefinitions(
             definitionString: "{%= " + prefix + "_" + key + " %}",
             fieldValue: insertDebugAttribute(dateFormatter(new Date(field.attributes.value)), field.attributes.identifier, insertDebugInfo)
         })
+
+        replaceDefinitions.push({
+          definitionString: "{%= " + prefix + "_" + key + "_#date_only %}",
+          fieldValue: insertDebugAttribute(dateFormatter(new Date(field.attributes.value), true), field.attributes.identifier, insertDebugInfo)
+      })
       } else if (isTagType(field)) {
         // TODO: タグの取り扱いを今後変更する必要がある
         replaceDefinitions.push({
