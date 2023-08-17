@@ -579,10 +579,10 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@spearly/sdk-js@^1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@spearly/sdk-js/-/sdk-js-1.3.1.tgz#fcd86a34c241a1e1a8ec8b93858d3b579504ee94"
-  integrity sha512-dxhAcKc/3QXDx8RYEBoSavna9MQSESX4kNyPG1rFZyZL22dHCHHPkMUu8jhNhm4c96LHa5A34uYSagEcrohzOw==
+"@spearly/sdk-js@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@spearly/sdk-js/-/sdk-js-2.0.0.tgz#164fc82379028cf14d4d32f5908863850983cf2a"
+  integrity sha512-C4UDdu0tZZcE4/0Qz8MO5w6ZTTrvO/BvJNkoUpb5CxlJRXY7Rs6lhuLWQkzyBedgzcE5PttKQXZ7YG2a58MLEg==
   dependencies:
     axios "^1.3.4"
     js-cookie "^3.0.5"
