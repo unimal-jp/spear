@@ -94,8 +94,8 @@ export class SpearlyJSGenerator {
     async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption, insertDebugInfo: boolean): Promise<[html: string, uid:string, patternName: string | null]> {
         try {
             const result = option.previewToken
-                ? await this.client.getContentPreview(contentId, option.previewToken)
-                : await this.client.getContent(contentId, 
+                ? await this.client.getContentPreview(contentType, contentId, option.previewToken)
+                : await this.client.getContent(contentType, contentId,
                     option.patternName
                     ? {
                         patternName: option.patternName
