@@ -12,7 +12,7 @@ export interface DefaultSettings {
   spearlyAuthKey?: string
   port?: number
   host?: string
-  crossOriginIsonation: boolean,
+  crossOriginIsolation: boolean,
   apiDomain: string,
   analysysDomain: string,
   generateSitemap: boolean,
