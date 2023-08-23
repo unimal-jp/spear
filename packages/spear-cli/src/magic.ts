@@ -39,6 +39,7 @@ function initializeArgument(args: Args) {
     spearlyAuthKey: "",
     port: 8080,
     host: "0.0.0.0",
+    crossOriginIsolation: false,
     apiDomain: "api.spearly.com",
     analysysDomain: "analytics.spearly.com",
     generateSitemap: false,
@@ -228,6 +229,16 @@ export default async function magic(args: Args): Promise<boolean> {
       wait: 1000,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       logLevel: 0 as any,
+      middleware:
+        Settings.crossOriginIsolation
+          ? [
+              function (req: any, res: any, next: any) {
+                res.setHeader("Cross-Origin-Embedder-Policy", "credentialless")
+                res.setHeader("Cross-Origin-Opener-Policy", "same-origin")
+                next()
+              }
+          ]
+          : []
     }
 
     liveServer.start(params)
