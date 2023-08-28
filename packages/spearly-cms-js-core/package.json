@@ -29,11 +29,11 @@
   },
   "homepage": "https://github.com/unimal-jp/spear#readme",
   "dependencies": {
-    "node-html-parser": "^6.1.4",
-    "@spearly/sdk-js": "^2.0.0"
+    "@spearly/sdk-js": "^2.0.0",
+    "node-html-parser": "^6.1.4"
   },
   "devDependencies": {
-    "@types/jest": "^29.2.3",
+    "@types/jest": "^29.5.4",
     "jest": "^29.3.1",
     "nodemon": "^2.0.19",
     "ts-jest": "^29.0.3",
