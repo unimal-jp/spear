@@ -173,14 +173,8 @@ async function loadSettingsFromFile() {
   }
 }
 
-export default async function magic(args: Args): Promise<boolean> {
-  initializeArgument(args)
-
-  if (args.action === "watch") {
-    Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
-  }
-
-  // Load default settings from spear.config.{js,json}|package.json
+async function loadSettings() {
+    // Load default settings from spear.config.{js,json}|package.json
   await loadSettingsFromFile()
   logger.isQuite = Settings.quiteMode
 
@@ -207,6 +201,16 @@ export default async function magic(args: Args): Promise<boolean> {
       }
     }
   }
+}
+
+export default async function magic(args: Args): Promise<boolean> {
+  initializeArgument(args)
+
+  if (args.action === "watch") {
+    Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
+  }
+
+  await loadSettings()
 
   if (args.action === "watch") {
     if (args.port) {
@@ -215,10 +219,24 @@ export default async function magic(args: Args): Promise<boolean> {
     // Bundle before starting the server
     await bundle()
 
-    watch(Settings.srcDir, { recursive: true }, function (evt, name) {
-      logger.log("changed: %s", name)
-      bundle()
-    })
+    watch("./",
+      {
+        recursive: true,
+        filter(f, skip) {
+          // skip node_modules
+          if (/node_modules/.test(f)) return skip;
+          return true;
+        }
+      },
+      async function (evt, name) {
+        logger.log("changed: %s", name)
+        // Realod settings in order to refresh plugins object in memory.
+        // If we don't refresh it, the plugin will not be reloaded.
+        // e.g., i18n plugin has i18n settings file in memory.
+        await loadSettings()
+        bundle()
+      }
+    );
 
     const params = {
       port: Settings.port,
