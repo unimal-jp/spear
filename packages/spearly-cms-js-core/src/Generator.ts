@@ -11,8 +11,6 @@ export interface FakeSpearlyApiClient {
     analytics: {
         pageView: (params: any) => Promise<void>;
     };
-    constructor(dir: string);
-    getRequest<T>(endpoint: string, queries?: string): Promise<T>;
     getList(contentTypeId: string, params?: any): Promise<List>;
     getContent(contentTypeId: string, contentId: string, params?: any): Promise<Content>;
     getContentPreview(contentTypeId: string, contentId: string, previewToken: string): Promise<Content>;
