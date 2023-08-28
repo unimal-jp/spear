@@ -110,7 +110,15 @@ export function needSASSBuild(ext: string) {
 }
 
 export function isSamePath(path1: string, path2: string) {
-  const normalizedPath1 = path1.replace(/^\//, "");
-  const normalizedPath2 = path2.replace(/^\//, "");
+  // Drop first two slash and last slash.
+  // E.g., //home/hoobar/ -> /home/hoobar
+  const normalizedPath1 = path1.replace(/^\/\//, "/").replace(/\/$/, "");
+  const normalizedPath2 = path2.replace(/^\/\//, "/").replace(/\/$/, "");
   return normalizedPath1 === normalizedPath2;
+}
+
+export function includeComponentsDir(componentsDir: string[], path: string) {
+  return componentsDir.some((dir) => {
+    return isSamePath(dir, path);
+  });
 }

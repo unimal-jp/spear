@@ -8,7 +8,7 @@ import { DefaultSettings } from "./interfaces/SettingsInterfaces"
 import { fileURLToPath } from "url"
 import { SpearlyJSGenerator } from '@spearly/cms-js-core'
 import chalk from 'chalk'
-import { defaultSettingDeepCopy, stateDeepCopy } from "./utils/util.js"
+import { defaultSettingDeepCopy, includeComponentsDir, stateDeepCopy } from "./utils/util.js"
 import { FileUtil } from "./utils/file.js"
 import { LocalFileManipulator } from "./file/LocalFileManipulator.js"
 import { generateAliasPagesFromPagesList, parseElements } from "./utils/dom.js"
@@ -20,14 +20,14 @@ const logger = new SpearLog(false)
 const fileUtil = new FileUtil(new LocalFileManipulator(), logger)
 
 let dirname = process.cwd()
-let Settings: DefaultSettings
+let settings: DefaultSettings
 let jsGenerator: SpearlyJSGenerator
 
 function initializeArgument(args: Args) {
   if (args.src) {
     dirname = path.resolve(args.src)
   }
-  Settings = {
+  settings = {
     projectName: "Spear CLI",
     settingsFile: "spear.config",
     pagesFolder: `${dirname}/src/pages`,
@@ -47,6 +47,8 @@ function initializeArgument(args: Args) {
     rootDir: dirname,
     plugins: [],
     quiteMode: false,
+    debugMode: false,
+    generateComponents: false,
   }
 }
 
@@ -61,10 +63,10 @@ async function bundle(): Promise<boolean> {
     },
   }
 
-  jsGenerator = new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain, Settings.analysysDomain)
+  jsGenerator = new SpearlyJSGenerator(settings.spearlyAuthKey, settings.apiDomain, settings.analysysDomain)
 
   // Hook API: beforeBuild
-  for (const plugin of Settings.plugins) {
+  for (const plugin of settings.plugins) {
     if (plugin.beforeBuild) {
       try {
         const newState = await plugin.beforeBuild(state, { fileUtil, logger })
@@ -78,12 +80,12 @@ async function bundle(): Promise<boolean> {
   }
 
   // Create dist folder
-  fileUtil.createDir(Settings)
+  fileUtil.createDir(settings)
 
   // First parse components from the /components folder
   try {
-    for (const componentsFolder of Settings.componentsFolder) {
-      await fileUtil.parseComponents(state, componentsFolder, Settings)
+    for (const componentsFolder of settings.componentsFolder) {
+      await fileUtil.parseComponents(state, componentsFolder, settings)
     }
   } catch(e) {
     logger.error(e);
@@ -91,8 +93,8 @@ async function bundle(): Promise<boolean> {
   }
 
   try {
-    for (const srcDir of Settings.srcDir) {
-      await fileUtil.parsePages(state, srcDir)
+    for (const srcDir of settings.srcDir) {
+      await fileUtil.parsePages(state, srcDir, settings)
     }
   } catch(e) {
     logger.error(e);
@@ -103,7 +105,7 @@ async function bundle(): Promise<boolean> {
   // Due to support nested components.
   const componentsList = [] as Component[]
   for (const component of state.componentsList) {
-    const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator, Settings) as Element[]
+    const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator, settings) as Element[]
     componentsList.push({
       "fname": component.fname,
       "rawData": parsedNode[0].outerHTML,
@@ -116,16 +118,16 @@ async function bundle(): Promise<boolean> {
 
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, Settings)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, settings)
     // We need to parseElement twice due to embed nested component.
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, Settings)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, settings)
   }
 
   // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator, Settings)
+  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator, settings)
 
   // Hook API: afterBuild
-  for (const plugin of Settings.plugins) {
+  for (const plugin of settings.plugins) {
     if (plugin.afterBuild) {
       try {
         const newState = await plugin.afterBuild(state, { fileUtil, logger })
@@ -139,10 +141,10 @@ async function bundle(): Promise<boolean> {
   }
 
   // Dump pages
-  fileUtil.dumpPages(state, libDirname, Settings)
+  fileUtil.dumpPages(state, libDirname, settings)
 
   // Hook API: bundle
-  for (const plugin of Settings.plugins) {
+  for (const plugin of settings.plugins) {
     if (plugin.bundle) {
       try {
         const newState = await plugin.bundle(state, { fileUtil, logger })
@@ -159,10 +161,10 @@ async function bundle(): Promise<boolean> {
 }
 
 async function loadSettingsFromFile() {
-  const data = await fileUtil.loadFile(`${dirname}/${Settings.settingsFile}.?(mjs|js|json)`)
+  const data = await fileUtil.loadFile(`${dirname}/${settings.settingsFile}.?(mjs|js|json)`)
   if (data) {
     Object.keys(data).forEach((k) => {
-      Settings[k] = data[k]
+      settings[k] = data[k]
     })
   }
 }
@@ -171,28 +173,28 @@ export default async function magic(args: Args): Promise<boolean> {
   initializeArgument(args)
 
   if (args.action === "watch") {
-    Settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
+    settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
   }
 
   // Load default settings from spear.config.{js,json}|package.json
   await loadSettingsFromFile()
-  logger.isQuite = Settings.quiteMode
+  logger.isQuite = settings.quiteMode
 
-  // If directory has the same name, it will be removed.
-  Settings.srcDir = Settings.srcDir.filter((srcDir) => {
-    return !Settings.srcDir.some((srcDir2) => {
-      if (srcDir !== srcDir2 && !srcDir2.endsWith("components")) return false
+  // If directory has the same name of components directory, remove it from srcDir
+  settings.srcDir = settings.srcDir.filter((srcDir) => {
+    return !settings.srcDir.some((srcDir2) => {
+      if (srcDir !== srcDir2 && includeComponentsDir(settings.componentsFolder, srcDir)) return false
       return srcDir !== srcDir2 && srcDir.startsWith(srcDir2)
     })
   })
 
   // Hook API after settings
-  for (const plugin of Settings.plugins) {
+  for (const plugin of settings.plugins) {
     if (plugin.configuration) {
       try {
-        const newSettings = await plugin.configuration(Settings, { fileUtil, logger })
+        const newSettings = await plugin.configuration(settings, { fileUtil, logger })
         if (newSettings) {
-          Settings = defaultSettingDeepCopy(newSettings)
+          settings = defaultSettingDeepCopy(newSettings)
         }
       } catch (e) {
         console.warn(` plugin process failed. ${plugin.pluginName}}}`)
@@ -202,27 +204,27 @@ export default async function magic(args: Args): Promise<boolean> {
 
   if (args.action === "watch") {
     if (args.port) {
-      Settings.port = args.port
+      settings.port = args.port
     }
     // Bundle before starting the server
     await bundle()
 
-    watch(Settings.srcDir, { recursive: true }, function (evt, name) {
+    watch(settings.srcDir, { recursive: true }, function (evt, name) {
       logger.log("changed: %s", name)
       bundle()
     })
 
     const params = {
-      port: Settings.port,
-      host: Settings.host,
-      root: Settings.distDir,
+      port: settings.port,
+      host: settings.host,
+      root: settings.distDir,
       open: false,
       file: "index.html",
       wait: 1000,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       logLevel: 0 as any,
       middleware:
-        Settings.crossOriginIsolation
+        settings.crossOriginIsolation
           ? [
               function (req: any, res: any, next: any) {
                 res.setHeader("Cross-Origin-Embedder-Policy", "credentialless")
@@ -235,10 +237,10 @@ export default async function magic(args: Args): Promise<boolean> {
 
     liveServer.start(params)
     logger.log(chalk.green(`
-    Server started on port ${Settings.port} 🚀
+    Server started on port ${settings.port} 🚀
     You can access the following URL:
 
-      http://localhost:${Settings.port}
+      http://localhost:${settings.port}
     `))
     return true
   } else if (args.action === "build") {
