@@ -79,9 +79,7 @@ export default async function inMemoryMagic(
           state = stateDeepCopy(newState);
         }
       } catch (e) {
-        // TODO. This error should have a plugin information.
-        // For more information, see the https://github.com/unimal-jp/spear/issues/111
-        console.warn(` plugin process failed. `);
+        console.warn(` plugin process failed. ${plugin.pluginName}}}`)
       }
     }
   }
@@ -204,9 +202,7 @@ export default async function inMemoryMagic(
           state = stateDeepCopy(newState);
         }
       } catch (e) {
-        // TODO. This error should have a plugin information.
-        // For more information, see the https://github.com/unimal-jp/spear/issues/111
-        console.warn(` plugin process failed. `);
+        console.warn(` plugin process failed. ${plugin.pluginName}}}`)
       }
     }
   }
@@ -224,9 +220,7 @@ export default async function inMemoryMagic(
           state = stateDeepCopy(newState);
         }
       } catch (e) {
-        // TODO. This error should have a plugin information.
-        // For more information, see the https://github.com/unimal-jp/spear/issues/111
-        console.warn(` plugin process failed. `);
+        console.warn(` plugin process failed. ${plugin.pluginName}}}`)
       }
     }
   }
