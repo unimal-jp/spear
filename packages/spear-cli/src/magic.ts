@@ -21,7 +21,6 @@ const fileUtil = new FileUtil(new LocalFileManipulator(), logger)
 
 let dirname = process.cwd()
 let settings: DefaultSettings
-let jsGenerator: SpearlyJSGenerator
 
 function initializeArgument(args: Args) {
   if (args.src) {
@@ -61,9 +60,9 @@ async function bundle(): Promise<boolean> {
     out: {
       assetsFiles: [],
     },
-  }
 
-  jsGenerator = new SpearlyJSGenerator(settings.spearlyAuthKey, settings.apiDomain, settings.analysysDomain)
+    jsGenerator: new SpearlyJSGenerator(settings.spearlyAuthKey, settings.apiDomain, settings.analysysDomain)
+  }
 
   // Hook API: beforeBuild
   for (const plugin of settings.plugins) {
@@ -105,7 +104,7 @@ async function bundle(): Promise<boolean> {
   // Due to support nested components.
   const componentsList = [] as Component[]
   for (const component of state.componentsList) {
-    const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator, settings) as Element[]
+    const parsedNode = await parseElements(state, component.node.childNodes as Element[], state.jsGenerator, settings) as Element[]
     componentsList.push({
       "fname": component.fname,
       "rawData": parsedNode[0].outerHTML,
@@ -118,13 +117,13 @@ async function bundle(): Promise<boolean> {
 
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, settings)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, settings)
     // We need to parseElement twice due to embed nested component.
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, settings)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, settings)
   }
 
   // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator, settings)
+  state.pagesList = await generateAliasPagesFromPagesList(state, state.jsGenerator, settings)
 
   // Hook API: afterBuild
   for (const plugin of settings.plugins) {
@@ -169,14 +168,8 @@ async function loadSettingsFromFile() {
   }
 }
 
-export default async function magic(args: Args): Promise<boolean> {
-  initializeArgument(args)
-
-  if (args.action === "watch") {
-    settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
-  }
-
-  // Load default settings from spear.config.{js,json}|package.json
+async function loadSettings() {
+    // Load default settings from spear.config.{js,json}|package.json
   await loadSettingsFromFile()
   logger.isQuite = settings.quiteMode
 
@@ -201,6 +194,16 @@ export default async function magic(args: Args): Promise<boolean> {
       }
     }
   }
+}
+
+export default async function magic(args: Args): Promise<boolean> {
+  initializeArgument(args)
+
+  if (args.action === "watch") {
+    settings.distDir = path.resolve(dirname, "node_modules", "spear-cli", "tmpBuild")
+  }
+
+  await loadSettings()
 
   if (args.action === "watch") {
     if (args.port) {
@@ -209,10 +212,24 @@ export default async function magic(args: Args): Promise<boolean> {
     // Bundle before starting the server
     await bundle()
 
-    watch(settings.srcDir, { recursive: true }, function (evt, name) {
-      logger.log("changed: %s", name)
-      bundle()
-    })
+    watch("./",
+      {
+        recursive: true,
+        filter(f, skip) {
+          // skip node_modules
+          if (/node_modules/.test(f)) return skip;
+          return true;
+        }
+      },
+      async function (evt, name) {
+        logger.log("changed: %s", name)
+        // Realod settings in order to refresh plugins object in memory.
+        // If we don't refresh it, the plugin will not be reloaded.
+        // e.g., i18n plugin has i18n settings file in memory.
+        await loadSettings()
+        bundle()
+      }
+    );
 
     const params = {
       port: settings.port,

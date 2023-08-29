@@ -1,7 +1,20 @@
 import { HTMLElement, Node, parse } from 'node-html-parser';
 import { FieldTypeTags, SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { generateGetParamsFromAPIOptions, getCustomDateString, ReplaceDefinition } from './Utils.js'
-import type { AnalyticsPostParams, Content } from '@spearly/sdk-js'
+import type { AnalyticsPostParams, Content, List } from '@spearly/sdk-js'
+
+/**
+ * FakeSpearlyApiClient is a fake implementation of SpearlyApiClient.
+ *  We can inject api client for using local file system, like markdown files.
+ */
+export interface FakeSpearlyApiClient {
+    analytics: {
+        pageView: (params: any) => Promise<void>;
+    };
+    getList(contentTypeId: string, params?: any): Promise<List>;
+    getContent(contentTypeId: string, contentId: string, params?: any): Promise<Content>;
+    getContentPreview(contentTypeId: string, contentId: string, previewToken: string): Promise<Content>;
+}
 
 export type DateFormatter = (date: Date, dateOnly?: boolean) => string
 
@@ -9,19 +22,18 @@ export type SpearlyJSGeneratorOption = {
     linkBaseUrl: string | undefined;
     dateFormatter: DateFormatter | undefined;
 }
-type SpearlyJSGeneratorInternalOption = {
-    linkBaseUrl: string;
-    dateFormatter: DateFormatter;
-}
+
 export type GetContentOption = {
     patternName: string,
     previewToken?: string,
 }
+
 export type GeneratedContent = {
     alias : string,
     generatedHtml: string,
     tag: string[],
 }
+
 export type GeneratedListContent = {
     generatedHtml: string,
     tag: string
@@ -29,18 +41,27 @@ export type GeneratedListContent = {
 
 export type APIOption = Map<string, string | Date | number | string[] | { [key: string]: string | string[] } >
 
+type SpearlyJSGeneratorInternalOption = {
+    linkBaseUrl: string;
+    dateFormatter: DateFormatter;
+}
+
 export class SpearlyJSGenerator {
-    client: SpearlyApiClient
+    client: SpearlyApiClient | FakeSpearlyApiClient
     options: SpearlyJSGeneratorInternalOption
 
     constructor(apiKey: string, domain: string, analyticsDomain: string, options: SpearlyJSGeneratorOption | undefined = undefined) {
         this.client = new SpearlyApiClient(apiKey, domain, analyticsDomain)
         this.options = {
             linkBaseUrl: options?.linkBaseUrl || "",
-            dateFormatter:  options?.dateFormatter || function japaneseDateFormatter(date: Date, dateOnly?: boolean) {
+            dateFormatter: options?.dateFormatter || function japaneseDateFormatter(date: Date, dateOnly?: boolean) {
                 return getCustomDateString(`YYYY年MM月DD日${!dateOnly ? " hh時mm分ss秒" : ""}`, date)
             }
         }
+    }
+
+    injectFakeApiClient(fakeClient: FakeSpearlyApiClient) {
+        this.client = fakeClient;
     }
 
     convertFromFieldsValueDefinitions(templateHtml: string, replacementArray: ReplaceDefinition[], content: Content, contentType: string): string {
@@ -60,7 +81,7 @@ export class SpearlyJSGenerator {
 
         const linkMatchResult = result.match(`{%= ${contentType}_#link %}`)
         if (!!linkMatchResult && linkMatchResult.length > 0) {
-            result = result.split(linkMatchResult[0]).join("./" + this.options.linkBaseUrl + "?contentId=" + alias);                
+            result = result.split(linkMatchResult[0]).join("./" + this.options.linkBaseUrl + "?contentId=" + alias);
         }
 
         const aliasMatchResult = result.match(`{%= ${contentType}_#alias %}`)
@@ -91,16 +112,16 @@ export class SpearlyJSGenerator {
         return result
     }
 
-    async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption, insertDebugInfo: boolean): Promise<[html: string, uid:string, patternName: string | null]> {
+    async generateContent(templateHtml: string, contentType: string, contentId: string, option: GetContentOption, insertDebugInfo: boolean): Promise<[html: string, uid: string, patternName: string | null]> {
         try {
             const result = option.previewToken
                 ? await this.client.getContentPreview(contentType, contentId, option.previewToken)
                 : await this.client.getContent(contentType, contentId,
                     option.patternName
-                    ? {
-                        patternName: option.patternName
-                    } 
-                    : {}
+                        ? {
+                            patternName: option.patternName
+                        }
+                        : {}
                 );
             const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
             const uid = result.attributes.publicUid;
@@ -132,7 +153,7 @@ export class SpearlyJSGenerator {
             }
             if (node.childNodes.length > 0) {
                 node.childNodes = await this.traverseInjectionSubLoop(node.childNodes as HTMLElement[], apiOptions, insertDebugInfo)
-            } 
+            }
             resultNode.appendChild(node)
         }
         return resultNode.childNodes
@@ -153,7 +174,7 @@ export class SpearlyJSGenerator {
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             let resultHtml = ""
             result.data.forEach(c => {
-                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
+                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
                 resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType)
             })
 
@@ -190,7 +211,7 @@ export class SpearlyJSGenerator {
                 })
                 let resultHtml = ""
                 targetContents.forEach(c => {
-                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName  || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
+                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
                     // Special replacement string
                     replacementArray.push({
                         definitionString: `{%= ${contentType}_#tag %}`,
@@ -204,12 +225,12 @@ export class SpearlyJSGenerator {
                 })
             })
             return contentsByTag
-        } catch(e) {
+        } catch (e) {
             return Promise.reject(e)
         }
     }
 
-    async generateEachContentFromList(templateHtml: string, contentType: string, apiOptions: APIOption, tagFieldName: string, insertDebugInfo: boolean) : Promise<GeneratedContent[]> {
+    async generateEachContentFromList(templateHtml: string, contentType: string, apiOptions: APIOption, tagFieldName: string, insertDebugInfo: boolean): Promise<GeneratedContent[]> {
         try {
             const generatedContents: GeneratedContent[] = []
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))

@@ -2,6 +2,7 @@ import { DefaultSettings } from "./SettingsInterfaces"
 import { HTMLElement } from "node-html-parser"
 import { FileUtil } from "../utils/file"
 import { SpearLog } from "../utils/log"
+import { SpearlyJSGenerator } from "@spearly/cms-js-core"
 
 export type SpearSettings = DefaultSettings
 
@@ -28,6 +29,7 @@ export interface SpearState {
   out: {
     assetsFiles: AssetFile[]
   }
+  jsGenerator: SpearlyJSGenerator
 }
 
 export interface SpearOption {
