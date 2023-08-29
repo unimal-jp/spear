@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "module": "ES2022",
+      "target": "ES2022",
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "rootDir": ".",
+      "outDir": "../dist/"
+    },
+    "references": [
+      { "path": "../" } // this project to the one at the root dir`
+    ]
+  }
+  

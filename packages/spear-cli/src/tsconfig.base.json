@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "moduleResolution": "Node",
+      "declaration": true,
+      "rootDir": ".",
+      "outDir": "../dist/",
+      "composite": true
+    }
+  }
+  

@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "module": "ES2022",
+      "target": "ES2022",
+      "strict": false,
+      "resolveJsonModule": true,
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "composite": true,
+      "outDir": "dist",
+      "rootDir": ".",
+      "lib": ["ESNext"]
+    },
+    "files": ["package.json"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+}
+  
