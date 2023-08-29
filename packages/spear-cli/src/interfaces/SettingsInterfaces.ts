@@ -24,4 +24,5 @@ export interface DefaultSettings {
   quiteMode?: boolean,
   embedMode? : boolean,
   debugMode? : boolean,
+  generateComponents?: boolean,
 }

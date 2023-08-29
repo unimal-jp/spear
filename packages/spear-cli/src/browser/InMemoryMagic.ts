@@ -1,7 +1,7 @@
 import { SpearlyJSGenerator } from "@spearly/cms-js-core";
 import parse from "node-html-parser";
 import { FileUtil } from "../utils/file.js";
-import { isSamePath, stateDeepCopy } from "../utils/util.js";
+import { includeComponentsDir, isSamePath, stateDeepCopy } from "../utils/util.js";
 import { embedAssets, generateAliasPagesFromPagesList, parseElements } from "../utils/dom.js";
 import { InMemoryFile, Settings } from "../interfaces/FileManipulatorInterface";
 import { Component, Element, State } from "../interfaces/MagicInterfaces";
@@ -22,6 +22,7 @@ export default async function inMemoryMagic(
   settings.quiteMode = settings.quiteMode || false;
   const logger = new SpearLog(settings.quiteMode);
   settings.targetPagesPathList = settings.targetPagesPathList || [];
+  settings.generateComponents = settings.generateComponents || false;
 
   let state: State = {
     pagesList: [],
@@ -38,10 +39,10 @@ export default async function inMemoryMagic(
     )
   };
 
-    // If directory has the same name, it will be removed.
+  // If directory has the same name of components directory, remove it from srcDir
   settings.srcDir = settings.srcDir.filter((srcDir) => {
     return !settings.srcDir.some((srcDir2) => {
-      if (srcDir !== srcDir2 && !srcDir2.endsWith("components")) return false
+      if (srcDir !== srcDir2 && includeComponentsDir(settings.componentsFolder, srcDir)) return false
       return srcDir !== srcDir2 && srcDir.startsWith(srcDir2)
     })
   })
@@ -79,9 +80,7 @@ export default async function inMemoryMagic(
           state = stateDeepCopy(newState);
         }
       } catch (e) {
-        // TODO. This error should have a plugin information.
-        // For more information, see the https://github.com/unimal-jp/spear/issues/111
-        console.warn(` plugin process failed. `);
+        console.warn(` plugin process failed. ${plugin.pluginName}}}`)
       }
     }
   }
@@ -101,7 +100,7 @@ export default async function inMemoryMagic(
 
   try {
     for (const srcDir of settings.srcDir) {
-      await fileUtil.parsePages(state, srcDir);
+      await fileUtil.parsePages(state, srcDir, settings);
     }
   } catch (e) {
     logger.log(e);
@@ -204,9 +203,7 @@ export default async function inMemoryMagic(
           state = stateDeepCopy(newState);
         }
       } catch (e) {
-        // TODO. This error should have a plugin information.
-        // For more information, see the https://github.com/unimal-jp/spear/issues/111
-        console.warn(` plugin process failed. `);
+        console.warn(` plugin process failed. ${plugin.pluginName}}}`)
       }
     }
   }
@@ -224,9 +221,7 @@ export default async function inMemoryMagic(
           state = stateDeepCopy(newState);
         }
       } catch (e) {
-        // TODO. This error should have a plugin information.
-        // For more information, see the https://github.com/unimal-jp/spear/issues/111
-        console.warn(` plugin process failed. `);
+        console.warn(` plugin process failed. ${plugin.pluginName}}}`)
       }
     }
   }

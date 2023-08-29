@@ -1,7 +1,7 @@
 import path from "path";
 import { Element, SiteMapURL, State } from "../interfaces/MagicInterfaces";
 import HTML_TAG_LIST from "../htmlList.js";
-import { isParseTarget, needSASSBuild } from "./util.js";
+import { includeComponentsDir, isParseTarget, needSASSBuild } from "./util.js";
 import { minify } from "html-minifier-terser";
 import { parse } from "node-html-parser";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
@@ -157,9 +157,11 @@ export class FileUtil {
   async parsePages(
     state: State,
     dirPath: string,
+    settings: DefaultSettings,
     relatePath = ""
   ): Promise<void> {
-    if (relatePath === "components") return;
+    // If generateComponents is false, skip parsing components folder.
+    if (!settings.generateComponents && includeComponentsDir(settings.componentsFolder, dirPath)) return;
     if (!this.manipulator.existsSync(dirPath)) return;
     const files = this.manipulator.readdirSync(dirPath);
 
@@ -178,6 +180,7 @@ export class FileUtil {
         await this.parsePages(
           state,
           filePath + "/",
+          settings,
           relatePath + (relatePath !== "" ? "/" : "") + file
         );
       } else if (needSASSBuild(ext)) {
