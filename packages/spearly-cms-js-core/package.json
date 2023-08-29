@@ -1,7 +1,7 @@
 {
   "name": "@spearly/cms-js-core",
   "private": false,
-  "version": "1.0.15",
+  "version": "1.0.16",
   "type": "module",
   "main": "dist/esm/index.js",
   "module": "dist/esm/index.js",
