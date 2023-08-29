@@ -1,3 +1,4 @@
+import { SpearlyJSGenerator } from "@spearly/cms-js-core"
 import { HTMLElement } from "node-html-parser"
 
 export type Element = HTMLElement & { props: { [key: string]: string } }
@@ -23,6 +24,7 @@ export interface State {
   out: {
     assetsFiles: AssetFile[]
   }
+  jsGenerator: SpearlyJSGenerator
 }
 
 export interface SiteMapURL {

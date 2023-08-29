@@ -23,11 +23,6 @@ export default async function inMemoryMagic(
   const logger = new SpearLog(settings.quiteMode);
   settings.targetPagesPathList = settings.targetPagesPathList || [];
 
-  const jsGenerator = new SpearlyJSGenerator(
-    settings.spearlyAuthKey,
-    settings.apiDomain,
-    settings.analysysDomain || "analytics.spearly.com",
-  );
   let state: State = {
     pagesList: [],
     componentsList: [],
@@ -36,6 +31,11 @@ export default async function inMemoryMagic(
     out: {
       assetsFiles: [],
     },
+    jsGenerator: new SpearlyJSGenerator(
+      settings.spearlyAuthKey,
+      settings.apiDomain,
+      settings.analysysDomain || "analytics.spearly.com",
+    )
   };
 
     // If directory has the same name, it will be removed.
@@ -114,7 +114,7 @@ export default async function inMemoryMagic(
     const parsedNode = (await parseElements(
       state,
       component.node.childNodes as Element[],
-      jsGenerator,
+      state.jsGenerator,
       settings
     )) as Element[];
     componentsList.push({
@@ -132,7 +132,7 @@ export default async function inMemoryMagic(
     page.node.childNodes = await parseElements(
       state,
       page.node.childNodes as Element[],
-      jsGenerator,
+      state.jsGenerator,
       settings
     );
   }
@@ -167,7 +167,7 @@ export default async function inMemoryMagic(
   }
 
   // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator, settings);
+  state.pagesList = await generateAliasPagesFromPagesList(state, state.jsGenerator, settings);
 
   // Embed assets
   const asettsUrlAndRaw: {[key: string]: string} = {};

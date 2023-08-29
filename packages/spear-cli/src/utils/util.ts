@@ -43,7 +43,8 @@ export function stateDeepCopy(state: State): State {
         globalProps: JSON.parse(JSON.stringify(state.globalProps)),
         out: {
             assetsFiles: assetsDeepCopy(state.out.assetsFiles)
-        }
+        },
+        jsGenerator: state.jsGenerator,
     }
 }
 

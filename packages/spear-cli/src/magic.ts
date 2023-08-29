@@ -21,7 +21,6 @@ const fileUtil = new FileUtil(new LocalFileManipulator(), logger)
 
 let dirname = process.cwd()
 let Settings: DefaultSettings
-let jsGenerator: SpearlyJSGenerator
 
 function initializeArgument(args: Args) {
   if (args.src) {
@@ -59,9 +58,9 @@ async function bundle(): Promise<boolean> {
     out: {
       assetsFiles: [],
     },
-  }
 
-  jsGenerator = new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain, Settings.analysysDomain)
+    jsGenerator: new SpearlyJSGenerator(Settings.spearlyAuthKey, Settings.apiDomain, Settings.analysysDomain)
+  }
 
   // Hook API: beforeBuild
   for (const plugin of Settings.plugins) {
@@ -105,7 +104,7 @@ async function bundle(): Promise<boolean> {
   // Due to support nested components.
   const componentsList = [] as Component[]
   for (const component of state.componentsList) {
-    const parsedNode = await parseElements(state, component.node.childNodes as Element[], jsGenerator, Settings) as Element[]
+    const parsedNode = await parseElements(state, component.node.childNodes as Element[], state.jsGenerator, Settings) as Element[]
     componentsList.push({
       "fname": component.fname,
       "rawData": parsedNode[0].outerHTML,
@@ -118,13 +117,13 @@ async function bundle(): Promise<boolean> {
 
   // Run list again to parse children of the pages
   for (const page of state.pagesList) {
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, Settings)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, Settings)
     // We need to parseElement twice due to embed nested component.
-    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], jsGenerator, Settings)
+    page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, Settings)
   }
 
   // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state, jsGenerator, Settings)
+  state.pagesList = await generateAliasPagesFromPagesList(state, state.jsGenerator, Settings)
 
   // Hook API: afterBuild
   for (const plugin of Settings.plugins) {
