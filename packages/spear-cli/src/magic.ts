@@ -1,6 +1,6 @@
-import path from "path"
+import * as path from "path"
 import { parse } from "node-html-parser"
-import liveServer from "live-server"
+import * as liveServer from "live-server"
 import watch from "node-watch"
 import { Args } from "./interfaces/ArgsInterfaces"
 import { Component, Element, State } from "./interfaces/MagicInterfaces"

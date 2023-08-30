@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import fs from "fs"
-import path from "path"
+import * as fs from "fs"
+import * as path from "path"
 import { ArgumentParser } from "argparse"
 import { fileURLToPath } from "url"
 import magic from "./magic.js"

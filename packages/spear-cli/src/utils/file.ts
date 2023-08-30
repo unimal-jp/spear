@@ -1,4 +1,4 @@
-import path from "path";
+import * as path from "path";
 import { Element, SiteMapURL, State } from "../interfaces/MagicInterfaces";
 import HTML_TAG_LIST from "../htmlList.js";
 import { includeComponentsDir, isParseTarget, needSASSBuild } from "./util.js";
