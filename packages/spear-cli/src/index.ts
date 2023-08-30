@@ -21,6 +21,7 @@ parser.add_argument("-p", "--port", { required: false, type: "int" })
 parser.add_argument("action", { help: "Action: create" })
 parser.add_argument("projectName", { help: "Project name", nargs: "?" })
 parser.add_argument("-s", "--src", { help: "Specify source directory. "})
+parser.add_argument("-f", "--file", { help: "Specify configuration settings file. (default is spear.config)"})
 
 const args = parser.parse_args()
 
