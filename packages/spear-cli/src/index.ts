@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import * as fs from "fs"
-import * as path from "path"
+import fs from "fs"
+import path from "path"
 import { ArgumentParser } from "argparse"
 import { fileURLToPath } from "url"
 import magic from "./magic.js"
@@ -14,7 +14,7 @@ const parser = new ArgumentParser({
   exit_on_error: false,
 })
 
-const { version } = JSON.parse(fs.readFileSync(`${dirname}/package.json`, "utf-8"))
+const { version } = JSON.parse(fs.readFileSync(`${dirname}/../package.json`, "utf-8"))
 
 parser.add_argument("-v", "--version", { action: "version", version })
 parser.add_argument("-p", "--port", { required: false, type: "int" })

@@ -1,15 +1,15 @@
 {
   "name": "@spearly/spear-cli",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "type": "module",
   "description": "",
   "preferGlobal": true,
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/esm/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/esm/types.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/types.d.ts",
   "scripts": {
     "tsc": "tsc",
     "clean": "rm -rf dist",
