@@ -1,9 +1,9 @@
-import * as fs from "fs";
-import * as glob from "glob";
-import * as path from "path";
+import fs from "fs";
+import glob from "glob";
+import path from "path";
 import { parse as yamlParse } from "yaml";
 import { FileManipulatorInterface } from "../interfaces/FileManipulatorInterface";
-import * as sass from "sass"
+import sass from "sass"
 import { SiteMapURL } from "../interfaces/MagicInterfaces";
 import { SitemapStream, streamToPromise } from "sitemap";
 import { Readable } from "stream";

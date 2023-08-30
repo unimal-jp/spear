@@ -1,4 +1,4 @@
-import * as path from "path"
+import path from "path"
 import { parse } from "node-html-parser"
 import { EditorFile } from "./interfaces/EditorFile"
 import { Element } from "./interfaces/MagicInterfaces"

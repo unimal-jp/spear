@@ -7,9 +7,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/esm/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/esm/types.d.ts",
+  "main": "dist/index.js",
+  "module": "distindex.js",
+  "types": "dist/types.d.ts",
   "scripts": {
     "tsc": "tsc",
     "clean": "rm -rf dist",
