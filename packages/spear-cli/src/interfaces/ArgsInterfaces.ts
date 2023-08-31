@@ -3,4 +3,5 @@ export interface Args {
   projectName: string
   port: number
   src: string
+  file: string
 }

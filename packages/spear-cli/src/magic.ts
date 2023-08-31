@@ -28,7 +28,7 @@ function initializeArgument(args: Args) {
   }
   settings = {
     projectName: "Spear CLI",
-    settingsFile: "spear.config",
+    settingsFile: args.file || "spear.config",
     pagesFolder: `${dirname}/src/pages`,
     componentsFolder: [ `${dirname}/src/components` ],
     srcDir: [ `${dirname}/src` ],
