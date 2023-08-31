@@ -109,6 +109,7 @@ export const markdownPlugin = (settings: MarkdownPluginSettings) => {
                         const dirs = await fs.readdir(`./${settings.directory}/${contentTypeId}`);
                         const contents = [];
                         for (const dir of dirs) {
+                            const contentId = dir.replace(settings.markdownExtension, "");
                             const fileStat = await fs.stat(`./${settings.directory}/${contentTypeId}/${dir}`);
                             const file = await fs.readFile(`./${settings.directory}/${contentTypeId}/${dir}`);
                             const { attributes, body } = fm(file.toString());
@@ -124,7 +125,7 @@ export const markdownPlugin = (settings: MarkdownPluginSettings) => {
                                 key: "body",
                                 value: settings.bodyPostProcessor(bodyHTML.toString())
                             });
-                            contents.push(generateContent(fields, dir, fileStat.birthtime, fileStat.mtime));
+                            contents.push(generateContent(fields, contentId, fileStat.birthtime, fileStat.mtime));
                         }
                         return generateLisit(contents);
                     },

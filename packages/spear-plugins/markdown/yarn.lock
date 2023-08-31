@@ -136,8 +136,10 @@
     js-cookie "^3.0.5"
     uuid "^9.0.0"
 
-"@spearly/spear-cli@file:../../spear-cli":
-  version "1.4.0"
+"@spearly/spear-cli@1.4.4":
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/@spearly/spear-cli/-/spear-cli-1.4.4.tgz#b8bfd4db211130e31376e02179a708cb2e89c7da"
+  integrity sha512-ByFSCUQ+U5ulrRhHJG/9/gd+iTd/+wlU9dxclKLltpxlX+PrJoyU9nssMiX3e64T7X/LUp7wl2VLECx0Mr05HQ==
   dependencies:
     "@spearly/cms-js-core" "1.0.16"
     "@types/live-server" "^1.2.1"
