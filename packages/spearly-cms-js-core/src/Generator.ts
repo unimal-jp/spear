@@ -67,12 +67,20 @@ export class SpearlyJSGenerator {
     convertFromFieldsValueDefinitions(templateHtml: string, replacementArray: ReplaceDefinition[], content: Content, contentType: string, insertDebugInfo: boolean): string {
         let result = templateHtml
         replacementArray.forEach(r => {
-            // TODO: 
+            // e.g.,<span data-spear="${contentTypeId}--${contentId}--${fieldId}">${value}</span>
             if (insertDebugInfo) {
-
+                const contentId = content.attributes.contentAlias || content.attributes.publicUid
+                const fieldId = r.debugInfo?.fieldId || ""
+                // If matching the "${r.definitionString}" or '${r.definitionString}', replace it to
+                // `"${r.fieldValue}" data-spear="${contentTypeId}--${contentId}--${fieldId}"`.
+                // I.g., add data-spear attribute to the parent element.
+                result = result
+                    .split(`"${r.definitionString}"`).join(`"${r.fieldValue}" data-spear="${contentType}--${contentId}--${fieldId}"`)
+                    .split(`'${r.definitionString}'`).join(`"${r.fieldValue}" data-spear="${contentType}--${contentId}--${fieldId}"`)
+                    .split(r.definitionString).join(`<span data-spear="${contentType}--${contentId}--${fieldId}">${r.fieldValue}</span>`)
+            } else {
+                result = result.split(r.definitionString).join(r.fieldValue)
             }
-            result = result.split(r.definitionString).join(r.fieldValue)
-
         })
 
         // Especially convert for {%= <ContentType>_#url %} and {%= <ContentType>_#link $}
