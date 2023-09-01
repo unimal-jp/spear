@@ -187,14 +187,6 @@ const getEscapedStringRichText = (str: string): string => {
     return ""
 }
 
-// wrap the targetHTML by span tag with debug attribute(value is fieldId)
-const insertDebugAttribute = (targetHTML: string, contentTypeId: string, contentId: string, fieldId: string, insertDebugInfo: boolean): string => {
-  return insertDebugInfo 
-    ? `<span data-spear-content="${contentTypeId}--${contentId}--${fieldId}">${targetHTML}</span>`
-    : targetHTML
-}
-
-
 export function getCustomDateString(suffix: string, date: Date): string {
     let numberFormat =
         new Intl.NumberFormat('en-US',
