@@ -76,7 +76,7 @@ export class SpearlyJSGenerator {
                 // I.g., add data-spear attribute to the parent element.
                 result = result
                     .split(`"${r.definitionString}"`).join(`"${r.fieldValue}" data-spear="${contentType}--${contentId}--${fieldId}"`)
-                    .split(`'${r.definitionString}'`).join(`"${r.fieldValue}" data-spear="${contentType}--${contentId}--${fieldId}"`)
+                    .split(`'${r.definitionString}'`).join(`'${r.fieldValue}' data-spear='${contentType}--${contentId}--${fieldId}'`)
                     .split(r.definitionString).join(`<span data-spear="${contentType}--${contentId}--${fieldId}">${r.fieldValue}</span>`)
             } else {
                 result = result.split(r.definitionString).join(r.fieldValue)
