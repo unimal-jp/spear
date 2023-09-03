@@ -30,6 +30,9 @@ const isContentType = (fieldType: FieldTypeAll): fieldType is FieldTypeContentTy
 export declare type ReplaceDefinition = {
     definitionString: string;
     fieldValue: string;
+    debugInfo?: {
+      fieldId: string;
+    };
 };
 
 export default function getFieldsValuesDefinitions(
@@ -38,7 +41,6 @@ export default function getFieldsValuesDefinitions(
     depth = 0,
     disableContentType = false,
     dateFormatter: Function,
-    insertDebugInfo: boolean
 ): ReplaceDefinition[] {
     if (depth >= 3) {
       return [];
@@ -50,61 +52,94 @@ export default function getFieldsValuesDefinitions(
       if (isTextType(field)) {
         replaceDefinitions.push({
           definitionString: "{%= " + prefix + "_" + key + " %}",
-          fieldValue: insertDebugAttribute(getEscapedString(field.attributes.value), field.attributes.identifier, insertDebugInfo)
+          fieldValue: getEscapedString(field.attributes.value),
+          debugInfo: {
+            fieldId: field.attributes.identifier
+          }
         });
       } else if (isNumberType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: insertDebugAttribute(field.attributes.value.toString(), field.attributes.identifier, insertDebugInfo)
+            fieldValue: field.attributes.value.toString(),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
         })
       } else if (isRichTextType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: insertDebugAttribute(getEscapedStringRichText(field.attributes.value), field.attributes.identifier, insertDebugInfo)
+            fieldValue: getEscapedStringRichText(field.attributes.value),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
         })
       } else if (isImageType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: insertDebugAttribute(getEscapedString(field.attributes.value), field.attributes.identifier, insertDebugInfo)
+            fieldValue: getEscapedString(field.attributes.value),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
         })
       } else if (isCalendarType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: insertDebugAttribute(dateFormatter(new Date(field.attributes.value)), field.attributes.identifier, insertDebugInfo)
+            fieldValue: dateFormatter(new Date(field.attributes.value)),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
         })
 
         replaceDefinitions.push({
           definitionString: "{%= " + prefix + "_" + key + "_#date_only %}",
-          fieldValue: insertDebugAttribute(dateFormatter(new Date(field.attributes.value), true), field.attributes.identifier, insertDebugInfo)
-      })
+          fieldValue: dateFormatter(new Date(field.attributes.value), true),
+          debugInfo: {
+            fieldId: field.attributes.identifier
+          }
+        })
       } else if (isTagType(field)) {
         // TODO: タグの取り扱いを今後変更する必要がある
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: insertDebugAttribute(getEscapedString(field.attributes.value.join(',')), field.attributes.identifier, insertDebugInfo)
+            fieldValue: getEscapedString(field.attributes.value.join(',')),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
         })
       } else if (isMapType(field)) {
         const value = field.attributes.value
         if (value.address) {
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#address %}",
-            fieldValue: insertDebugAttribute(encodeURIComponent(getEscapedString(value.address)), field.attributes.identifier, insertDebugInfo)
+            fieldValue: encodeURIComponent(getEscapedString(value.address)),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
           });
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#address_decoded %}",
-            fieldValue: insertDebugAttribute(getEscapedString(value.address), field.attributes.identifier, insertDebugInfo)
+            fieldValue: getEscapedString(value.address),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
           });
         }
         if (value.latitude) {
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#latitude %}",
-            fieldValue: insertDebugAttribute(value.latitude.toString(), field.attributes.identifier, insertDebugInfo)
+            fieldValue: value.latitude.toString(),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
           });
         }
         if (value.longitude) {
           replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + "_#longitude %}",
-            fieldValue: insertDebugAttribute(value.longitude.toString(), field.attributes.identifier, insertDebugInfo)
+            fieldValue: value.longitude.toString(),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
           });
         }
       } else if (isContentType(field)) {
@@ -116,8 +151,7 @@ export default function getFieldsValuesDefinitions(
                     `${prefix}_${key}`,
                     depth++,
                     disableContentType,
-                    dateFormatter,
-                    insertDebugInfo
+                    dateFormatter
                 ));
         } catch(e) {
             console.log('Spearly found the non value of reference type', e)
@@ -152,14 +186,6 @@ const getEscapedStringRichText = (str: string): string => {
     }
     return ""
 }
-
-// wrap the targetHTML by span tag with debug attribute(value is fieldId)
-const insertDebugAttribute = (targetHTML: string, fieldId: string, insertDebugInfo: boolean): string => {
-  return insertDebugInfo 
-    ? `<span data-spear-content-field="${fieldId}">${targetHTML}</span>`
-    : targetHTML
-}
-
 
 export function getCustomDateString(suffix: string, date: Date): string {
     let numberFormat =

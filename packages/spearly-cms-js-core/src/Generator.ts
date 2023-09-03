@@ -64,11 +64,23 @@ export class SpearlyJSGenerator {
         this.client = fakeClient;
     }
 
-    convertFromFieldsValueDefinitions(templateHtml: string, replacementArray: ReplaceDefinition[], content: Content, contentType: string): string {
+    convertFromFieldsValueDefinitions(templateHtml: string, replacementArray: ReplaceDefinition[], content: Content, contentType: string, insertDebugInfo: boolean): string {
         let result = templateHtml
         replacementArray.forEach(r => {
-            result = result.split(r.definitionString).join(r.fieldValue)
-
+            // e.g.,<span data-spear="${contentTypeId}--${contentId}--${fieldId}">${value}</span>
+            if (insertDebugInfo) {
+                const contentId = content.attributes.contentAlias || content.attributes.publicUid
+                const fieldId = r.debugInfo?.fieldId || ""
+                // If matching the "${r.definitionString}" or '${r.definitionString}', replace it to
+                // `"${r.fieldValue}" data-spear="${contentTypeId}--${contentId}--${fieldId}"`.
+                // I.g., add data-spear attribute to the parent element.
+                result = result
+                    .split(`"${r.definitionString}"`).join(`"${r.fieldValue}" data-spear="${contentType}--${contentId}--${fieldId}"`)
+                    .split(`'${r.definitionString}'`).join(`'${r.fieldValue}' data-spear='${contentType}--${contentId}--${fieldId}'`)
+                    .split(r.definitionString).join(`<span data-spear="${contentType}--${contentId}--${fieldId}">${r.fieldValue}</span>`)
+            } else {
+                result = result.split(r.definitionString).join(r.fieldValue)
+            }
         })
 
         // Especially convert for {%= <ContentType>_#url %} and {%= <ContentType>_#link $}
@@ -123,10 +135,10 @@ export class SpearlyJSGenerator {
                         }
                         : {}
                 );
-            const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
+            const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
             const uid = result.attributes.publicUid;
             const patternName = result.attributes.patternName;
-            return [this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType), uid, patternName]
+            return [this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType, insertDebugInfo), uid, patternName]
         } catch (e: any) {
             return Promise.reject(e);
         }
@@ -174,8 +186,8 @@ export class SpearlyJSGenerator {
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             let resultHtml = ""
             result.data.forEach(c => {
-                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
-                resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType)
+                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter);
+                resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo)
             })
 
             return resultHtml
@@ -211,13 +223,13 @@ export class SpearlyJSGenerator {
                 })
                 let resultHtml = ""
                 targetContents.forEach(c => {
-                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter, insertDebugInfo);
+                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter);
                     // Special replacement string
                     replacementArray.push({
                         definitionString: `{%= ${contentType}_#tag %}`,
                         fieldValue: tag,
                     })
-                    resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType)
+                    resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo)
                 })
                 contentsByTag.push({
                     generatedHtml: resultHtml,
@@ -235,7 +247,7 @@ export class SpearlyJSGenerator {
             const generatedContents: GeneratedContent[] = []
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             result.data.forEach(c => {
-                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter, insertDebugInfo)
+                const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter)
                 const tags = c.attributes.fields.data.filter(field => field.attributes.identifier === tagFieldName)
                 let tag: string[] = []
                 if (tags && tags.length > 0 && Array.isArray(tags[0].attributes.value)) {
@@ -244,7 +256,7 @@ export class SpearlyJSGenerator {
 
                 generatedContents.push({
                     alias: c.attributes.contentAlias || c.attributes.publicUid,
-                    generatedHtml: this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType),
+                    generatedHtml: this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo),
                     tag
                 })
             });
