@@ -1,6 +1,6 @@
 {
   "name": "@spearly/spear-cli",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "type": "module",
   "description": "",
   "preferGlobal": true,
@@ -39,7 +39,7 @@
     "url": "https://github.com/unimal-jp/spear/issues"
   },
   "dependencies": {
-    "@spearly/cms-js-core": "1.0.16",
+    "@spearly/cms-js-core": "1.0.17",
     "@types/live-server": "^1.2.1",
     "argparse": "^2.0.1",
     "chalk": "^5.2.0",
