@@ -1,0 +1,41 @@
+name: "⭐Feature request / 機能提案"
+description: Suggest an idea for this project. / このプロジェクトに対するアイデアを提案します。
+title: "[Proposal]: "
+labels: "enhance"
+body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: "📦 Package / パッケージ"
+      description: Select the package you are requesting an idea for / 機能を提案するパッケージを選択してください。
+      options:
+        - spear-cli
+        - create-spear
+        - cms-js-core
+        - plugin/i18n
+        - plugin/seo
+        - plugin/markdown
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "📝 Describe the problem / 問題を記載"
+      description: Describe the issue what you want to fix by this idea / このアイデアで解決する問題はなんですか？"
+      placeholder: Description of your Issue / 問題点を記載
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: "🤔 Describe your idea / アイデアを記載"
+      description: Describe your idea how do you resolve the issue. / 問題をどのように解決するかアイデアを記載してください。"
+      placeholder: Description of your Idea / アイデアを記載
+  - type: textarea
+    id: additional
+    attributes:
+      label: "📄 Additional Information"
+      description: Add any other context about the problem here. / 問題について追加情報があれば記載してください。
+    validations:
+      required: false
