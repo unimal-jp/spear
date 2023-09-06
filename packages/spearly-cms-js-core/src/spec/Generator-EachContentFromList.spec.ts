@@ -19,21 +19,25 @@ const convertTestData = [
                 {identifier: "description", inputType: "text", value: "description2" },
             ], 'alias-2'),
         ]),
-        expected: "<h1>title</h1><div>description</div><h1>title2</h1><div>description2</div>"
+        expected: [
+            "<h1>title</h1><div>description</div>",
+            "<h1>title2</h1><div>description2</div>"
+        ]
     },
-    { 
-        testName: "cms-loop reference sub loop",
-        template: `<h1>{%= blog_title %}</h1><div cms-loop cms-field="ref">{%= blog_ref_author %}</div>`,
+    {
+        testName: "Sub loop",
+        template: 
+            `<h1>{%= blog_title %}</h1><div cms-loop cms-field="ref"><h4>{%= blog_ref_author %}</h4></div>`,
         options: {} as unknown as SpearlyJSGeneratorOption,
         apiOptions: new Map<string, string>(),
         contentType: "blog",
         mockData: generateServerListFromContent([
             generateServerContent([
-                {identifier: "title", inputType: "text", value: "title1" },
+                {identifier: "title", inputType: "text", value: "title" },
                 {identifier: "ref", inputType: "content_type", value: {
                     data: [
                         generateServerContent([
-                            {identifier: "author", inputType: "text", value: "ref-title1"}
+                            {identifier: "author", inputType: "text", value: "ref-title"}
                         ], 'alias-sub-1')
                     ]
                 }}
@@ -44,19 +48,22 @@ const convertTestData = [
                     data: [
                         generateServerContent([
                             {identifier: "author", inputType: "text", value: "ref-title2"}
-                        ], 'alias-sub-2')
+                        ], 'alias-sub-1')
                     ]
                 }}
             ], 'alias-2'),
         ]),
-        expected: "<h1>title1</h1><div>ref-title1</div><h1>title2</h1><div>ref-title2</div>"
+        expected: [
+            `<h1>title</h1><div><h4>ref-title</h4></div>`,
+            `<h1>title2</h1><div><h4>ref-title2</h4></div>`
+        ]
     }
 ]
 
-describe('generateList: リスト生成', () => {        
+describe('generateEachContentFromList: リストかこコンテンツ生成(リストのコンテンツ毎)', () => {
     convertTestData.forEach(testData => {
         let generator = new SpearlyJSGenerator('apikey', 'domain', 'analyticsDomain', testData.options)
-        it(`generateContent: ${testData.testName}`, async () => {
+        it(`generateEachContentFromList: ${testData.testName}`, async () => {
             // モック
             Object.defineProperty(generator, 'client', {
                 value: {
@@ -69,11 +76,15 @@ describe('generateList: リスト生成', () => {
             // 変換
             let result
             try {
-                result = await generator.generateList(testData.template, testData.contentType, "", testData.apiOptions, false)
+                result = await generator.generateEachContentFromList(testData.template, testData.contentType, testData.apiOptions, "", false)
             } catch(e) {
                 console.log(e)
             }
-            expect(result).toBe(testData.expected)
+            expect(result.length).toBe(2)
+            for (let i = 0; i < result.length; i++) {
+                expect(result[i].generatedHtml).toBe(testData.expected[i])
+                expect(result[i].alias).toBe(`alias-${i+1}`)
+            }
         })
     });
 })

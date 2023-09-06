@@ -1,56 +1,51 @@
-import { SpearlyJSGenerator, SpearlyJSGeneratorOption } from '../Generator'
+import type { FieldType, FieldTypeAll, MapValue, ServerContent, ServerList } from '@spearly/sdk-js'
 
 export type ATTR = {
     identifier: string;
-    inputType: string;
-    value: string | ATTR;
+    inputType: 'text' | 'number' | 'rich_text' | 'image' | 'calendar' | 'map' | 'content_type' | 'tags';
+    value: string | number | Date | MapValue | string[] | { data: ServerContent[] };
 }
 
-export const generateServerContent = (attrs: ATTR[]) :any => {
-    const template = {
-        attributes: {
-            contentAlias: 'content-alias',
-            createdAt: "2022-12-05 00:00:00",
-            fields: {
-                data: new Array(),
-            },
-            publicUid: 'content_1',
-            publishedAt: '2022-12-04 00:00:00',
-            updatedAt: '2022-12-04 00:00:00'
-        },
-        values: {}
-    }
+export const generateServerContent = (attrs: ATTR[], alias: string, dateOptions?: { createdAt?: string, publishedAt?: string, updatedAt?: string}) :ServerContent => {
+    const fields = [] as FieldTypeAll[]
     attrs.forEach((attr, id) => {
-        template.attributes.fields.data.push({
+        fields.push({
             attributes: {
                 identifier: attr.identifier,
                 inputType: attr.inputType,
-                value: attr.value
+                // @spealry/sdk-js doesn't define reference as content
+                // @ts-ignore
+                value: attr.value,
             },
-            id,
+            id: id.toString(),
             type: 'field',
         })
-        Object.defineProperty(template.values, attr.identifier, {
-            value: attr.value
-        })
     })
+    const template = {
+        attributes: {
+            contentAlias: alias || 'content-alias',
+            createdAt: dateOptions?.createdAt || "2022-12-05 00:00:00",
+            fields: {
+                data: fields,
+            },
+            publicUid: alias || 'content_1',
+            publishedAt: dateOptions?.publishedAt || '2022-12-04 00:00:00',
+            updatedAt: dateOptions?.updatedAt || '2022-12-04 00:00:00'
+        },
+        values: {}
+    } as ServerContent
     return template
 }
 
-export const generateServerList = (attrs: ATTR[], num: number = 1): any => {
+export const generateServerListFromContent = (contents: ServerContent[]): ServerList => {
     const template = {
-        totalContentsCount: num,
-        matchingContentsCount: num,
+        totalContentsCount: contents.length,
+        matchingContentsCount: contents.length,
         limit: 10,
         offset: 0,
         next: 11,
-        data: new Array(),
-    }
-
-    for (let i = 0; i < num; i++) {
-        const c = generateServerContent(attrs)
-        template.data.push(c)
-    }
+        data: contents
+    } as ServerList
 
     return template
 }
