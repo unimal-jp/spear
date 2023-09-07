@@ -60,7 +60,7 @@ const convertTestData = [
     }
 ]
 
-describe('generateEachContentFromList: リストかこコンテンツ生成(リストのコンテンツ毎)', () => {
+describe('generateEachContentFromList: リスト化したコンテンツ生成(コンテンツをリスト毎に生成)', () => {
     convertTestData.forEach(testData => {
         let generator = new SpearlyJSGenerator('apikey', 'domain', 'analyticsDomain', testData.options)
         it(`generateEachContentFromList: ${testData.testName}`, async () => {
