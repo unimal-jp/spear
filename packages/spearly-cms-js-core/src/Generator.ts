@@ -162,7 +162,7 @@ export class SpearlyJSGenerator {
         const node = parse(nodeHTML);
         const cmsLoopNodes = node.querySelectorAll("[cms-loop]");
 
-        if (cmsLoopNodes.length > 0) {
+        if (cmsLoopNodes.length) {
             // sort cms loop nodes by depth from top element with getElementDepth.
             const sortedCmsLoopNodes = cmsLoopNodes.sort((a, b) => {
                 return this.getElementDepth(b, node) - this.getElementDepth(a, node)
