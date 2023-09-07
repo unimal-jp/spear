@@ -76,27 +76,48 @@ export default function getFieldsValuesDefinitions(
       } else if (isImageType(field)) {
         replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
-            fieldValue: getEscapedString(field.attributes.value),
+            // URL deson't need to escape.
+            // E.g., https://foobar.com/img.png&id=日本語, this "&" should not be escaped.
+            fieldValue: field.attributes.value,
             debugInfo: {
               fieldId: field.attributes.identifier
             }
         })
       } else if (isCalendarType(field)) {
-        replaceDefinitions.push({
+        try {
+          replaceDefinitions.push({
             definitionString: "{%= " + prefix + "_" + key + " %}",
             fieldValue: dateFormatter(new Date(field.attributes.value)),
             debugInfo: {
               fieldId: field.attributes.identifier
             }
-        })
+          })
 
-        replaceDefinitions.push({
-          definitionString: "{%= " + prefix + "_" + key + "_#date_only %}",
-          fieldValue: dateFormatter(new Date(field.attributes.value), true),
-          debugInfo: {
-            fieldId: field.attributes.identifier
-          }
-        })
+          replaceDefinitions.push({
+            definitionString: "{%= " + prefix + "_" + key + "_#date_only %}",
+            fieldValue: dateFormatter(new Date(field.attributes.value), true),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
+          })
+        } catch(e) {
+          replaceDefinitions.push({
+            definitionString: "{%= " + prefix + "_" + key + " %}",
+            fieldValue: "[Fail to convert time]" + field.attributes.value.toString(),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
+          })
+
+          replaceDefinitions.push({
+            definitionString: "{%= " + prefix + "_" + key + "_#date_only %}",
+            fieldValue: "[Fail to convert time]" + field.attributes.value.toString(),
+            debugInfo: {
+              fieldId: field.attributes.identifier
+            }
+          })
+          return
+        }
       } else if (isTagType(field)) {
         // TODO: タグの取り扱いを今後変更する必要がある
         replaceDefinitions.push({
@@ -145,14 +166,18 @@ export default function getFieldsValuesDefinitions(
       } else if (isContentType(field)) {
         if (disableContentType) return
         try {
-            Array.prototype.push.apply(replaceDefinitions,
-                getFieldsValuesDefinitions(
-                    field.attributes.value,
-                    `${prefix}_${key}`,
-                    depth++,
-                    disableContentType,
-                    dateFormatter
-                ));
+          // At the moment, content type is supporting only one content.
+          // This reference is old style. So we can drop it.
+          // @ts-ignore
+          const fields = field.attributes.value.data[0].attributes.fields.data as FieldTypeAll[];
+          const definition = getFieldsValuesDefinitions(
+            fields,
+            `${prefix}_${key}`,
+            ++depth,
+            disableContentType,
+            dateFormatter
+          );
+          Array.prototype.push.apply(replaceDefinitions, definition);
         } catch(e) {
             console.log('Spearly found the non value of reference type', e)
             return

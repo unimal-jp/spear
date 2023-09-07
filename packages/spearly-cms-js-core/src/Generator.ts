@@ -1,7 +1,7 @@
 import { HTMLElement, Node, parse } from 'node-html-parser';
 import { FieldTypeTags, SpearlyApiClient } from '@spearly/sdk-js';
 import getFieldsValuesDefinitions, { generateGetParamsFromAPIOptions, getCustomDateString, ReplaceDefinition } from './Utils.js'
-import type { AnalyticsPostParams, Content, List } from '@spearly/sdk-js'
+import type { AnalyticsPostParams, Content, FieldTypeContentType, List } from '@spearly/sdk-js'
 
 /**
  * FakeSpearlyApiClient is a fake implementation of SpearlyApiClient.
@@ -138,57 +138,74 @@ export class SpearlyJSGenerator {
             const replacementArray = getFieldsValuesDefinitions(result.attributes.fields.data, contentType, 2, true, this.options.dateFormatter);
             const uid = result.attributes.publicUid;
             const patternName = result.attributes.patternName;
-            return [this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType, insertDebugInfo), uid, patternName]
+            let html = this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, result, contentType, insertDebugInfo);
+            if (html.includes("cms-loop"))  {
+                html = await this.generateSubLoop(html, contentType, insertDebugInfo, result)
+            }
+            return [html, uid, patternName]
         } catch (e: any) {
             return Promise.reject(e);
         }
     }
 
-    async traverseInjectionSubLoop(nodes: HTMLElement[], apiOptions: APIOption, insertDebugInfo: boolean): Promise<Node[]> {
-        const resultNode = parse("") as HTMLElement
-        for (const node of nodes) {
-            const isTextNode = node.nodeType === 3
-            if (!isTextNode && node.hasAttribute("cms-loop")) {
-                const contentType = node.getAttribute("cms-field")
-                if (!contentType) {
-                    // Error case.
-                    return Promise.reject(new Error("cms-loop element doesn't have cms-field"))
-                }
-                const varName = node.getAttribute("cms-item-variable")
-                node.removeAttribute("cms-loop")
-                node.removeAttribute("cms-field")
-                node.removeAttribute("cms-item-variable")
-                const generatedStr = await this.generateList(node.outerHTML, contentType, varName || contentType, apiOptions, insertDebugInfo)
-                const generatedNode = parse(generatedStr) as HTMLElement
-                resultNode.childNodes = generatedNode.childNodes
-                continue
-            }
-            if (node.childNodes.length > 0) {
-                node.childNodes = await this.traverseInjectionSubLoop(node.childNodes as HTMLElement[], apiOptions, insertDebugInfo)
-            }
-            resultNode.appendChild(node)
+    getElementDepth(targetElement: HTMLElement, topElement: HTMLElement) {
+        let depth = 0
+        let currentElement = targetElement
+        while (currentElement !== topElement) {
+            depth++
+            currentElement = currentElement.parentNode as HTMLElement
         }
-        return resultNode.childNodes
+        return depth
     }
 
-    async generateSubLoop(templateHtml: string, apiOptions: APIOption, insertDebugInfo): Promise<string> {
-        const parsedNode = parse(templateHtml)
-        parsedNode.childNodes = await this.traverseInjectionSubLoop(parsedNode.childNodes as HTMLElement[], apiOptions, insertDebugInfo)
-        return parsedNode.outerHTML
+    async generateSubLoop(nodeHTML: string, contentTypeId: string, insertDebugInfo: boolean, parentData: Content): Promise<string> {
+        const node = parse(nodeHTML);
+        const cmsLoopNodes = node.querySelectorAll("[cms-loop]");
+
+        if (cmsLoopNodes.length) {
+            // sort cms loop nodes by depth from top element with getElementDepth.
+            const sortedCmsLoopNodes = cmsLoopNodes.sort((a, b) => {
+                return this.getElementDepth(b, node) - this.getElementDepth(a, node)
+            })
+            for (const cmsLoopNode of sortedCmsLoopNodes) {
+                const referenceFieldId = cmsLoopNode.getAttribute("cms-field")
+                const variableName = cmsLoopNode.getAttribute("cms-variable")
+                // Remove attributes
+                cmsLoopNode.removeAttribute("cms-loop")
+                cmsLoopNode.removeAttribute("cms-field")
+                cmsLoopNode.removeAttribute("cms-variable")
+
+                const contentTypeName = variableName || `${contentTypeId}_${referenceFieldId}`
+                const targetData = parentData.attributes.fields.data.filter(field => field.attributes.identifier === referenceFieldId);
+                if (targetData.length === 0) continue;
+
+                // @ts-ignore
+                const targetContents = (targetData[0] as FieldTypeContentType).attributes.value.data as Content[]
+                let generatedHtml = ""
+                for (const c of targetContents) {
+                    const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentTypeName, 2, true, this.options.dateFormatter);
+                    let html = this.convertFromFieldsValueDefinitions(cmsLoopNode.outerHTML, replacementArray, parentData, contentTypeId, insertDebugInfo);
+                    generatedHtml += html;
+                }
+                cmsLoopNode.parentNode.innerHTML = cmsLoopNode.parentNode.innerHTML.replace(cmsLoopNode.outerHTML, generatedHtml);
+            }
+        }
+        return node.outerHTML;
     }
 
     async generateList(templateHtml: string, contentType: string, variableName = "", apiOptions: APIOption, insertDebugInfo: boolean): Promise<string> {
         try {
-            // Searching sub-loop in html.
-            if (templateHtml.includes("cms-loop")) {
-                templateHtml = await this.generateSubLoop(templateHtml, apiOptions, insertDebugInfo)
-            }
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
             let resultHtml = ""
-            result.data.forEach(c => {
+            for (const c of result.data) {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter);
-                resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo)
-            })
+                let html = this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo);
+                // Searching sub-loop in html.
+                if (html.includes("cms-loop")) {
+                    html = await this.generateSubLoop(html, contentType, insertDebugInfo, c)
+                }
+                resultHtml += html
+            }
 
             return resultHtml
         } catch (e: any) {
@@ -198,11 +215,6 @@ export class SpearlyJSGenerator {
 
     async generateListGroupByTag(templateHtml: string, contentType: string, apiOption, tagFieldName: string, variableName: string, insertDebugInfo: boolean): Promise<GeneratedListContent[]> {
         try {
-            // Searching sub-loop in html
-            if (templateHtml.includes("cms-loop")) {
-                templateHtml = await this.generateSubLoop(templateHtml, apiOption, insertDebugInfo)
-            }
-
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOption))
             let allTags = [] as string[]
             result.data.forEach(content => {
@@ -212,7 +224,7 @@ export class SpearlyJSGenerator {
             })
             const tags = [...new Set(allTags.flat())]
             const contentsByTag: GeneratedListContent[] = []
-            tags.forEach(tag => {
+            for (const tag of tags) {
                 const targetContents: Content[] = []
                 result.data.forEach(c => {
                     const searchTag = c.attributes.fields.data.filter(f => f.attributes.identifier === tagFieldName) as FieldTypeTags[]
@@ -221,21 +233,24 @@ export class SpearlyJSGenerator {
                         targetContents.push(c)
                     }
                 })
-                let resultHtml = ""
-                targetContents.forEach(c => {
+                for (const c of targetContents) {
                     const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, variableName || contentType, 2, true, this.options.dateFormatter);
                     // Special replacement string
                     replacementArray.push({
                         definitionString: `{%= ${contentType}_#tag %}`,
                         fieldValue: tag,
                     })
-                    resultHtml += this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo)
-                })
-                contentsByTag.push({
-                    generatedHtml: resultHtml,
-                    tag
-                })
-            })
+                    let html = this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo)
+                    // Searching sub-loop in html
+                    if (html.includes("cms-loop")) {
+                        html = await this.generateSubLoop(html, contentType, insertDebugInfo, c)
+                    }
+                    contentsByTag.push({
+                        generatedHtml: html,
+                        tag
+                    })
+                }
+            }
             return contentsByTag
         } catch (e) {
             return Promise.reject(e)
@@ -246,7 +261,7 @@ export class SpearlyJSGenerator {
         try {
             const generatedContents: GeneratedContent[] = []
             const result = await this.client.getList(contentType, generateGetParamsFromAPIOptions(apiOptions))
-            result.data.forEach(c => {
+            for (const c of result.data) {
                 const replacementArray = getFieldsValuesDefinitions(c.attributes.fields.data, contentType, 2, true, this.options.dateFormatter)
                 const tags = c.attributes.fields.data.filter(field => field.attributes.identifier === tagFieldName)
                 let tag: string[] = []
@@ -254,12 +269,17 @@ export class SpearlyJSGenerator {
                     tag = tag.concat(tags[0].attributes.value as [])
                 }
 
+                let html = this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo)
+                // Searching sub-loop in html
+                if (html.includes("cms-loop")) {
+                    html = await this.generateSubLoop(html, contentType, insertDebugInfo, c)
+                }
                 generatedContents.push({
                     alias: c.attributes.contentAlias || c.attributes.publicUid,
-                    generatedHtml: this.convertFromFieldsValueDefinitions(templateHtml, replacementArray, c, contentType, insertDebugInfo),
+                    generatedHtml: html,
                     tag
                 })
-            });
+            }
             return generatedContents
         } catch (e: any) {
             return Promise.reject(e)
