@@ -26,8 +26,10 @@ parser.add_argument("-f", "--file", { help: "Specify configuration settings file
 const args = parser.parse_args()
 
 if (args.action === "watch" || args.action === "build") {
-  if (!magic(args)) {
-    // Notify caller to magic fail.
-    process.exit(1);
-  }
+  magic(args).then(result => {
+    if (!result) {
+      // Notify caller to magic fail.
+      process.exit(1);
+    }
+  });
 }
