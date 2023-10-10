@@ -14,6 +14,13 @@ export class FileUtil {
   constructor(manipulator: FileManipulatorInterface, logger: SpearLog) {
     this.manipulator = manipulator;
     this.logger = logger;
+
+    // Define isTTY for sass compilation in the browser.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    process.stdout = {
+      isTTY: true
+    }
   }
 
   loadFile(filePath: string): Promise<any> {
