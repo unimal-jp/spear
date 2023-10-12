@@ -2,7 +2,7 @@ import { fs, vol } from "memfs";
 import { FileManipulatorInterface, InMemoryFile } from "../interfaces/FileManipulatorInterface";
 import { SiteMapURL } from "../interfaces/MagicInterfaces";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
-import { compileString } from "sass"
+import * as sass from "sass"
 
 export class InMemoryFileManipulator implements FileManipulatorInterface {
     files: InMemoryFile[]
@@ -100,11 +100,53 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
     }
 
     // Use Salesforce Light SCSS parser on in-browser mode.
-    compileSASS(path: string):string {
-      const fileContent = fs.readFileSync(path, 'utf8');
-      const result = compileString(fileContent.toString());
-      return result.css;
+  compileSASS(path: string): string {
+    const fileContent = fs.readFileSync(path, 'utf8');
+    const filePrefix = 'file:/'
+    try {
+      const result = sass.compileString(fileContent.toString(),{
+        importers: [{
+          canonicalize(url)  {
+            if (url.startsWith(filePrefix) && url.endsWith('.scss')) {
+              return new URL(url);
+            }
+
+            // basename to url
+            const basename = url.split('/').pop().split('.').shift() ?? url
+
+            // generate SCSS full path
+            const targetPath = path.split('/').slice(0, -1).join('/') + '/' + basename + ".scss"
+
+            if (fs.existsSync(targetPath)) {
+              return new URL(`${filePrefix}${targetPath}`);
+            }
+
+            const partialPath = path.split('/').slice(0, -1).join('/') + '/_' + basename + ".scss"
+
+            if (fs.existsSync(partialPath)) {
+              return new URL(`${filePrefix}${partialPath}`);
+            }
+
+            return null;
+          },
+          load(canonicalUrl) {
+            // remove file:/ prefix
+            const data = fs.readFileSync(canonicalUrl.toString().slice(filePrefix.length), 'utf8');
+
+            return {
+              contents: data.toString(),
+              syntax: 'scss'
+            };
+          }
+        }]
+      });
+
+      return result.css.replace(/:root/g, ':host');
+    } catch (error) {
+      console.error(error);
     }
+    return fileContent.toString()
+  }
 
     async generateSiteMap(linkList: Array<SiteMapURL>, siteURL: string): Promise<string> {
         const xml = `<?xml version="1.0" encoding="UTF-8"?>

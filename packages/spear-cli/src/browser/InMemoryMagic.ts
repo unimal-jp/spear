@@ -69,7 +69,7 @@ export default async function inMemoryMagic(
     createdAt: new Date(),
     updatedAt: new Date(),
   })
-  const fileUtil = new FileUtil(new InMemoryFileManipulator(inputFiles, settings), logger);
+  const fileUtil = new FileUtil(new InMemoryFileManipulator(inputFiles, settings), logger, true);
 
   // Hook API: beforeBuild
   for (const plugin of settings.plugins) {
@@ -211,7 +211,7 @@ export default async function inMemoryMagic(
   // Dump pages
   await fileUtil.dumpPages(state, "/lib", settings);
   fileUtil.manipulator.rmSync("/lib", { recursive: true });
-  
+
   // Hook API: bundle
   for (const plugin of settings.plugins) {
     if (plugin.bundle) {

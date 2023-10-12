@@ -178,7 +178,7 @@ export async function generateAliasPagesFromPagesList(
             }
           })
         } else {
-          // In this case, target file doesn't have [alias] path. 
+          // In this case, target file doesn't have [alias] path.
           throw new Error(`You specified the cms-tag-loop attribute in ${page.fname}. However, this path doesn't include [tags] directory.`);
         }
       } else if (tagAndLoopElement && !tagAndLoopElement.getAttribute("cms-ignore-static")) {
@@ -369,7 +369,7 @@ export function embedAssets(filepath: string, state: State, assets: {[key:string
             // Get the extension of image.
             // (We need to specify the extension for data url.)
             const ext = imgURL.split(".").pop();
-            const mimeType = mime.lookup(ext) || "png";
+            const mimeType = mime.lookup(ext) || "image/png";
             node.setAttribute("src", `data:${mimeType};base64,${assets[imgURL]}`);
           }
           break;
