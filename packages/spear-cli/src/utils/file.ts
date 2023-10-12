@@ -11,15 +11,17 @@ import { SpearLog } from "./log";
 export class FileUtil {
   manipulator: FileManipulatorInterface;
   logger: SpearLog
-  constructor(manipulator: FileManipulatorInterface, logger: SpearLog) {
+  constructor(manipulator: FileManipulatorInterface, logger: SpearLog, browserMode?: boolean) {
     this.manipulator = manipulator;
     this.logger = logger;
 
     // Define isTTY for sass compilation in the browser.
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    process.stdout = {
-      isTTY: true
+    if (browserMode) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      process.stdout = {
+        isTTY: true
+      }
     }
   }
 

@@ -52,7 +52,7 @@
     "mime-types": "^2.1.35",
     "node-html-parser": "^5.3.3",
     "node-watch": "^0.7.3",
-    "sass": "^1.63.6",
+    "sass": "^1.69.2",
     "sitemap": "^7.1.1",
     "yaml": "^2.2.1"
   },
