@@ -124,7 +124,79 @@ export async function generateAliasPagesFromPagesList(
 ): Promise<Component[]> {
   const replacePagesList: Component[] = [];
   for (const page of state.pagesList) {
-    if (page.fname.includes("[tags]")) {
+    if (page.fname.includes("[pagination]")) {
+      // Pagination Routing
+      const loopElement = page.node.querySelector("[cms-loop]");
+      console.log(loopElement);
+      if (!loopElement) throw new Error("You should specify the cms-loop");
+      const hasTagLoop  = loopElement.hasAttribute("cms-tag-loop");
+
+      console.log("🙈🙉🙊");
+      console.log(page);
+
+      if (loopElement && hasTagLoop) {
+        console.log("😺😺😺😺😺😺");
+        // combination of pagination and tag
+        const tagFieldName = loopElement.getAttribute("cms-tag-loop");
+        const contentType  = loopElement.getAttribute("cms-content-type");
+        if (!tagFieldName) throw new Error("You should specify the cms-tag-loop");
+        if (!contentType)  throw new Error("You should specify the cms-content-type");
+
+        const apiOption = generateAPIOptionMap(loopElement as Element)
+        apiOption.set('limit', 1000);
+        removeCMSAttributes(loopElement as Element);
+        if (settings.debugMode) {
+          loopElement.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+          loopElement.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+        }
+        const generatedContents = await jsGenerator.generateEachContentFromList(
+          loopElement.innerHTML,
+          contentType,
+          apiOption,
+          tagFieldName,
+          settings.debugMode
+        );
+        generatedContents.forEach(c => {
+          console.log('--------------');
+          console.log(c);
+          console.log('--------------');
+        })
+      } else if (loopElement) {
+        console.log("🐶🐶🐶🐶🐶🐶");
+        // pagination
+        const contentType  = loopElement.getAttribute("cms-content-type");
+        if (!contentType)  throw new Error("You should specify the cms-content-type");
+
+        const apiOption = generateAPIOptionMap(loopElement as Element)
+        removeCMSAttributes(loopElement as Element);
+        if (settings.debugMode) {
+          loopElement.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
+          loopElement.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
+        }
+        const generatedContents = await jsGenerator.generateEachContentFromList(
+          loopElement.innerHTML,
+          contentType,
+          apiOption,
+          "",
+          settings.debugMode
+        );
+        generatedContents.forEach(c => {
+          console.log('--------------');
+          console.log(c);
+          console.log('--------------');
+        })
+      } else {
+        // [pagination] page doesn't have [cms-loop]. So we need to treat this file as item file.
+        replacePagesList.push({
+          fname: page.fname,
+          node: parse(page.node.innerHTML) as Element,
+          props: page.props,
+          tagName: page.tagName,
+          rawData: page.rawData,
+        })
+      }
+
+    } else if (page.fname.includes("[tags]")) {
       // Path has [tags].
       const tagAndAliasLoopElement = page.node.querySelector("[cms-item][cms-tag-loop]");
       const tagAndLoopElement = page.node.querySelector("[cms-loop][cms-tag-loop]");
@@ -136,6 +208,7 @@ export async function generateAliasPagesFromPagesList(
         if (!tagFieldName) throw new Error("You should specify the cms-tag-loop");
         if (!contentType)  throw new Error("You should specify the cms-content-type");
 
+        //alias routing
         if (page.fname.includes("[alias]")) {
           const apiOption = generateAPIOptionMap(tagAndAliasLoopElement as Element);
           removeCMSAttributes(tagAndAliasLoopElement as Element);
