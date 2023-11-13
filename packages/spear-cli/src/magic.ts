@@ -48,6 +48,7 @@ function initializeArgument(args: Args) {
     quiteMode: false,
     debugMode: false,
     generateComponents: false,
+    maxPaginationCount: 10000,
   }
 }
 
@@ -104,7 +105,10 @@ async function bundle(): Promise<boolean> {
   // Due to support nested components.
   const componentsList = [] as Component[]
   for (const component of state.componentsList) {
-    const parsedNode = await parseElements(state, component.node.childNodes as Element[], state.jsGenerator, settings) as Element[]
+    const parsedNode = 
+      component.fname.includes("[pagination]") 
+      ? await parseElements(state, component.node.childNodes as Element[], state.jsGenerator, settings) as Element[]
+      : component.node.childNodes as Element[];
     componentsList.push({
       "fname": component.fname,
       "rawData": parsedNode[0].outerHTML,
@@ -116,7 +120,13 @@ async function bundle(): Promise<boolean> {
   state.componentsList = componentsList
 
   // Run list again to parse children of the pages
+  const isSkipFileName = (filePath): boolean => {
+    return filePath.includes("[pagination]") ||
+      filePath.includes("[alias]") ||
+      filePath.includes("[tags]");
+  }
   for (const page of state.pagesList) {
+    if (isSkipFileName(page.fname)) continue;
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, settings)
     // We need to parseElement twice due to embed nested component.
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, settings)

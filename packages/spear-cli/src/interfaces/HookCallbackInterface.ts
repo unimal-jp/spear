@@ -74,6 +74,20 @@ export interface BundleHookFunction {
 }
 
 /**
+ * Call when generating pagination navigation element.
+ * If return empty string, generating default pagination navigation.
+ * 
+ * fname: file name including [pagination].
+ * page: current page element.
+ * loopId: loop id.
+ * targetSource: target source object.
+ * sources: all sources object.
+ */
+export interface PaginationHookFunction {
+    (fname: string, page: Element, loopId: string, targetSource: {element: Element, count: number, currentPage: number}, sources: Array<{element: Element, count: number, currentPage: number}>):  string
+}
+
+/**
  * Hook API structure.
  * You can specify this object into spear.config.mjs.
  */
@@ -83,4 +97,5 @@ export interface HookApi {
     beforeBuild?: BeforeBuildHookFunction,
     afterBuild? : AfterBuildHookFunction,
     bundle? : BundleHookFunction,
+    pagination? : PaginationHookFunction
 }
