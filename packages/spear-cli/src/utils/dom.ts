@@ -136,6 +136,19 @@ export async function generateAliasPagesFromPagesList(
       const paginationSize = parseInt(loopElement.getAttribute("cms-pagination-size")) || 10;
 
       if (loopElement && hasTagLoop) {
+        // Routing Hook
+        for (const plugin of settings.plugins) {
+          if (plugin.beforeBuild) {
+            try {
+              const pages = await plugin.routing(page);
+              if (pages) {
+                replacePagesList.push(...pages);
+              }
+            } catch (e) {
+              console.warn(` plugin process failed. [${plugin.pluginName}]`)
+            }
+          }
+        }
         // combination of pagination and tag
         const tagFieldName = loopElement.getAttribute("cms-tag-loop");
         const contentType  = loopElement.getAttribute("cms-content-type");
@@ -209,10 +222,23 @@ export async function generateAliasPagesFromPagesList(
           });
         });
       } else if (loopElement) {
-        console.log("🐶🐶🐶🐶🐶🐶");
+        // Routing Hook
+        for (const plugin of settings.plugins) {
+          if (plugin.beforeBuild) {
+            try {
+              const pages = await plugin.routing(page);
+              if (pages) {
+                replacePagesList.push(...pages);
+              }
+            } catch (e) {
+              console.warn(` plugin process failed. [${plugin.pluginName}]`)
+            }
+          }
+        }
         // pagination
         const contentType  = loopElement.getAttribute("cms-content-type");
         if (!contentType)  throw new Error("You should specify the cms-content-type");
+        const loopId       = loopElement.getAttribute("cms-loop-id");
 
         const apiOption = generateAPIOptionMap(loopElement as Element)
         apiOption.set('limit', settings.maxPaginationCount);
@@ -222,17 +248,56 @@ export async function generateAliasPagesFromPagesList(
           loopElement.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
         }
         const generatedContents = await jsGenerator.generateEachContentFromList(
-          loopElement.innerHTML,
+          loopElement.outerHTML,
           contentType,
           apiOption,
           "",
           settings.debugMode
         );
-        generatedContents.forEach(c => {
-          console.log('--------------');
-          console.log(c);
-          console.log('--------------');
-        })
+
+        const targetLoopElementHTMLTemplate = loopElement.outerHTML;
+        const targetPageHTMLTemplate = page.node.innerHTML;
+        const elements: Array<{element: Element, count: number, currentPage: number}> = [{ element: parse("") as Element, count: 0, currentPage: 1}];
+        generatedContents.forEach((c, i) => {
+          let lastItem = elements[elements.length - 1];
+          const element  = lastItem.element;
+          const count    = lastItem.count;
+          const currentPage = lastItem.currentPage;
+          const generatedHTML = c.generatedHtml;
+          element.innerHTML += generatedHTML;
+
+          lastItem.element = element;
+          lastItem.count = count + 1;
+          lastItem.currentPage = currentPage;
+          if ((lastItem.count + 1) >  paginationSize) {
+            const newElement = parse("") as Element;
+            newElement.innerHTML = "";
+            elements.push({ element: parse("") as Element, count: 0, currentPage: currentPage + 1});
+          }
+        });
+        elements.forEach((v, i) => {
+          const element = v.element;
+          const currentPage = v.currentPage;
+          const html = targetPageHTMLTemplate.replace(
+            targetLoopElementHTMLTemplate,
+            element.outerHTML
+          );
+          const replacedPaginationHTML = replacePaginationTag(
+            settings,
+            page.fname,
+            parse(html) as Element,
+            loopId,
+            v,
+            elements
+          );
+          replacePagesList.push({
+            fname: page.fname.split("[pagination]").join(currentPage.toString()),
+            node: parse(replacedPaginationHTML) as Element,
+            props: page.props,
+            tagName: page.tagName,
+            rawData: html,
+          });
+        });
       } else {
         // [pagination] page doesn't have [cms-loop]. So we need to treat this file as item file.
         replacePagesList.push({
@@ -258,6 +323,19 @@ export async function generateAliasPagesFromPagesList(
 
         //alias routing
         if (page.fname.includes("[alias]")) {
+          // Routing Hook
+          for (const plugin of settings.plugins) {
+            if (plugin.beforeBuild) {
+              try {
+                const pages = await plugin.routing(page);
+                if (pages) {
+                  replacePagesList.push(...pages);
+                }
+              } catch (e) {
+                console.warn(` plugin process failed. [${plugin.pluginName}]`)
+              }
+            }
+          }
           const apiOption = generateAPIOptionMap(tagAndAliasLoopElement as Element);
           removeCMSAttributes(tagAndAliasLoopElement as Element);
           if (settings.debugMode) {
@@ -303,6 +381,19 @@ export async function generateAliasPagesFromPagesList(
           throw new Error(`You specified the cms-tag-loop attribute in ${page.fname}. However, this path doesn't include [tags] directory.`);
         }
       } else if (tagAndLoopElement && !tagAndLoopElement.getAttribute("cms-ignore-static")) {
+        // Routing Hook
+        for (const plugin of settings.plugins) {
+          if (plugin.beforeBuild) {
+            try {
+              const pages = await plugin.routing(page);
+              if (pages) {
+                replacePagesList.push(...pages);
+              }
+            } catch (e) {
+              console.warn(` plugin process failed. [${plugin.pluginName}]`)
+            }
+          }
+        }
         // In this case, target file has cms-tag-loop and cms-loop.
         const tagFieldName = tagAndLoopElement.getAttribute("cms-tag-loop");
         const contentType  = tagAndLoopElement.getAttribute("cms-content-type");
@@ -344,6 +435,19 @@ export async function generateAliasPagesFromPagesList(
           throw new Error(`You specified the cms-tag-loop attribute in ${page.fname}. However, this path doesn't include [tags] directory.`);
         }
       } else if (aliasLoopElement && !aliasLoopElement.getAttribute("cms-ignore-static")) {
+        // Routing Hook
+        for (const plugin of settings.plugins) {
+          if (plugin.beforeBuild) {
+            try {
+              const pages = await plugin.routing(page);
+              if (pages) {
+                replacePagesList.push(...pages);
+              }
+            } catch (e) {
+              console.warn(` plugin process failed. [${plugin.pluginName}]`)
+            }
+          }
+        }
         // In this case, target file has cms-item. (This mean we need to treat this file as loop if path contain the [alias].)
         if (page.fname.includes("[alias]")) {
           // path contain [alias]
@@ -389,6 +493,19 @@ export async function generateAliasPagesFromPagesList(
         }
       }
     } else if (page.fname.includes("[alias]")) {
+      // Routing Hook
+      for (const plugin of settings.plugins) {
+        if (plugin.beforeBuild) {
+          try {
+            const pages = await plugin.routing(page);
+            if (pages) {
+              replacePagesList.push(...pages);
+            }
+          } catch (e) {
+            console.warn(` plugin process failed. [${plugin.pluginName}]`)
+          }
+        }
+      }
       const targetElement = page.node.querySelector("[cms-item]");
       if (!targetElement) continue;
 
@@ -436,8 +553,12 @@ function replacePaginationTag(settings: DefaultSettings, fname: string, page: El
   // TODO: Hook pagination
   for(const plugin of settings.plugins) {
     if (plugin.pagination) {
-      const html = plugin.pagination(fname, page, loopId, targetSource, sources);
-      if (html) return html;
+      try {
+        const html = plugin.pagination(fname, page, loopId, targetSource, sources);
+        if (html) return html;
+      } catch (e) {
+        console.warn(` plugin process failed. ${plugin.pluginName}}`);
+      }
     }
   };
   const paginationElement = page.querySelector("[cms-pagination]");

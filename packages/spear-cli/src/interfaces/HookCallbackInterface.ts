@@ -84,7 +84,17 @@ export interface BundleHookFunction {
  * sources: all sources object.
  */
 export interface PaginationHookFunction {
-    (fname: string, page: Element, loopId: string, targetSource: {element: Element, count: number, currentPage: number}, sources: Array<{element: Element, count: number, currentPage: number}>):  string
+  (fname: string, page: Element, loopId: string, targetSource: {element: Element, count: number, currentPage: number}, sources: Array<{element: Element, count: number, currentPage: number}>):  string
+}
+
+/**
+ * Call when generating routing pages.
+ * E.g., [pagination].html, [alias].html, [tags].html... etc
+ * If return empty or null, generating default routing pages.
+ * 
+ */
+export interface RoutingHookFunction {
+  (targetPage: Component): Promise<Component[]>
 }
 
 /**
@@ -97,5 +107,6 @@ export interface HookApi {
     beforeBuild?: BeforeBuildHookFunction,
     afterBuild? : AfterBuildHookFunction,
     bundle? : BundleHookFunction,
-    pagination? : PaginationHookFunction
+    pagination? : PaginationHookFunction,
+    routing? : RoutingHookFunction,
 }
