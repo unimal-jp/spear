@@ -138,7 +138,7 @@ export async function generateAliasPagesFromPagesList(
       if (loopElement && hasTagLoop) {
         // Routing Hook
         for (const plugin of settings.plugins) {
-          if (plugin.beforeBuild) {
+          if (plugin.routing) {
             try {
               const pages = await plugin.routing(page);
               if (pages) {
@@ -224,7 +224,7 @@ export async function generateAliasPagesFromPagesList(
       } else if (loopElement) {
         // Routing Hook
         for (const plugin of settings.plugins) {
-          if (plugin.beforeBuild) {
+          if (plugin.routing) {
             try {
               const pages = await plugin.routing(page);
               if (pages) {
@@ -325,7 +325,7 @@ export async function generateAliasPagesFromPagesList(
         if (page.fname.includes("[alias]")) {
           // Routing Hook
           for (const plugin of settings.plugins) {
-            if (plugin.beforeBuild) {
+            if (plugin.routing) {
               try {
                 const pages = await plugin.routing(page);
                 if (pages) {
@@ -383,7 +383,7 @@ export async function generateAliasPagesFromPagesList(
       } else if (tagAndLoopElement && !tagAndLoopElement.getAttribute("cms-ignore-static")) {
         // Routing Hook
         for (const plugin of settings.plugins) {
-          if (plugin.beforeBuild) {
+          if (plugin.routing) {
             try {
               const pages = await plugin.routing(page);
               if (pages) {
@@ -437,7 +437,7 @@ export async function generateAliasPagesFromPagesList(
       } else if (aliasLoopElement && !aliasLoopElement.getAttribute("cms-ignore-static")) {
         // Routing Hook
         for (const plugin of settings.plugins) {
-          if (plugin.beforeBuild) {
+          if (plugin.routing) {
             try {
               const pages = await plugin.routing(page);
               if (pages) {
@@ -495,7 +495,7 @@ export async function generateAliasPagesFromPagesList(
     } else if (page.fname.includes("[alias]")) {
       // Routing Hook
       for (const plugin of settings.plugins) {
-        if (plugin.beforeBuild) {
+        if (plugin.routing) {
           try {
             const pages = await plugin.routing(page);
             if (pages) {
