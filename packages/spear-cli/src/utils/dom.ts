@@ -187,7 +187,7 @@ export async function generateAliasPagesFromPagesList(
             const generatedHTML = c.generatedHtml;
             element.innerHTML += generatedHTML;
             obj[obj.length - 1] = { element: element, count: count + 1, currentPage: currentPage };
-            if ((count + 1 )>  paginationSize) {
+            if ((count + 1 ) >=  paginationSize) {
               const newElement = parse("") as Element;
               newElement.innerHTML = "";
               obj.push({ element: newElement, count: 0, currentPage: currentPage + 1 });
@@ -269,7 +269,7 @@ export async function generateAliasPagesFromPagesList(
           lastItem.element = element;
           lastItem.count = count + 1;
           lastItem.currentPage = currentPage;
-          if ((lastItem.count + 1) >  paginationSize) {
+          if ((lastItem.count + 1) >=  paginationSize) {
             const newElement = parse("") as Element;
             newElement.innerHTML = "";
             elements.push({ element: parse("") as Element, count: 0, currentPage: currentPage + 1});
