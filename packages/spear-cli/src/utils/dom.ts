@@ -129,7 +129,6 @@ export async function generateAliasPagesFromPagesList(
       // Pagination Routing
       const loopElement = page.node.querySelector("[cms-loop]");
       if (!loopElement) {
-        console.log(page.node.innerHTML);
         throw new Error("You should specify the cms-loop");
       }
       const hasTagLoop  = loopElement.hasAttribute("cms-tag-loop");
