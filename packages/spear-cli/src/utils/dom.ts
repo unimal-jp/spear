@@ -171,7 +171,7 @@ export async function generateAliasPagesFromPagesList(
         );
         const targetLoopElementHTMLTemplate = loopElement.outerHTML;
         const targetPageHTMLTemplate = page.node.innerHTML;
-        const tagElements: Map<string, Array<PaginationElement>> = new Map();
+        const tagElements: Map<string, PaginationElement[]> = new Map();
         generatedContents.forEach((c, i) => {
           const tags = c.tag;
           tags.forEach(tag => {
@@ -256,7 +256,7 @@ export async function generateAliasPagesFromPagesList(
 
         const targetLoopElementHTMLTemplate = loopElement.outerHTML;
         const targetPageHTMLTemplate = page.node.innerHTML;
-        const elements: Array<PaginationElement> = [{ element: parse("") as Element, count: 0, currentPage: 1}];
+        const elements: PaginationElement[] = [{ element: parse("") as Element, count: 0, currentPage: 1}];
         generatedContents.forEach((c, i) => {
           let lastItem = elements[elements.length - 1];
           const element  = lastItem.element;
@@ -548,7 +548,7 @@ export async function generateAliasPagesFromPagesList(
 }
 
 
-function replacePaginationTag(settings: DefaultSettings, fname: string, page: Element, loopId: string, targetSource: PaginationElement, sources: Array<PaginationElement>): string {
+function replacePaginationTag(settings: DefaultSettings, fname: string, page: Element, loopId: string, targetSource: PaginationElement, sources: PaginationElement[]): string {
   // TODO: Hook pagination
   for(const plugin of settings.plugins) {
     if (plugin.pagination) {

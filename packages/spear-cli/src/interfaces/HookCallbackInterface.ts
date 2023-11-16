@@ -87,7 +87,7 @@ export interface BundleHookFunction {
  * sources: all sources object.
  */
 export interface PaginationHookFunction {
-  (fname: string, page: Element, loopId: string, targetSource: SpearPaginationElement, sources: Array<SpearPaginationElement>):  string
+  (fname: string, page: Element, loopId: string, targetSource: SpearPaginationElement, sources: SpearPaginationElement[]):  string
 }
 
 /**
