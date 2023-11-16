@@ -194,8 +194,7 @@ export async function generateAliasPagesFromPagesList(
             tagElements.set(tag, obj);
           });
         });
-        tagElements.forEach((v, k) => {
-          const tag = k;
+        tagElements.forEach((v, tag) => {
           v.forEach((obj, i) => {
             const element = obj.element;
             const currentPage = obj.currentPage;
