@@ -48,6 +48,7 @@ function initializeArgument(args: Args) {
     quiteMode: false,
     debugMode: false,
     generateComponents: false,
+    maxPaginationCount: 10000,
   }
 }
 
@@ -115,15 +116,14 @@ async function bundle(): Promise<boolean> {
   }
   state.componentsList = componentsList
 
-  // Run list again to parse children of the pages
+  // generate static routing files.
+  state.pagesList = await generateAliasPagesFromPagesList(state, state.jsGenerator, settings)
+
   for (const page of state.pagesList) {
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, settings)
     // We need to parseElement twice due to embed nested component.
     page.node.childNodes = await parseElements(state, page.node.childNodes as Element[], state.jsGenerator, settings)
   }
-
-  // generate static routing files.
-  state.pagesList = await generateAliasPagesFromPagesList(state, state.jsGenerator, settings)
 
   // Hook API: afterBuild
   for (const plugin of settings.plugins) {

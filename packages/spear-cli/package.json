@@ -1,6 +1,6 @@
 {
   "name": "@spearly/spear-cli",
-  "version": "1.4.7",
+  "version": "1.4.9",
   "type": "module",
   "description": "",
   "preferGlobal": true,

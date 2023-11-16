@@ -25,4 +25,5 @@ export interface DefaultSettings {
   embedMode? : boolean,
   debugMode? : boolean,
   generateComponents?: boolean,
+  maxPaginationCount?: number,
 }

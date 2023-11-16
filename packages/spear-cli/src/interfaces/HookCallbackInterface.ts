@@ -3,6 +3,7 @@ import { HTMLElement } from "node-html-parser"
 import { FileUtil } from "../utils/file"
 import { SpearLog } from "../utils/log"
 import { SpearlyJSGenerator } from "@spearly/cms-js-core"
+import { PaginationElement } from "./MagicInterfaces"
 
 export type SpearSettings = DefaultSettings
 
@@ -36,6 +37,8 @@ export interface SpearOption {
   fileUtil: FileUtil,
   logger: SpearLog
 }
+
+export type SpearPaginationElement = PaginationElement;
 
 /**
  * Call after configuration has finished.
@@ -74,6 +77,30 @@ export interface BundleHookFunction {
 }
 
 /**
+ * Call when generating pagination navigation element.
+ * If return empty string, generating default pagination navigation.
+ * 
+ * fname: file name including [pagination].
+ * page: current page element.
+ * loopId: loop id.
+ * targetSource: target source object.
+ * sources: all sources object.
+ */
+export interface PaginationHookFunction {
+  (fname: string, page: Element, loopId: string, targetSource: SpearPaginationElement, sources: SpearPaginationElement[]):  string
+}
+
+/**
+ * Call when generating routing pages.
+ * E.g., [pagination].html, [alias].html, [tags].html... etc
+ * If return empty or null, generating default routing pages.
+ * 
+ */
+export interface RoutingHookFunction {
+  (targetPage: Component): Promise<Component[]>
+}
+
+/**
  * Hook API structure.
  * You can specify this object into spear.config.mjs.
  */
@@ -83,4 +110,6 @@ export interface HookApi {
     beforeBuild?: BeforeBuildHookFunction,
     afterBuild? : AfterBuildHookFunction,
     bundle? : BundleHookFunction,
+    pagination? : PaginationHookFunction,
+    routing? : RoutingHookFunction,
 }
