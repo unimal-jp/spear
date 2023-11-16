@@ -88,7 +88,10 @@ export function generateAPIOptionMap(node: Element): APIOption {
       case "filters":
         // For now, Spear doesn't support multiple specify.
         break
-
+    }
+    if (key.startsWith("cms-option-order_by_")) {
+      const cmsKey = key.replace("cms-option-", "");
+      apiOptions.set(cmsKey, value);
     }
   }
   return apiOptions
