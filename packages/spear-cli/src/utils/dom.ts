@@ -1,4 +1,4 @@
-import { Component, Element, State } from "../interfaces/MagicInterfaces";
+import { Component, Element, PaginationElement, State } from "../interfaces/MagicInterfaces";
 import { parse } from "node-html-parser";
 import mime from "mime-types";
 import { minify } from "html-minifier-terser";
@@ -171,7 +171,7 @@ export async function generateAliasPagesFromPagesList(
         );
         const targetLoopElementHTMLTemplate = loopElement.outerHTML;
         const targetPageHTMLTemplate = page.node.innerHTML;
-        const tagElements: Map<string, Array<{element: Element, count: number, currentPage: number}>> = new Map();
+        const tagElements: Map<string, Array<PaginationElement>> = new Map();
         generatedContents.forEach((c, i) => {
           const tags = c.tag;
           tags.forEach(tag => {
@@ -256,7 +256,7 @@ export async function generateAliasPagesFromPagesList(
 
         const targetLoopElementHTMLTemplate = loopElement.outerHTML;
         const targetPageHTMLTemplate = page.node.innerHTML;
-        const elements: Array<{element: Element, count: number, currentPage: number}> = [{ element: parse("") as Element, count: 0, currentPage: 1}];
+        const elements: Array<PaginationElement> = [{ element: parse("") as Element, count: 0, currentPage: 1}];
         generatedContents.forEach((c, i) => {
           let lastItem = elements[elements.length - 1];
           const element  = lastItem.element;
@@ -548,7 +548,7 @@ export async function generateAliasPagesFromPagesList(
 }
 
 
-function replacePaginationTag(settings: DefaultSettings, fname: string, page: Element, loopId: string, targetSource: {element: Element, count: number, currentPage: number}, sources: Array<{element: Element, count: number, currentPage: number}>): string {
+function replacePaginationTag(settings: DefaultSettings, fname: string, page: Element, loopId: string, targetSource: PaginationElement, sources: Array<PaginationElement>): string {
   // TODO: Hook pagination
   for(const plugin of settings.plugins) {
     if (plugin.pagination) {

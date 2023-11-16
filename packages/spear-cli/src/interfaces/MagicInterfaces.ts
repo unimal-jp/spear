@@ -32,3 +32,9 @@ export interface SiteMapURL {
   changefreq: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never",
   priority: number,
 }
+
+export interface PaginationElement {
+  element: Element,
+  count: number,
+  currentPage: number
+}

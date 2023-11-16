@@ -3,6 +3,7 @@ import { HTMLElement } from "node-html-parser"
 import { FileUtil } from "../utils/file"
 import { SpearLog } from "../utils/log"
 import { SpearlyJSGenerator } from "@spearly/cms-js-core"
+import { PaginationElement } from "./MagicInterfaces"
 
 export type SpearSettings = DefaultSettings
 
@@ -36,6 +37,8 @@ export interface SpearOption {
   fileUtil: FileUtil,
   logger: SpearLog
 }
+
+export type SpearPaginationElement = PaginationElement;
 
 /**
  * Call after configuration has finished.
@@ -84,7 +87,7 @@ export interface BundleHookFunction {
  * sources: all sources object.
  */
 export interface PaginationHookFunction {
-  (fname: string, page: Element, loopId: string, targetSource: {element: Element, count: number, currentPage: number}, sources: Array<{element: Element, count: number, currentPage: number}>):  string
+  (fname: string, page: Element, loopId: string, targetSource: SpearPaginationElement, sources: Array<SpearPaginationElement>):  string
 }
 
 /**
