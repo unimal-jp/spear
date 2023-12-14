@@ -66,27 +66,23 @@ export function generateAPIOptionMap(node: Element): APIOption {
         apiOptions.set(cmsKey, parseInt(value))
         node.removeAttribute(key)
         break
-      case "order":
-      case "orderDirection":
-      case "orderBy":
-      case "filterBy":
-      case "filterRef":
-      case "filterMode":
-        apiOptions.set(cmsKey, value)
-        node.removeAttribute(key)
-        break
       case "rangeFrom":
       case "rangeTo":
         apiOptions.set(cmsKey, new Date(value))
         node.removeAttribute(key)
         break
       case "filterValue": 
+      case "filter_value":
         apiOptions.set(cmsKey, [...value.split(",")])
         node.removeAttribute(key)
         break
       case "orders":
       case "filters":
         // For now, Spear doesn't support multiple specify.
+        break
+      default:
+        apiOptions.set(cmsKey, value)
+        node.removeAttribute(key)
         break
     }
     if (key.startsWith("cms-option-order_by_")) {
