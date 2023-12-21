@@ -58,6 +58,8 @@ export function generateAPIOptionMap(node: Element): APIOption {
   if (!attrs || Object.keys(attrs).length <= 0) return apiOptions
 
   for (const key in attrs) {
+    if (!key.includes("cms-option-")) continue;
+
     const value = attrs[key]
     const cmsKey = key.replace("cms-option-", "")
     switch(cmsKey) {
