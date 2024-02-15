@@ -96,6 +96,14 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
       continue;
     }
 
+    if (!isTextNode && node.attributes) {
+      for (const key in node.attributes) {
+        if (["src","href","data","action"].includes(key) && node.getAttribute(key).startsWith("{%= spear_root %}")) {
+          node.setAttribute(key, node.getAttribute(key).replace(/{%= spear_root %}/, "")); ;
+        }
+      }
+    }
+
     if (!isTextNode && !component) {
       node.props = {};
       extractProps(state, node);
