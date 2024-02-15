@@ -3,7 +3,7 @@ import { Element, SiteMapURL, State } from "../interfaces/MagicInterfaces";
 import HTML_TAG_LIST from "../htmlList.js";
 import { includeComponentsDir, isParseTarget, needSASSBuild } from "./util.js";
 import { minify } from "html-minifier-terser";
-import { parse } from "node-html-parser";
+import { HTMLElement, parse } from "node-html-parser";
 import { DefaultSettings } from "../interfaces/SettingsInterfaces";
 import { FileManipulatorInterface, Settings } from "../interfaces/FileManipulatorInterface";
 import { SpearLog } from "./log";
@@ -99,7 +99,7 @@ export class FileUtil {
     const linkList: Array<SiteMapURL> = [];
     for (const page of state.pagesList) {
       // Read index.html template
-      let indexNode;
+      let indexNode: HTMLElement | null = null;
       if (!page.node.outerHTML || !page.node.outerHTML.includes("</html>")) {
         const indexRawData = this.manipulator.readFileSync(
           `${libDirName}/templates/index.html`,
