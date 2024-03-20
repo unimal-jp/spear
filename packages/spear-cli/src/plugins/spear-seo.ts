@@ -75,8 +75,14 @@ async function generateSEOBeforeBundle(state: SpearState, logger: SpearLog): Pro
             const headerTag = indexNode.querySelector("head")
             Object.keys(spearSEOTag.attributes).forEach((k) => {
                 if (k === "title") {
-                    const titleTag = parse(`<title>${spearSEOTag.attributes[k]}</title>`)
-                    headerTag.appendChild(titleTag)
+                    const existTitleTag = headerTag.querySelector("title");
+                    // MEMO: If title tag already exists, replace it.
+                    if (existTitleTag) {
+                        existTitleTag.set_content(spearSEOTag.attributes[k])
+                    } else {
+                        const titleTag = parse(`<title>${spearSEOTag.attributes[k]}</title>`)
+                        headerTag.appendChild(titleTag)
+                    }
                 } else if (k.startsWith("meta-")) {
                     const metaName = k.replace("meta-", "")
                     const metaValue = spearSEOTag.attributes[k]
