@@ -7,10 +7,10 @@ export interface FileManipulatorInterface {
   readdirSync: (path: string) => string[];
   existsSync: (path: string) => boolean;
   isDirectory: (path: string) => boolean;
-  mkDirSync: (path: string, option: any) => void;
-  rmSync: (path: string, option: any) => void;
+  mkDirSync: (path: string, option: { recursive: boolean } | null) => void;
+  rmSync: (path: string, option: { recursive: boolean } | null) => void;
   writeFileSync: (path: string, content: string) => void;
-  loadFile: (path: string) => any;
+  loadFile: (path: string) => Promise<DefaultSettings>;
   compileSASS: (path: string) => string;
   generateSiteMap: (linkList: Array<SiteMapURL>, siteURL: string) => Promise<string>;
   debug: () => void;

@@ -243,6 +243,7 @@ export default async function magic(args: Args): Promise<boolean> {
       middleware:
         settings.crossOriginIsolation
           ? [
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               function (req: any, res: any, next: any) {
                 res.setHeader("Cross-Origin-Embedder-Policy", "credentialless")
                 res.setHeader("Cross-Origin-Opener-Policy", "same-origin")

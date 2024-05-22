@@ -12,8 +12,6 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         const jsonObject = this.extractInMemoryFilesToObject(files, "/")
         vol.fromJSON(jsonObject, '/')
 
-        const ret = fs.readdirSync('/src')
-
         this.files = files
         this.settingsObject = settingsObject
     }
@@ -71,7 +69,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         return fs.lstatSync(path).isDirectory()
     }
 
-    mkDirSync(path: string, option: any): void {
+    mkDirSync(path: string, option: { recursive: boolean } | null): void {
         if (option && option.recursive) {
             fs.mkdirSync(path, { recursive: true })
         } else {
@@ -79,7 +77,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         }
     }
 
-    rmSync(path: string, option: any): void {
+    rmSync(path: string, option: { recursive: boolean } | null): void {
         if (!this.existsSync(path)) return
         if (option.recursive && this.isDirectory(path)) {
             const files = this.readdirSync(path)
@@ -95,7 +93,7 @@ export class InMemoryFileManipulator implements FileManipulatorInterface {
         return fs.writeFileSync(path, content)
     }
 
-    loadFile(pathPattern: string): any {
+    loadFile(): Promise<DefaultSettings> {
         return Promise.resolve(this.settingsObject)
     }
 

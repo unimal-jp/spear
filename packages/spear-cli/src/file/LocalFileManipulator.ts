@@ -7,9 +7,10 @@ import * as sass from "sass"
 import { SiteMapURL } from "../interfaces/MagicInterfaces";
 import { SitemapStream, streamToPromise } from "sitemap";
 import { Readable } from "stream";
+import { DefaultSettings } from "../types";
 
 export class LocalFileManipulator implements FileManipulatorInterface {
-    loadFile(filePath: string): any {
+    loadFile(filePath: string): Promise<DefaultSettings> {
         return new Promise((resolve, reject) => {
           glob(filePath, null, async (er, files) => {
             if (er) {
@@ -32,7 +33,7 @@ export class LocalFileManipulator implements FileManipulatorInterface {
                 const data = this.readFileSync(files[0], "utf8");
                 resolve(yamlParse(data));
               } else {
-                resolve(this.readFileSync(files[0], "utf8"));
+                resolve(JSON.parse(this.readFileSync(files[0], "utf8")));
               }
             } else {
               resolve(null);
@@ -56,11 +57,11 @@ export class LocalFileManipulator implements FileManipulatorInterface {
     isDirectory(filePath: string): boolean {
         return fs.lstatSync(filePath).isDirectory()
     }
-    mkDirSync(filePath: string, option: any): void {
+    mkDirSync(filePath: string, option: { recursive: boolean } | null): void {
         fs.mkdirSync(filePath, option)
         return
     }
-    rmSync(filePath: string, option: any): void {
+    rmSync(filePath: string, option: { recursive: boolean } | null): void {
       fs.rmSync(filePath, option)
       return
     }
