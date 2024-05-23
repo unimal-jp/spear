@@ -54,7 +54,7 @@ export function defaultSettingDeepCopy(config: DefaultSettings): DefaultSettings
 
 export function generateAPIOptionMap(node: Element): APIOption {
   const attrs = node.attributes
-  const apiOptions = new Map<string, any>()
+  const apiOptions = new Map<string, number | Date | string[] | string>()
   if (!attrs || Object.keys(attrs).length <= 0) return apiOptions
 
   for (const key in attrs) {

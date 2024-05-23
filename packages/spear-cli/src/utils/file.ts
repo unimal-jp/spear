@@ -25,7 +25,7 @@ export class FileUtil {
     }
   }
 
-  loadFile(filePath: string): Promise<any> {
+  loadFile(filePath: string): Promise<DefaultSettings> {
     return this.manipulator.loadFile(filePath);
   }
 

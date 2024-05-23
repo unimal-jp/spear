@@ -84,7 +84,7 @@ export async function parseElements(state: State, nodes: Element[], jsGenerator:
         node.setAttribute("data-spear-content-type", `{%= ${contentType}_#content_type %}`);
         node.setAttribute("data-spear-content", `{%= ${contentType}_#alias %}`);
       }
-      const [generatedStr, _] = await jsGenerator.generateContent(
+      const [ generatedStr ] = await jsGenerator.generateContent(
         node.outerHTML,
         contentType,
         contentId,
@@ -172,7 +172,7 @@ export async function generateAliasPagesFromPagesList(
         const targetLoopElementHTMLTemplate = loopElement.outerHTML;
         const targetPageHTMLTemplate = page.node.innerHTML;
         const tagElements: Map<string, PaginationElement[]> = new Map();
-        generatedContents.forEach((c, i) => {
+        generatedContents.forEach((c) => {
           const tags = c.tag;
           tags.forEach(tag => {
             if (!tagElements.has(tag)) {
@@ -195,7 +195,7 @@ export async function generateAliasPagesFromPagesList(
           });
         });
         tagElements.forEach((v, tag) => {
-          v.forEach((obj, i) => {
+          v.forEach((obj) => {
             const element = obj.element;
             const currentPage = obj.currentPage;
             const html = targetPageHTMLTemplate.replace(
@@ -256,8 +256,8 @@ export async function generateAliasPagesFromPagesList(
         const targetLoopElementHTMLTemplate = loopElement.outerHTML;
         const targetPageHTMLTemplate = page.node.innerHTML;
         const elements: PaginationElement[] = [{ element: parse("") as Element, count: 0, currentPage: 1}];
-        generatedContents.forEach((c, i) => {
-          let lastItem = elements[elements.length - 1];
+        generatedContents.forEach((c) => {
+          const lastItem = elements[elements.length - 1];
           const element  = lastItem.element;
           const count    = lastItem.count;
           const currentPage = lastItem.currentPage;
@@ -273,7 +273,7 @@ export async function generateAliasPagesFromPagesList(
             elements.push({ element: parse("") as Element, count: 0, currentPage: currentPage + 1});
           }
         });
-        elements.forEach((v, i) => {
+        elements.forEach((v) => {
           const element = v.element;
           const currentPage = v.currentPage;
           const html = targetPageHTMLTemplate.replace(
@@ -558,7 +558,7 @@ function replacePaginationTag(settings: DefaultSettings, fname: string, page: El
         console.warn(` plugin process failed. ${plugin.pluginName}}`);
       }
     }
-  };
+  }
   const paginationElement = page.querySelector("[cms-pagination]");
   if (!paginationElement) return page.innerHTML;
   const targetLoopId = paginationElement.getAttribute("cms-loop-id");
@@ -587,7 +587,7 @@ function replacePaginationTag(settings: DefaultSettings, fname: string, page: El
     return page.innerHTML.replace(paginationElement.outerHTML, replaceHTML);
   }
   return "";
-};
+}
 
 function insertComponentSlot(
   componentElement: Element,
