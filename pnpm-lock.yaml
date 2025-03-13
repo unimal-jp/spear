@@ -43,8 +43,8 @@ importers:
   packages/spear-cli:
     dependencies:
       '@spearly/cms-js-core':
-        specifier: 1.0.17
-        version: 1.0.17
+        specifier: 1.0.19
+        version: 1.0.19
       '@types/live-server':
         specifier: ^1.2.1
         version: 1.2.3
@@ -950,8 +950,8 @@ packages:
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
 
-  '@spearly/cms-js-core@1.0.17':
-    resolution: {integrity: sha512-FAYhSrGLDeFaJhyUy4CP0cbuU66vLmRAX5ZQ9KTlXupUiA2KsMqbQbg9s9Hf2iIB8MpqCmJliHvk11zuAh3Mbw==}
+  '@spearly/cms-js-core@1.0.19':
+    resolution: {integrity: sha512-69ZoejxEzXeONT6fkHlcMfgHwBUBuj08FCVKk3qSCobFuFgdqsw3a63i6Zh0YROB1RCfHLAvag/2uM9pxjw3kw==}
 
   '@spearly/sdk-js@2.0.3':
     resolution: {integrity: sha512-CWhp6XmNxjsWnZTqD5oBxAPHJvFOjl0z5RRhyWyV25l0/ZLe7MvTQVC8vEAVMHZGXm5AGFO3O/BD6ssTw8p83w==}
@@ -4724,7 +4724,7 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@spearly/cms-js-core@1.0.17':
+  '@spearly/cms-js-core@1.0.19':
     dependencies:
       '@spearly/sdk-js': 2.0.3
       node-html-parser: 6.1.13
