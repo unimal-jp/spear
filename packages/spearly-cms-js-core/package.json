@@ -1,7 +1,7 @@
 {
   "name": "@spearly/cms-js-core",
   "private": false,
-  "version": "1.0.17",
+  "version": "1.0.18",
   "type": "module",
   "main": "dist/esm/index.js",
   "module": "dist/esm/index.js",
@@ -30,7 +30,7 @@
   "homepage": "https://github.com/unimal-jp/spear#readme",
   "dependencies": {
     "node-html-parser": "^6.1.4",
-    "@spearly/sdk-js": "^2.0.1"
+    "@spearly/sdk-js": "^2.0.3"
   },
   "devDependencies": {
     "@types/jest": "^29.2.3",
